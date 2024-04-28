@@ -668,9 +668,9 @@ namespace ModernWMS.WMS.Services
                                    location_name = gl.location_name == null ? "" : gl.location_name,
                                    warehouse_area_name = gl.warehouse_area_name == null ? "" : gl.warehouse_area_name,
                                    warehouse_name = gl.warehouse_name == null ? "" : gl.warehouse_name,
-                                   series_number = sg.series_number,
-                                   sg.expiry_date,
-                                   sg.price,
+                                   series_number = sg.series_number==null ? "":sg.series_number,
+                                   expiry_date = sg.expiry_date==null ? UtilConvert.MinDate : sg.expiry_date,
+                                   price = sg.price == null ? 0:sg.price,
                                }).ToListAsync();
             var res = (from d in datas
                        group d by new
