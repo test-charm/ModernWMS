@@ -1121,7 +1121,7 @@ namespace ModernWMS.WMS.Services
         {
             var DBSet = _dBContext.GetDbSet<DispatchlistEntity>();
             var pick_DBSet = _dBContext.GetDbSet<DispatchpicklistEntity>();
-            var pick_datas = await pick_DBSet.Where(t => picklist_id.Contains(t.dispatchlist_id)).ToListAsync();
+            var pick_datas = await pick_DBSet.Where(t => picklist_id.Contains(t.id)).ToListAsync();
             if (pick_datas.Any(t=>t.picker_id > 0) || pick_datas.Any(t=>t.picked_qty>0))
             {
                 return (false, _stringLocalizer["data_changed"]);
@@ -1152,7 +1152,7 @@ namespace ModernWMS.WMS.Services
         {
             var DBSet = _dBContext.GetDbSet<DispatchlistEntity>();
             var pick_DBSet = _dBContext.GetDbSet<DispatchpicklistEntity>();
-            var pick_datas = await pick_DBSet.Where(t => picklist_id.Contains(t.dispatchlist_id)  ).ToListAsync();
+            var pick_datas = await pick_DBSet.Where(t => picklist_id.Contains(t.id)  ).ToListAsync();
             if (pick_datas.Any(t =>t.picker_id == 0) || pick_datas.Any(t => t.picked_qty > 0))
             {
                 return (false, _stringLocalizer["data_changed"]);
