@@ -111,7 +111,7 @@
       @page-change="method.handlePageChange"
     >
     </custom-pager>
-    <SearchDeliveredDetail :id="data.showDeliveredDetailID" :show-dialog="data.showDeliveredDetail" @close="method.closeDeliveredDetail" />
+    <SearchDeliveredDetail :id="data.showDeliveredDetailID" :source-type="'picking'" :show-dialog="data.showDeliveredDetail" @close="method.closeDeliveredDetail" />
   </div>
 </template>
 
