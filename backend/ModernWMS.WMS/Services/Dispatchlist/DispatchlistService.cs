@@ -148,6 +148,8 @@ namespace ModernWMS.WMS.Services
                             length_unit = spu.length_unit,
                             volume_unit = spu.volume_unit,
                             weight_unit = spu.weight_unit,
+                            pick_checker = d.pick_checker,
+                            pick_checker_id = d.pick_checker_id,
                             is_todo = pageSearch.sqlTitle.Contains("dispatch_status") || (pageSearch.sqlTitle.Equals("package") && d.dispatch_status.Equals(4))
                                             || (pageSearch.sqlTitle.Equals("weight") && d.dispatch_status.Equals(5))
                                             || (pageSearch.sqlTitle.Equals("delivery") && d.dispatch_status.Equals(6)) ? false : true,
@@ -218,7 +220,9 @@ namespace ModernWMS.WMS.Services
                                    bar_code = sku.bar_code,
                                    unpicked_qty = d.qty - d.picked_qty,
                                    sku_name = sku.sku_name,
-                                   unit = sku.unit
+                                   unit = sku.unit,
+                                   pick_checker = d.pick_checker,
+                                   pick_checker_id = d.pick_checker_id,
                                }).ToListAsync();
             return datas;
         }
@@ -353,6 +357,8 @@ namespace ModernWMS.WMS.Services
                                    series_number = dpl.series_number,
                                    expiry_date = dpl.expiry_date,
                                    price = dpl.price,
+                                   picker = dpl.picker,
+                                   picker_id = dpl.picker_id,
                                }).ToListAsync();
             return datas;
         }
@@ -484,6 +490,8 @@ namespace ModernWMS.WMS.Services
                                   waybill_no = dl.waybill_no,
                                   carrier = dl.carrier,
                                   freightfee = dl.freightfee,
+                                  pick_checker = dl.pick_checker,
+                                  pick_checker_id = dl.pick_checker_id,
                               }
                               ).ToListAsync();
             return data.Adapt<List<DispatchlistDetailViewModel>>();
@@ -668,9 +676,9 @@ namespace ModernWMS.WMS.Services
                                    location_name = gl.location_name == null ? "" : gl.location_name,
                                    warehouse_area_name = gl.warehouse_area_name == null ? "" : gl.warehouse_area_name,
                                    warehouse_name = gl.warehouse_name == null ? "" : gl.warehouse_name,
-                                   series_number = sg.series_number,
-                                   sg.expiry_date,
-                                   sg.price,
+                                   series_number = sg.series_number==null ? "":sg.series_number,
+                                   expiry_date = sg.expiry_date==null ? UtilConvert.MinDate : sg.expiry_date,
+                                   price = sg.price == null ? 0:sg.price,
                                }).ToListAsync();
             var res = (from d in datas
                        group d by new
@@ -917,14 +925,10 @@ namespace ModernWMS.WMS.Services
             };
             await DBSet.AddRangeAsync(new_dispatchlists);
             var qty = await _dBContext.SaveChangesAsync();
-            if (qty > 0)
-            {
-                return (true, _stringLocalizer["operation_success"]);
-            }
-            else
-            {
-                return (false, _stringLocalizer["operation_failed"]);
-            }
+
+            return (true, _stringLocalizer["operation_success"]);
+ 
+
         }
 
         /// <summary>
@@ -1088,11 +1092,75 @@ namespace ModernWMS.WMS.Services
                 t.picked_qty = t.lock_qty;
                 t.dispatch_status = 3;
                 t.last_update_time = now_time;
+                t.pick_checker = currentUser.user_name;
+                t.pick_checker_id = currentUser.user_id;
             });
             pick_datas.ForEach(t =>
             {
                 t.picked_qty = t.pick_qty;
                 t.last_update_time = now_time;
+            });
+            var qty = await _dBContext.SaveChangesAsync();
+            if (qty > 0)
+            {
+                return (true, _stringLocalizer["operation_success"]);
+            }
+            else
+            {
+                return (false, _stringLocalizer["operation_failed"]);
+            }
+        }
+
+        /// <summary>
+        /// confirm pick detail
+        /// </summary>
+        /// <param name="picklist_id">dispatch list pick detail id</param>
+        /// <param name="currentUser">current user</param>
+        /// <returns></returns>
+        public async Task<(bool flag, string msg)> ConfirmPickDetail(List<int> picklist_id, CurrentUser currentUser)
+        {
+            var DBSet = _dBContext.GetDbSet<DispatchlistEntity>();
+            var pick_DBSet = _dBContext.GetDbSet<DispatchpicklistEntity>();
+            var pick_datas = await pick_DBSet.Where(t => picklist_id.Contains(t.id)).ToListAsync();
+            if (pick_datas.Any(t=>t.picker_id > 0) || pick_datas.Any(t=>t.picked_qty>0))
+            {
+                return (false, _stringLocalizer["data_changed"]);
+            }
+            pick_datas.ForEach(t=> 
+            { 
+                t.picker = currentUser.user_name;
+                t.picker_id = currentUser.user_id;
+            });
+            var qty = await _dBContext.SaveChangesAsync();
+            if (qty > 0)
+            {
+                return (true, _stringLocalizer["operation_success"]);
+            }
+            else
+            {
+                return (false, _stringLocalizer["operation_failed"]);
+            }
+        }
+
+        /// <summary>
+        /// cancel confirm pick detail
+        /// </summary>
+        /// <param name="picklist_id">dispatch list pick detail id</param>
+        /// <param name="currentUser">current user</param>
+        /// <returns></returns>
+        public async Task<(bool flag, string msg)> CancelConfirmPickDetail(List<int> picklist_id, CurrentUser currentUser)
+        {
+            var DBSet = _dBContext.GetDbSet<DispatchlistEntity>();
+            var pick_DBSet = _dBContext.GetDbSet<DispatchpicklistEntity>();
+            var pick_datas = await pick_DBSet.Where(t => picklist_id.Contains(t.id)  ).ToListAsync();
+            if (pick_datas.Any(t =>t.picker_id == 0) || pick_datas.Any(t => t.picked_qty > 0))
+            {
+                return (false, _stringLocalizer["data_changed"]);
+            }
+            pick_datas.ForEach(t => 
+            {
+                t.picker = "";
+                t.picker_id = 0;
             });
             var qty = await _dBContext.SaveChangesAsync();
             if (qty > 0)

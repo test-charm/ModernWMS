@@ -136,6 +136,15 @@ namespace ModernWMS.WMS.Entities.ViewModels
         /// </summary>
         public decimal price { get; set; } = 0;
 
+        /// <summary>
+        /// picker_id
+        /// </summary>
+        public int picker_id { get; set; } = 0;
+
+        /// <summary>
+        /// picker
+        /// </summary>
+        public string picker { get; set; } = string.Empty;
         #endregion Property
     }
 }

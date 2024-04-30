@@ -71,11 +71,6 @@ namespace ModernWMS.WMS.Entities.Models
         public string series_number { get; set; } = string.Empty;
 
         /// <summary>
-        /// expiry_date
-        /// </summary>
-        public DateTime expiry_date { get; set; } = UtilConvert.MinDate;
-
-        /// <summary>
         /// price
         /// </summary>
         public decimal price { get; set; } = 0;
