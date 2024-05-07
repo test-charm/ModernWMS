@@ -65,6 +65,7 @@ export function menusToSideBar(): SideBarMenu[] {
     }
   }
   result.push({ icon: GetModuleAndIcon('homepage'), lable: i18n.global.t('router.sideBar.vwms'), routerPath: 'vwms', showDetail: false })
+  result.push({ icon: GetModuleAndIcon('homepage'), lable: i18n.global.t('router.sideBar.largeScreen'), routerPath: 'largeScreen', showDetail: false })
   return result
 }
 

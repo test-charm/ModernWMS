@@ -260,6 +260,7 @@
       "userManagement": "用户管理",
       "userRoleSetting": "角色设置",
       "vwms": "可视化仓库",
+      "largeScreen":"大屏",
       "warehouseAdjust": "库存调整",
       "warehouseFreeze": "库存冻结",
       "warehouseMove": "库存移动",
@@ -348,7 +349,8 @@
       "view": "查看",
       "setSearch": "设置查询条件",
       "chart": "图表",
-      "table": "表格"
+      "table": "表格",
+      "fullScreen":"全屏"
     },
     "pager": {
       "goTo": "前往",

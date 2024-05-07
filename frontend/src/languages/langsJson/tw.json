@@ -260,6 +260,7 @@
       "userManagement": "用戶管理",
       "userRoleSetting": "角色設置",
       "vwms": "視覺化倉庫",
+      "largeScreen":"大螢幕",
       "warehouseAdjust": "庫存調整",
       "warehouseFreeze": "庫存凍結",
       "warehouseMove": "庫存移動",
@@ -348,7 +349,8 @@
       "view": "查看",
       "setSearch": "設定查詢準則",
       "chart": "圖表",
-      "table": "表格"
+      "table": "表格",
+      "fullScreen":"全屏"
     },
     "pager": {
       "goTo": "前往",

@@ -260,6 +260,7 @@
       "userManagement": "User Management",
       "userRoleSetting": "User Role",
       "vwms": "Visual warehouse",
+      "largeScreen":"Large Screen",
       "warehouseAdjust": "Inventory Adjust",
       "warehouseFreeze": "Inventory freeze",
       "warehouseMove": "Inventory Move",
@@ -348,7 +349,8 @@
       "view": "View",
       "setSearch": "Set query criteria",
       "chart": "Chart",
-      "table": "Table"
+      "table": "Table",
+      "fullScreen":"FullScreen"
     },
     "pager": {
       "goTo": "Go to",
