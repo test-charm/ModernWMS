@@ -61,11 +61,7 @@
                   <vxe-column field="unit" :title="$t('wms.warehouseWorking.warehouseProcessing.unit')"></vxe-column>
                   <vxe-column field="series_number" :title="$t('wms.stockLocation.series_number')"></vxe-column>
                   <vxe-column field="price" :title="$t('wms.warehouseWorking.warehouseProcessing.price')"></vxe-column>
-                  <vxe-column
-                    field="expiry_date"
-                    :title="$t('wms.warehouseWorking.warehouseProcessing.expiry_date')"
-                    :formatter="['formatDate', 'yyyy-MM-dd']"
-                  ></vxe-column>
+                  <vxe-date-column field="expiry_date" :title="$t('wms.warehouseWorking.warehouseProcessing.expiry_date')"></vxe-date-column>
                 </vxe-table>
               </div>
             </v-col>
@@ -382,7 +378,7 @@ const method = reactive({
             unit: record.unit,
             is_update_stock: false,
             price: 0,
-          expiry_date: ''
+            expiry_date: ''
           },
           -1
         )

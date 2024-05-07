@@ -14,6 +14,8 @@ import { router } from './router'
 import { store } from './store/index'
 import hookComponent from '@/components/system/index'
 
+import VxeDateColumn from '@/components/table/vxe-date-column.vue'
+
 const app = createApp(App)
 app.config.globalProperties.hiprint = setup()
 
@@ -29,5 +31,8 @@ app.use(i18n)
 app.use(hookComponent)
 app.use(VXETable)
 app.use(DataVVue3)
+
+// 自定义组件挂载
+app.component('VxeDateColumn', VxeDateColumn)
 
 app.mount('#app')
