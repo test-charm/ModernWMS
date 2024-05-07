@@ -358,7 +358,7 @@ const method = reactive({
     } else {
       hookComponent.$message({
         type: 'error',
-        content: i18n.global.t('base.userManagement.checkboxIsNull')
+        content: i18n.global.t('base.commodityManagement.checkboxIsNullByPrint')
       })
     }
   },

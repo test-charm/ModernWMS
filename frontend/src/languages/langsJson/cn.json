@@ -34,7 +34,8 @@
       "volume_unit": "体积单位",
       "weight": "商品重量",
       "weight_unit": "重量单位",
-      "width": "商品宽度"
+      "width": "商品宽度",
+      "checkboxIsNullByPrint": "未选中数据 或 选中的sku不具备商品条码!"
     },
     "companySetting": {
       "address": "详细地址",
@@ -260,6 +261,7 @@
       "userManagement": "用户管理",
       "userRoleSetting": "角色设置",
       "vwms": "可视化仓库",
+      "largeScreen":"大屏",
       "warehouseAdjust": "库存调整",
       "warehouseFreeze": "库存冻结",
       "warehouseMove": "库存移动",
@@ -348,7 +350,8 @@
       "view": "查看",
       "setSearch": "设置查询条件",
       "chart": "图表",
-      "table": "表格"
+      "table": "表格",
+      "fullScreen":"全屏"
     },
     "pager": {
       "goTo": "前往",
@@ -393,7 +396,7 @@
       "confirmBack": "确认撤回",
       "confirmDelivery": "确认出库",
       "confirmOrder": "确认发货单",
-      "confirmPicking": "确认拣货",
+      "confirmPicking": "拣货复核",
       "confirmSignIn": "确认签收",
       "confirmSuccess": "确认发货单成功!",
       "create_time": "创建时间",
@@ -431,6 +434,8 @@
       "packaged": "打包",
       "picked": "已拣货",
       "picked_qty": "已拣货数量",
+      "picker":"拣货员",
+      "pick_checker":"拣货复核员",
       "preShipment": "预发货",
       "qty": "总数量",
       "qty_available": "可用数量",
