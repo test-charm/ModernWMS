@@ -74,7 +74,7 @@
                   </template>
                 </vxe-column>
                 <vxe-column field="price" :title="$t('wms.stockAsnInfo.price')"></vxe-column>
-                <vxe-column field="expiry_date" :title="$t('wms.stockAsnInfo.expiry_date')" :formatter="['formatDate', 'yyyy-MM-dd']"></vxe-column>
+                <vxe-date-column field="expiry_date" :title="$t('wms.stockAsnInfo.expiry_date')"></vxe-date-column>
               </vxe-table>
             </v-col>
           </v-row>
