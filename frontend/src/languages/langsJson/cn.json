@@ -34,7 +34,8 @@
       "volume_unit": "体积单位",
       "weight": "商品重量",
       "weight_unit": "重量单位",
-      "width": "商品宽度"
+      "width": "商品宽度",
+      "checkboxIsNullByPrint": "未选中数据 或 选中的sku不具备商品条码!"
     },
     "companySetting": {
       "address": "详细地址",

@@ -34,7 +34,8 @@
       "volume_unit": "Volume Unit",
       "weight": "Commodity Weight",
       "weight_unit": "Weight Unit",
-      "width": "Commodity Width"
+      "width": "Commodity Width",
+      "checkboxIsNullByPrint": "No data selected or the selected SKU does not have a product barcode."
     },
     "companySetting": {
       "address": "Detailed Address",
