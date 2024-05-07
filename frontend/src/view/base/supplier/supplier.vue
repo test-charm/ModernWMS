@@ -93,7 +93,7 @@
                     :flat="true"
                     icon="mdi-delete-outline"
                     :tooltip-text="$t('system.page.delete')"
-                    :icon-color="!data.authorityList.includes('delete')?'':errorColor"
+                    :icon-color="!data.authorityList.includes('delete') ? '' : errorColor"
                     :disabled="!data.authorityList.includes('delete')"
                     @click="method.deleteRow(row)"
                   ></tooltip-btn>
@@ -265,11 +265,11 @@ const method = reactive({
       return
     }
     data.tableData = res.data.rows
+    console.log('test', data.tableData)
     data.tablePage.total = res.data.totals
   }
 })
 onMounted(() => {
-  console.log('test')
   data.btnList = [
     {
       name: i18n.global.t('system.page.add'),
