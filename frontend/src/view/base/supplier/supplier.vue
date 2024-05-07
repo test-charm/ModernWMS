@@ -269,6 +269,7 @@ const method = reactive({
   }
 })
 onMounted(() => {
+  console.log('test')
   data.btnList = [
     {
       name: i18n.global.t('system.page.add'),
