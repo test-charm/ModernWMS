@@ -100,5 +100,12 @@ namespace ModernWMS.WMS.Entities.ViewModels
         /// price
         /// </summary>
         public decimal price { get; set; } = 0;
+
+        /// <summary>
+        /// putaway_date
+        /// </summary>
+        public DateTime putaway_date { get; set; } = UtilConvert.MinDate;
+
+
     }
 }

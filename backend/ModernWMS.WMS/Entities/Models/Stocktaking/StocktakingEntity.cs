@@ -61,6 +61,11 @@ namespace ModernWMS.WMS.Entities.Models
         public decimal price { get; set; } = 0;
 
         /// <summary>
+        /// putaway_date
+        /// </summary>
+        public DateTime putaway_date { get; set; } = UtilConvert.MinDate;
+
+        /// <summary>
         /// book_qty
         /// </summary>
         public int book_qty { get; set; }  = 0;

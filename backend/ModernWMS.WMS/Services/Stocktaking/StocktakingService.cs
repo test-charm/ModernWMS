@@ -15,6 +15,7 @@ using ModernWMS.Core.Models;
 using ModernWMS.Core.JWT;
 using System.Linq;
 using ModernWMS.Core;
+using ModernWMS.Core.Utility;
 
 namespace ModernWMS.WMS.Services
 {
@@ -112,6 +113,7 @@ namespace ModernWMS.WMS.Services
                             goods_owner_name = gso.goods_owner_name == null ? string.Empty : gso.goods_owner_name,
                             expiry_date = st.expiry_date,
                             price = st.price,
+                            putaway_date = st.putaway_date,
                             series_number = st.series_number,
                             book_qty = st.book_qty,
                             counted_qty = st.counted_qty,
@@ -172,6 +174,7 @@ namespace ModernWMS.WMS.Services
                             goods_owner_name = gso.goods_owner_name == null ? string.Empty : gso.goods_owner_name,
                             expiry_date = st.expiry_date,
                             price = st.price,
+                            putaway_date = st.putaway_date,
                             series_number = st.series_number,
                             book_qty = st.book_qty,
                             counted_qty = st.counted_qty,
@@ -313,6 +316,7 @@ namespace ModernWMS.WMS.Services
                                                                  && t.series_number.Equals(entity.series_number)
                                                                  && t.expiry_date.Equals(entity.expiry_date)
                                                                  && t.price.Equals(entity.price)
+                                                                 && t.putaway_date.Equals(entity.putaway_date)
                                                                  );
             if (stockEntity == null)
             {
@@ -325,6 +329,7 @@ namespace ModernWMS.WMS.Services
                     series_number = entity.series_number,
                     expiry_date = entity.expiry_date,
                     price = entity.price,
+                    putaway_date = DateTime.Now.ToString("yyyy-MM-dd").ObjToDate(),
                     is_freeze = false,
                     last_update_time = DateTime.Now,
                     tenant_id = currentUser.tenant_id
@@ -346,6 +351,7 @@ namespace ModernWMS.WMS.Services
                 series_number = entity.series_number,
                 expiry_date = entity.expiry_date,
                 price = entity.price,
+                putaway_date = entity.putaway_date,
                 qty = entity.difference_qty,
                 creator = currentUser.user_name,
                 create_time = DateTime.Now,

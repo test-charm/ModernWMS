@@ -145,6 +145,13 @@ namespace ModernWMS.WMS.Entities.ViewModels
         /// picker
         /// </summary>
         public string picker { get; set; } = string.Empty;
+
+        /// <summary>
+        /// putaway_date
+        /// </summary>
+        public DateTime putaway_date { get; set; } = UtilConvert.MinDate;
+
+
         #endregion Property
     }
 }

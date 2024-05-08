@@ -110,6 +110,7 @@ namespace ModernWMS.WMS.Services
                             series_number = sj.series_number,
                             expiry_date = sj.expiry_date,
                             price = sj.price,
+                            putaway_date = sj.putaway_date,
                         };
             query = query.Where(queries.AsExpression<StockadjustViewModel>());
             int totals = await query.CountAsync();
@@ -199,6 +200,7 @@ namespace ModernWMS.WMS.Services
             entity.series_number = viewModel.series_number;
             entity.expiry_date = viewModel.expiry_date;
             entity.price = viewModel.price;
+            entity.putaway_date = viewModel.putaway_date;
             var qty = await _dBContext.SaveChangesAsync();
             if (qty > 0)
             {
@@ -259,7 +261,7 @@ namespace ModernWMS.WMS.Services
                 }
             }
             var stock_DBSet = _dBContext.GetDbSet<StockEntity>();
-            var stock = await stock_DBSet.Where(t => t.goods_owner_id == entity.goods_owner_id && t.series_number == entity.series_number && t.goods_location_id == entity.goods_location_id && t.sku_id == entity.sku_id && t.expiry_date == entity.expiry_date && t.price == entity.price).FirstOrDefaultAsync();
+            var stock = await stock_DBSet.Where(t => t.goods_owner_id == entity.goods_owner_id && t.series_number == entity.series_number && t.goods_location_id == entity.goods_location_id && t.sku_id == entity.sku_id && t.expiry_date == entity.expiry_date && t.price == entity.price && t.putaway_date == entity.putaway_date).FirstOrDefaultAsync();
             if (stock == null)
             {
                 stock = new StockEntity
@@ -272,6 +274,7 @@ namespace ModernWMS.WMS.Services
                     series_number = entity.series_number,
                     expiry_date = entity.expiry_date,
                     price = entity.price,
+                    putaway_date = entity.putaway_date,
                     is_freeze = false,
                     last_update_time = DateTime.Now,
                     tenant_id = entity.tenant_id,
