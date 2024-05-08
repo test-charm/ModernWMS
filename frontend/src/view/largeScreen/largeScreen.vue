@@ -6,38 +6,36 @@
         <v-icon :icon="`mdi-arrow-${fullScreen ? 'collapse' : 'expand'}`" color="white"></v-icon>
       </v-btn>
     </div>
+    <div v-if="loading" class="mask flex-c">
+      <dv-loading>
+        <span class="loading-title">加载中...</span>
+      </dv-loading>
+    </div>
     <div ref="screenRef" class="screen-content" :class="{ 'screen-content-full': fullScreen }">
-      <div v-if="loading" class="mask flex-c">
-        <dv-loading>
-          <span class="loading-title">加载中...</span>
-        </dv-loading>
+      <div class="header-section">
+        <ScreenHeader></ScreenHeader>
       </div>
-      <div v-if="ifShow">
-        <div class="header-section">
-          <ScreenHeader></ScreenHeader>
-        </div>
-        <div class="screen-chart-section1">
-          <dv-border-box-12>
-            <ScreenTopLeft></ScreenTopLeft>
-          </dv-border-box-12>
-          <dv-border-box-8 :dur="10">
-            <ScreenTopCenter></ScreenTopCenter>
-          </dv-border-box-8>
-          <dv-border-box-13>
-            <ScreenTopRight></ScreenTopRight>
-          </dv-border-box-13>
-        </div>
-        <div class="screen-chart-section2">
-          <dv-border-box-12>
-            <ScreenBottomLeft></ScreenBottomLeft>
-          </dv-border-box-12>
-          <dv-border-box-13>
-            <ScreenBottomRight></ScreenBottomRight>
-          </dv-border-box-13>
-        </div>
-        <div class="footer-section">
-          <ScreenFooter></ScreenFooter>
-        </div>
+      <div :key="key_section1" class="screen-chart-section1">
+        <dv-border-box-12>
+          <ScreenTopLeft></ScreenTopLeft>
+        </dv-border-box-12>
+        <dv-border-box-8 :dur="10">
+          <ScreenTopCenter></ScreenTopCenter>
+        </dv-border-box-8>
+        <dv-border-box-13>
+          <ScreenTopRight></ScreenTopRight>
+        </dv-border-box-13>
+      </div>
+      <div :key="key_section2" class="screen-chart-section2">
+        <dv-border-box-12>
+          <ScreenBottomLeft></ScreenBottomLeft>
+        </dv-border-box-12>
+        <dv-border-box-13>
+          <ScreenBottomRight></ScreenBottomRight>
+        </dv-border-box-13>
+      </div>
+      <div class="footer-section">
+        <ScreenFooter></ScreenFooter>
       </div>
     </div>
   </div>
@@ -68,30 +66,26 @@ onMounted(() => {
 onUnmounted(() => {
   unWindowDraw()
 })
-const fullScreen = ref(true)
-const ifShow = ref(true)
+const fullScreen = ref(false)
+
+const key_section1 = ref('section1')
+const key_section2 = ref('section2')
 const toggleFullScreen = () => {
-  ifShow.value = false
   if (screenfull.isEnabled) {
     fullScreen.value = !fullScreen.value
     setTimeout(() => {
-      ifShow.value = true
-
+      const time = Date.now()
+      key_section1.value = `${ time }_1`
+      key_section2.value = `${ time }_2`
       setTimeout(() => {
         calcRate()
-      }, 2000)
+      }, 200)
     }, 0)
   }
 }
 </script>
 <style lang="less" scoped>
 .screen-container {
-  // z-index: 999;
-  // position: absolute;
-  // left: 0px;
-  // right: 0px;
-  // width: 100vw;
-  // height: 100vh;
   width: 100%;
   height: 100%;
   background-color: #020308;
@@ -120,10 +114,8 @@ const toggleFullScreen = () => {
     border-radius: 4px;
   }
   .screen-content {
-    width: 1428px;
-    height: 851px;
-    // width: 100%;
-    // height: 100%;
+    width: 1920px !important;
+    height: 1080px !important;
     box-sizing: border-box;
     padding: 12px;
     background-image: url('@/assets/img/home_bg.png');

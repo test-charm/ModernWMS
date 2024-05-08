@@ -18,34 +18,22 @@ export default function windowResize() {
   // * 需保持的比例（默认1.77778）
   const baseProportion = parseFloat((baseWidth / baseHeight).toFixed(5))
   const calcRate = () => {
-    const width = window.innerWidth
-    const height = window.innerHeight
-    // const diff = 0
-    // let width = screenContainerRef.value.offsetWidth
-    // let height = screenContainerRef.value.offsetHeight
-    // const fullScreen = screenContainerRef.value.dataset.screen
+    let width = screenContainerRef.value.offsetWidth
+    let height = screenContainerRef.value.offsetHeight
+    const fullScreen = screenContainerRef.value.dataset.screen
 
     // if (fullScreen === 'true' || fullScreen === true) {
     //   width = window.innerWidth
     //   height = window.innerHeight
-    //   // baseWidth = 1920
-    //   // baseHeight = 1080
-    //   diff = 0.0001
-    // } else {
-    //   // baseWidth = 1428
-    //   // baseHeight = 851
     // }
-    // console.log(width, height)
 
-    // baseProportion = parseFloat((baseWidth / baseHeight).toFixed(5))
+    width = window.innerWidth
+    height = window.innerHeight
     // 当前宽高比
     const currentRate = parseFloat(
       (width / height).toFixed(5)
     )
-    console.log(window.innerWidth, window.innerHeight)
-    
-    console.log(currentRate, baseProportion)
-    
+
     if (screenRef.value) {
       if (currentRate > baseProportion) {
         // 表示更宽
@@ -72,7 +60,7 @@ export default function windowResize() {
     clearTimeout(timer.value)
     timer.value = window.setTimeout(() => {
       calcRate()
-    }, 200)
+    }, 100)
   }
 
   // 改变窗口大小重新绘制
