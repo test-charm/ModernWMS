@@ -22,37 +22,42 @@ export default function windowResize() {
     let height = screenContainerRef.value.offsetHeight
     const fullScreen = screenContainerRef.value.dataset.screen
 
-    // if (fullScreen === 'true' || fullScreen === true) {
-    //   width = window.innerWidth
-    //   height = window.innerHeight
-    // }
-
-    width = window.innerWidth
-    height = window.innerHeight
+    if (fullScreen === 'true' || fullScreen === true) {
+      width = window.innerWidth
+      height = window.innerHeight
+    }
+    
+    const widthPre = (width / baseWidth).toFixed(5)
+    const heightPre = (height / baseHeight).toFixed(5)
+    let pre = widthPre
+    if (heightPre < widthPre) {
+      pre = heightPre
+    }
     // 当前宽高比
     const currentRate = parseFloat(
       (width / height).toFixed(5)
     )
 
     if (screenRef.value) {
-      if (currentRate > baseProportion) {
-        // 表示更宽
-        scale.width = (
-          (height * baseProportion)
-          / baseWidth
-        ).toFixed(5)
-        scale.height = (height / baseHeight).toFixed(5)
-        screenRef.value.style.transform = `scale(${ scale.width }, ${ scale.height })`
-      } else {
-        // 表示更高
-        scale.height = (
-          width
-          / baseProportion
-          / baseHeight
-        ).toFixed(5)
-        scale.width = (width / baseWidth).toFixed(5)
-        screenRef.value.style.transform = `scale(${ scale.width }, ${ scale.height })`
-      }
+      screenRef.value.style.transform = `scale(${ pre }, ${ pre })`
+      // if (currentRate > baseProportion) {
+      //   // 表示更宽
+      //   scale.width = (
+      //     (height * baseProportion)
+      //     / baseWidth
+      //   ).toFixed(5)
+      //   scale.height = (height / baseHeight).toFixed(5)
+      //   screenRef.value.style.transform = `scale(${scale.width}, ${scale.height})`
+      // } else {
+      //   // 表示更高
+      //   scale.height = (
+      //     width
+      //     / baseProportion
+      //     / baseHeight
+      //   ).toFixed(5)
+      //   scale.width = (width / baseWidth).toFixed(5)
+      //   screenRef.value.style.transform = `scale(${scale.width}, ${scale.height})`
+      // }
     }
   }
 

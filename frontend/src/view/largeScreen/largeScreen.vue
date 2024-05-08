@@ -11,7 +11,7 @@
         <span class="loading-title">加载中...</span>
       </dv-loading>
     </div>
-    <div ref="screenRef" class="screen-content" :class="{ 'screen-content-full': fullScreen }">
+    <div ref="screenRef" class="screen-content">
       <div class="header-section">
         <ScreenHeader></ScreenHeader>
       </div>
@@ -87,7 +87,7 @@ const toggleFullScreen = () => {
 <style lang="less" scoped>
 .screen-container {
   width: 100%;
-  height: 100%;
+  height: calc(100vh - 75px);
   background-color: #020308;
   display: flex;
   justify-content: center;
@@ -141,17 +141,13 @@ const toggleFullScreen = () => {
       grid-column-gap: 5px;
     }
   }
-  .screen-content-full {
-    width: 1920px !important;
-    height: 1080px !important;
-  }
 }
 .screen-container-full {
   z-index: 999;
   position: absolute;
   left: 0px;
   top: 0px;
-  width: 100vw;
+  // width: 100vw;
   height: 100vh;
   overflow: hidden;
 }
