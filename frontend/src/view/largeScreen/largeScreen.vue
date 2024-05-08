@@ -12,19 +12,32 @@
           <span class="loading-title">加载中...</span>
         </dv-loading>
       </div>
-      <div class="header-section">
-        <ScreenHeader></ScreenHeader>
-      </div>
-      <div class="screen-chart-section1">
-        <dv-border-box-12>
-          <ScreenTopLeft></ScreenTopLeft>
-        </dv-border-box-12>
-        <dv-border-box-8 :dur="10">
-          <ScreenTopCenter></ScreenTopCenter>
-        </dv-border-box-8>
-        <dv-border-box-13>
-          <ScreenTopRight></ScreenTopRight>
-        </dv-border-box-13>
+      <div v-if="ifShow">
+        <div class="header-section">
+          <ScreenHeader></ScreenHeader>
+        </div>
+        <div class="screen-chart-section1">
+          <dv-border-box-12>
+            <ScreenTopLeft></ScreenTopLeft>
+          </dv-border-box-12>
+          <dv-border-box-8 :dur="10">
+            <ScreenTopCenter></ScreenTopCenter>
+          </dv-border-box-8>
+          <dv-border-box-13>
+            <ScreenTopRight></ScreenTopRight>
+          </dv-border-box-13>
+        </div>
+        <div class="screen-chart-section2">
+          <dv-border-box-12>
+            <ScreenBottomLeft></ScreenBottomLeft>
+          </dv-border-box-12>
+          <dv-border-box-13>
+            <ScreenBottomRight></ScreenBottomRight>
+          </dv-border-box-13>
+        </div>
+        <div class="footer-section">
+          <ScreenFooter></ScreenFooter>
+        </div>
       </div>
     </div>
   </div>
@@ -37,6 +50,9 @@ import ScreenHeader from './ScreenHeader.vue'
 import ScreenTopLeft from './ScreenTopLeft.vue'
 import ScreenTopCenter from './ScreenTopCenter.vue'
 import ScreenTopRight from './ScreenTopRight.vue'
+import ScreenBottomLeft from './ScreenBottomLeft.vue'
+import ScreenBottomRight from './ScreenBottomRight.vue'
+import ScreenFooter from './ScreenFooter.vue'
 
 const { screenContainerRef, screenRef, calcRate, windowDraw, unWindowDraw } = windowResize()
 const loading = ref(true)
@@ -52,12 +68,19 @@ onMounted(() => {
 onUnmounted(() => {
   unWindowDraw()
 })
-const fullScreen = ref(false)
+const fullScreen = ref(true)
+const ifShow = ref(true)
 const toggleFullScreen = () => {
+  ifShow.value = false
   if (screenfull.isEnabled) {
-    // const container = document.getElementById('container')
-    // screenfull.toggle(container!)
     fullScreen.value = !fullScreen.value
+    setTimeout(() => {
+      ifShow.value = true
+
+      setTimeout(() => {
+        calcRate()
+      }, 2000)
+    }, 0)
   }
 }
 </script>
@@ -138,5 +161,6 @@ const toggleFullScreen = () => {
   top: 0px;
   width: 100vw;
   height: 100vh;
+  overflow: hidden;
 }
 </style>
