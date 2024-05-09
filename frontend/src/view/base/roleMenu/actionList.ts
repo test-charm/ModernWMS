@@ -51,6 +51,7 @@ export const actionDict: any = {
   saftyStock: ['export'],
   asnStatistic: ['export'],
   deliveryStatistic: ['export'],
+  stockageStatistic: ['export'],
 
   warehouseProcessing: ['split', 'group', 'confirmOpeartion', 'confirmAdjust', 'delete', 'export'],
   warehouseMove: ['save', 'delete', 'export', 'confirm'],

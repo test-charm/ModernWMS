@@ -122,6 +122,8 @@ function GetMenuNameAndModule(path: string): string {
       return i18n.global.t('router.sideBar.deliveryStatistic')
     case 'asnStatistic':
       return i18n.global.t('router.sideBar.asnStatistic')
+    case 'stockageStatistic':
+      return i18n.global.t('router.sideBar.stockageStatistic')
     default:
       return ''
   }
@@ -172,7 +174,7 @@ function GetModuleAndIcon(name: string) {
       return 'ballot-recount-outline'
     case 'customer':
       return 'account-box-outline'
-      case 'print':
+    case 'print':
       return 'printer-outline'
     case 'supplier':
       return 'account-badge'
@@ -180,6 +182,8 @@ function GetModuleAndIcon(name: string) {
       return 'chart-pie'
     case 'saftyStock':
       return 'alarm-light'
+    case 'stockageStatistic':
+      return 'calendar-month'
     default:
       return ''
   }
