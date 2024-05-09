@@ -418,6 +418,7 @@ namespace ModernWMS.WMS.Services
                 }
                 else
                 {
+                    d.putaway_date = DateTime.Today;
                     if (stock == null)
                     {
                         await stock_DBSet.AddAsync(new StockEntity
