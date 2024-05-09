@@ -13,6 +13,7 @@ using ModernWMS.Core.DynamicSearch;
 using ModernWMS.Core.JWT;
 using ModernWMS.Core.Models;
 using ModernWMS.Core.Services;
+using ModernWMS.Core.Utility;
 using ModernWMS.WMS.Entities.Models;
 using ModernWMS.WMS.Entities.ViewModels;
 using ModernWMS.WMS.IServices;
@@ -915,6 +916,7 @@ namespace ModernWMS.WMS.Services
                 {
                     entity.damage_qty += viewModel.putaway_qty;
                 }
+                DateTime putaway_date = DateTime.Now.ToString("yyyy-MM-dd").ObjToDate();
                 // 2024年3月14日 09:40:25 增加单价
                 var stockEntity = await Stocks.FirstOrDefaultAsync(t => t.sku_id.Equals(entity.sku_id)
                                                                               && t.goods_location_id.Equals(viewModel.goods_location_id)
@@ -922,6 +924,7 @@ namespace ModernWMS.WMS.Services
                                                                               && t.series_number.Equals(viewModel.series_number)
                                                                               && t.expiry_date.Equals(expiry_date)
                                                                               && t.price.Equals(entity.price)
+                                                                              && t.putaway_date.Equals(putaway_date)
                                                                               );
                 if (stockEntity == null)
                 {
@@ -937,6 +940,7 @@ namespace ModernWMS.WMS.Services
                         tenant_id = currentUser.tenant_id,
                         expiry_date = expiry_date,
                         price = entity.price,
+                        putaway_date = putaway_date,
                         id = 0
                     };
                     await Stocks.AddAsync(stockEntity);

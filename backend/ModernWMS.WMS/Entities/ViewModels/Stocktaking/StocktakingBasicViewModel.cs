@@ -98,6 +98,11 @@ namespace ModernWMS.WMS.Entities.ViewModels
         [Display(Name = "book_qty")]
         public int book_qty { get; set; } = 0;
 
+        /// <summary>
+        /// putaway_date
+        /// </summary>
+        public DateTime putaway_date { get; set; } = UtilConvert.MinDate;
+
         #endregion
     }
 }
