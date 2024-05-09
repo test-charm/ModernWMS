@@ -67,6 +67,7 @@ const data = reactive({
     adjust_status: false,
     price: 0,
     expiry_date: '',
+    putaway_date: '',
     handler: '',
     handle_time: '',
     series_number: ''

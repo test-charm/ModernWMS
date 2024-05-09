@@ -202,6 +202,7 @@ const data = reactive({
     sku_name: '',
     price: 0,
     expiry_date: '',
+    putaway_date: '',
     series_number: '',
     creator: '',
     create_time: ''
@@ -241,6 +242,7 @@ const method = reactive({
       sku_name: '',
       price: 0,
       expiry_date: '',
+      putaway_date: '',
       series_number: '',
       creator: '',
       create_time: ''

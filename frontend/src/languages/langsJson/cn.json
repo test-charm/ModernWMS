@@ -593,6 +593,7 @@
       "sku_name": "规格名称",
       "sorted_qty": "分拣数量",
       "expiry_date":"过期日期",
+      "putaway_date":"上架日期",
       "spu_code": "商品编码",
       "spu_id": "商品spu标识",
       "spu_name": "商品名称",
@@ -718,7 +719,8 @@
         "target_warehouse": "目标仓库",
         "unit": "商品单位",
         "price": "商品价格",
-        "expiry_date":"过期日期"
+        "expiry_date":"过期日期",
+        "putaway_date":"上架日期"
       },
       "warehouseTaking": {
         "addFromCommodity": "选择商品",
@@ -741,7 +743,8 @@
         "unfinish": "待作业",
         "warehouse": "所在仓库",
         "price": "商品价格",
-        "expiry_date":"过期日期"
+        "expiry_date":"过期日期",
+        "putaway_date":"上架日期"
       }
     }
   }

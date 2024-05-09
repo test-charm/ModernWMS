@@ -593,6 +593,7 @@
       "sku_name": "Form Name",
       "sorted_qty": "Sorted Quantity",
       "expiry_date":"Expiration Date",
+      "putaway_date":"Listing Date",
       "spu_code": "Commodity code",
       "spu_id": "Spu Id",
       "spu_name": "Trade name",
@@ -718,7 +719,8 @@
         "target_warehouse": "Target Warehouse",
         "unit": "Unit",
         "price":"Commodity Price",
-        "expiry_date":"Expiration Date"
+        "expiry_date":"Expiration Date",
+        "putaway_date":"Listing Date"
       },
       "warehouseTaking": {
         "addFromCommodity": "Choose From Commodity",
@@ -741,7 +743,8 @@
         "unfinish": "Unfinish",
         "warehouse": "Warehouse",
         "price":"Commodity Price",
-        "expiry_date":"Expiration Date"
+        "expiry_date":"Expiration Date",
+        "putaway_date":"Listing Date"
       }
     }
   }

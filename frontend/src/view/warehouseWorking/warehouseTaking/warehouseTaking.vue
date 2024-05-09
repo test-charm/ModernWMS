@@ -190,6 +190,7 @@ const data = reactive({
     handle_time: '',
     price: 0,
     expiry_date: '',
+    putaway_date: '',
     adjust_status: false,
     creator: '',
     create_time: ''
@@ -232,6 +233,7 @@ const method = reactive({
       adjust_status: false,
       price: 0,
       expiry_date: '',
+      putaway_date: '',
       creator: '',
       create_time: ''
     }

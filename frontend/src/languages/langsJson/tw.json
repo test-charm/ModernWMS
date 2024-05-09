@@ -593,6 +593,7 @@
       "sku_name": "規格名稱",
       "sorted_qty": "分揀數量",
       "expiry_date":"過期日期",
+      "putaway_date":"上架日期",
       "spu_code": "商品編碼",
       "spu_id": "商品spu標識",
       "spu_name": "商品名稱",
@@ -718,7 +719,8 @@
         "target_warehouse": "目標倉庫",
         "unit": "商品單位",
         "price":"商品價格",
-        "expiry_date":"過期日期"
+        "expiry_date":"過期日期",
+        "putaway_date":"上架日期"
       },
       "warehouseTaking": {
         "addFromCommodity": "選擇商品",
@@ -741,7 +743,8 @@
         "unfinish": "待作業",
         "warehouse": "所在倉庫",
         "price":"商品價格",
-        "expiry_date":"過期日期"
+        "expiry_date":"過期日期",
+        "putaway_date":"上架日期"
       }
     }
   }
