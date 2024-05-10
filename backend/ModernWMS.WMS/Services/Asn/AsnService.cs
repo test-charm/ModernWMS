@@ -1350,5 +1350,44 @@ namespace ModernWMS.WMS.Services
         }
 
         #endregion Arrival list
+
+        #region print series number
+        /// <summary>
+        /// print series number
+        /// </summary>
+        /// <param name="input">selected asn id</param>
+        /// <returns></returns>
+        public async Task<List<AsnPrintSeriesNumberViewModel>> GetAsnPrintSeriesNumberAsync(List<int> input)
+        {
+            var Spus = _dBContext.GetDbSet<SpuEntity>().AsNoTracking();
+            var Skus = _dBContext.GetDbSet<SkuEntity>().AsNoTracking();
+            var Asns = _dBContext.GetDbSet<AsnEntity>().AsNoTracking();
+            var Asnmasters = _dBContext.GetDbSet<AsnmasterEntity>().AsNoTracking();
+            var sorts = _dBContext.GetDbSet<AsnsortEntity>().AsNoTracking();
+
+            var query = from m in Asnmasters
+                        join a in Asns on m.id equals a.asnmaster_id
+                        join p in Spus.AsNoTracking() on a.spu_id equals p.id
+                        join k in Skus.AsNoTracking() on a.sku_id equals k.id
+                        join s in sorts on a.id equals s.asn_id
+                        where input.Contains(a.id)
+                        select new AsnPrintSeriesNumberViewModel
+                        {
+                            asn_id = a.id,
+                            asnmaster_id = m.id,
+                            asn_no = m.asn_no,
+                            sku_id = a.sku_id,
+                            sku_code = k.sku_code,
+                            sku_name = k.sku_name,
+                            spu_code = p.spu_code,
+                            spu_name = p.spu_name,
+                            series_number = s.series_number
+                        };
+            var data = await query.OrderBy(t => t.asn_id).ToListAsync();
+            data ??= new List<AsnPrintSeriesNumberViewModel>();
+            return data;
+        }
+
+        #endregion
     }
 }
