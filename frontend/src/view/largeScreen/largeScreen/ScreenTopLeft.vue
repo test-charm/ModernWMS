@@ -87,21 +87,18 @@ const method = reactive({
       pageSize: 99999999
     })
     if (res.isSuccess) {
-      let index = 0
       res.data.rows.forEach((item) => {
-        item.stock_age = index
         if (item.stock_age < 30) {
-          item.category = '<30'
+          item.category = '<30(day)'
         } else if (item.stock_age < 61) {
-          item.category = '30-60'
+          item.category = '30-60(day)'
         } else if (item.stock_age < 181) {
-          item.category = '61-180'
+          item.category = '61-180(day)'
         } else if (item.stock_age < 361) {
-          item.category = '181-360'
+          item.category = '181-360(day)'
         } else {
-          item.category = '>360'
+          item.category = '>360(day)'
         }
-        index += 1
       })
       const groupedData = _.groupBy(res.data.rows, 'category')
       _.forEach(groupedData, (group, key) => {
@@ -113,7 +110,6 @@ const method = reactive({
     method.initCharts()
   }
 })
-// 生命周期
 onMounted(() => {
   method.getStockAgeStatisticList()
   setInterval(() => {
@@ -174,7 +170,6 @@ onMounted(() => {
   justify-content: center;
   align-items: center;
 }
-// 图标
 .iconfont {
   font-size: 20px !important;
   color: #5cd9e8;

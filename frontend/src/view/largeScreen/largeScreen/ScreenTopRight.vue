@@ -30,11 +30,11 @@ const config = reactive({
     i18n.global.t('wms.stockLocation.qty_available')
   ] as string[],
   data: [],
-  rowNum: 7, // 表格行数
+  rowNum: 7, // Table Rows
   headerHeight: 35,
-  headerBGC: '#0f1325', // 表头
-  oddRowBGC: '#0f1325', // 奇数行
-  evenRowBGC: '#171c33', // 偶数行
+  headerBGC: '#0f1325', // Meter header
+  oddRowBGC: '#0f1325', // Odd Rows
+  evenRowBGC: '#171c33', // Even rows
   index: true,
   columnWidth: [50],
   align: ['center']
@@ -103,7 +103,6 @@ onMounted(() => {
   justify-content: center;
   align-items: center;
 }
-// 图标
 .iconfont {
   font-size: 20px !important;
   color: #5cd9e8;

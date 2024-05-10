@@ -5,7 +5,7 @@
         <i class="iconfont icon-chart-line" />
       </div>
       <div class="header-right flex-l">
-        <span class="header-title">{{ $t('router.sideBar.asnStatistic') }}</span>
+        <span class="header-title">{{ $t('router.sideBar.deliveryStatistic') }}</span>
         <dv-decoration-3 class="dv-dec-1" />
       </div>
     </div>

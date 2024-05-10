@@ -29,6 +29,7 @@
 
               <!-- Table -->
               <div
+                v-if="data.currentRender === 'table'"
                 class="mt-5"
                 :style="{
                   height: cardHeight
@@ -64,6 +65,15 @@
                 >
                 </custom-pager>
               </div>
+              <div
+                v-else
+                class="mt-5"
+                :style="{
+                  height: cardHeight
+                }"
+              >
+                <div ref="chatRef" class="chat" />
+              </div>
             </v-window-item>
           </v-window>
         </v-card-text>
@@ -73,8 +83,11 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref, reactive, watch, onMounted } from 'vue'
+import { computed, ref, reactive, watch, onMounted, nextTick } from 'vue'
 import { VxePagerEvents } from 'vxe-table'
+import _ from 'lodash'
+import * as echarts from 'echarts'
+import { EChartsOption, EChartsType } from 'echarts'
 import { computedCardHeight, computedTableHeight } from '@/constant/style'
 import { PAGE_SIZE, PAGE_LAYOUT, DEFAULT_PAGE_SIZE } from '@/constant/vxeTable'
 import { DEBOUNCE_TIME } from '@/constant/system'
@@ -91,6 +104,12 @@ import SearchGroup from '@/components/system/search-group.vue'
 
 const xTable = ref()
 const searchGroupRef = ref()
+const chatRef = ref()
+let chat: EChartsType
+const chartData = reactive({
+  category: [] as Array<string>,
+  countData: [] as Array<any>
+})
 
 const data = reactive({
   showDialog: false,
@@ -119,10 +138,59 @@ const data = reactive({
   // Menu operation permissions
   authorityList: getMenuAuthorityList(),
   // Local search criteria settings
-  menu_name: 'stockageStatistic'
+  menu_name: 'stockageStatistic',
+  currentRender: 'table'
 })
 
 const method = reactive({
+  // Switch Chart Mode
+  switchRenderMode: () => {
+    if (data.currentRender === 'chart') {
+      data.currentRender = 'table'
+    } else {
+      data.currentRender = 'chart'
+      
+      nextTick(() => {
+        method.initCharts()
+      })
+    }
+  },
+  initCharts: () => {
+    if (chat) chat.dispose()
+    chat = echarts.init(chatRef.value)
+    const option: EChartsOption = {
+      tooltip: {
+        trigger: 'item',
+        formatter: '{b} : {c} ({d}%)'
+      },
+      toolbox: {
+        show: true
+      },
+      calculable: true,
+      legend: {
+        orient: 'horizontal',
+        icon: 'circle',
+        bottom: 0,
+        data: chartData.category,
+      },
+      series: [
+        {
+          type: 'pie',
+          radius: '55%',
+          itemStyle: {
+            borderRadius: 5
+          },
+          data: chartData.countData,
+          label: {
+            show: true,
+            position: 'outside',
+            formatter: '{b} : {d}%',
+          }
+        }
+      ]
+    }
+    chat.setOption(option)
+  },
   // get data
   list: async () => {
     const searchForm = {}
@@ -143,6 +211,25 @@ const method = reactive({
     }
     data.tableData = res.data.rows
     data.tablePage.total = res.data.totals
+    res.data.rows.forEach((item) => {
+      if (item.stock_age < 30) {
+        item.category = '<30(day)'
+      } else if (item.stock_age < 61) {
+        item.category = '30-60(day)'
+      } else if (item.stock_age < 181) {
+        item.category = '61-180(day)'
+      } else if (item.stock_age < 361) {
+        item.category = '181-360(day)'
+      } else {
+        item.category = '>360(day)'
+      }
+    })
+    const groupedData = _.groupBy(res.data.rows, 'category')
+    _.forEach(groupedData, (group, key) => {
+      const sumAmount = _.sumBy(group, 'qty')
+      chartData.category.push(key)
+      chartData.countData.push({ name: key, value: sumAmount })
+    })
   },
 
   // Refresh data
@@ -205,6 +292,12 @@ const btnList = computed(() => [
     icon: 'mdi-cog',
     code: '',
     click: method.handleSetSearch
+  },
+  {
+    name: data.currentRender !== 'chart' ? i18n.global.t('system.page.chart') : i18n.global.t('system.page.table'),
+    icon: data.currentRender !== 'chart' ? 'mdi-chart-bar' : 'mdi-table',
+    code: '',
+    click: method.switchRenderMode
   }
 ])
 
@@ -239,5 +332,9 @@ watch(
 .col {
   display: flex;
   align-items: center;
+}
+.chat {
+  width: 100%;
+  height: 100%;
 }
 </style>

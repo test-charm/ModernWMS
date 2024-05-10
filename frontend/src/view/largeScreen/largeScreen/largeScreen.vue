@@ -53,7 +53,7 @@ import ScreenFooter from './ScreenFooter.vue'
 const { screenContainerRef, screenRef, calcRate, windowDraw, unWindowDraw } = windowResize()
 const loading = ref(true)
 onMounted(() => {
-  // 监听浏览器窗口尺寸变化
+  // Monitor browser window size changes
   windowDraw()
   calcRate()
   setTimeout(() => {
