@@ -25,16 +25,17 @@ const config = reactive({
   header: [
     i18n.global.t('wms.stockLocation.warehouse_name'),
     i18n.global.t('wms.stockLocation.location_name'),
+    i18n.global.t('wms.stockLocation.spu_code'),
     i18n.global.t('wms.stockLocation.spu_name'),
     i18n.global.t('wms.stockLocation.sku_code'),
     i18n.global.t('wms.stockLocation.qty')
   ] as string[],
   data: [],
-  rowNum: 7, // 表格行数
+  rowNum: 7, // Table Rows
   headerHeight: 35,
-  headerBGC: '#0f1325', // 表头
-  oddRowBGC: '#0f1325', // 奇数行
-  evenRowBGC: '#171c33', // 偶数行
+  headerBGC: '#0f1325', // Meter header
+  oddRowBGC: '#0f1325', // Odd Rows
+  evenRowBGC: '#171c33', // Even rows
   index: true,
   columnWidth: [50],
   align: ['center']
@@ -42,7 +43,7 @@ const config = reactive({
 const method = reactive({
   getStockLocationList: async () => {
     const { data: res } = await getStockLocationList({ total: 0, pageIndex: 1, pageSize: 99999 })
-    config.data = res.data.rows.map((item: StockLocationVO) => [item.warehouse_name, item.location_name, item.spu_name, item.sku_code, item.qty])
+    config.data = res.data.rows.map((item: StockLocationVO) => [item.warehouse_name, item.location_name, item.spu_code, item.spu_name, item.sku_code, item.qty])
   }
 })
 onMounted(() => {
@@ -103,7 +104,6 @@ onMounted(() => {
   justify-content: center;
   align-items: center;
 }
-// 图标
 .iconfont {
   font-size: 20px !important;
   color: #5cd9e8;

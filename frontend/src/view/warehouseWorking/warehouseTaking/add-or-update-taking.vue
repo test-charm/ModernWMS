@@ -84,8 +84,15 @@
               :label="$t('wms.warehouseWorking.warehouseTaking.expiry_date')"
               variant="outlined"
               type="date"
+              :disabled="isFromStock"
             ></v-text-field>
-            <!-- <v-datetime-picker v-model="data.form.expiry_date" :label="$t('wms.warehouseWorking.warehouseTaking.expiry_date')" /> -->
+            <v-text-field
+              v-model="data.form.putaway_date"
+              :label="$t('wms.warehouseWorking.warehouseTaking.putaway_date')"
+              variant="outlined"
+              type="date"
+              :disabled="isFromStock"
+            ></v-text-field>
             <v-text-field
               v-model="data.form.book_qty"
               :label="$t('wms.warehouseWorking.warehouseTaking.book_qty')"
@@ -175,7 +182,8 @@ const data = reactive({
     creator: '',
     create_time: '',
     price: 0,
-    expiry_date: ''
+    expiry_date: '',
+    putaway_date: ''
   }),
   rules: {
     job_type: [],
@@ -204,6 +212,7 @@ const method = reactive({
     data.curStockID = 0
     if (data.form.expiry_date) {
       data.form.expiry_date = formatDate(data.form.expiry_date, 'yyyy-MM-dd')
+      data.form.putaway_date = formatDate(data.form.putaway_date, 'yyyy-MM-dd')
     }
   },
 
@@ -230,8 +239,12 @@ const method = reactive({
       data.form.book_qty = selectRecords[0].qty_available
       data.form.price = selectRecords[0].price
       data.form.expiry_date = selectRecords[0].expiry_date
+      data.form.putaway_date = selectRecords[0].putaway_date
       if (data.form.expiry_date) {
         data.form.expiry_date = formatDate(data.form.expiry_date, 'yyyy-MM-dd')
+      }
+      if (data.form.putaway_date) {
+        data.form.putaway_date = formatDate(data.form.putaway_date, 'yyyy-MM-dd')
       }
     } catch (error) {
       // console.error(error)

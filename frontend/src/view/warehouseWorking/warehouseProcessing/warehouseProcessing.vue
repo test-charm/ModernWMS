@@ -165,7 +165,7 @@ import { PROCESS_JOB_COMBINE, PROCESS_JOB_SPLIT } from '@/constant/warehouseWork
 import { DEBOUNCE_TIME } from '@/constant/system'
 import { setSearchObject, getMenuAuthorityList } from '@/utils/common'
 import { SearchObject, btnGroupItem } from '@/types/System/Form'
-import { formatIsValid } from '@/utils/format/formatSystem'
+import { formatIsValid, formatDate } from '@/utils/format/formatSystem'
 import { formatProcessJobType } from '@/utils/format/formatWarehouseWorking'
 import tooltipBtn from '@/components/tooltip-btn.vue'
 import addOrUpdateDialog from './add-or-update-process.vue'
@@ -296,7 +296,10 @@ const method = reactive({
       })
       return
     }
-
+    res.data.target_detail_list.forEach((element) => {
+      element.expiry_date = formatDate(element.expiry_date, 'yyyy-MM-dd')
+      element.putaway_date = formatDate(element.putaway_date, 'yyyy-MM-dd')
+    })
     data.dialogForm = res.data
     data.processType = res.data.job_type
   },

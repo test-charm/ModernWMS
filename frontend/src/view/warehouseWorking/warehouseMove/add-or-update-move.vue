@@ -185,7 +185,8 @@ const data = reactive({
     creator: '',
     create_time: '',
     price: 0,
-    expiry_date: ''
+    expiry_date: '',
+    putaway_date: ''
   }),
   rules: {
     qty: [
@@ -267,6 +268,7 @@ const method = reactive({
       data.form.series_number = selectRecords[0].series_number
       data.form.price = selectRecords[0].price
       data.form.expiry_date = selectRecords[0].expiry_date
+      data.form.putaway_date = selectRecords[0].putaway_date
 
       data.curAvailableQty = selectRecords[0].qty_available
     } catch (error) {

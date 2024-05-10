@@ -247,6 +247,7 @@
       "customer": "客户信息",
       "deliveryManagement": "发货管理",
       "deliveryStatistic": "发货统计",
+      "stockageStatistic":"库龄分析",
       "freightSetting": "运费设置",
       "homepage": "首页",
       "menuBasicSettings": "菜单基础设置",
@@ -511,6 +512,26 @@
       "spu_name": "商品名称",
       "warehouse_name": "仓库名称"
     },
+    "stockageStatistic":{
+      "warehouse_name": "仓库名称",
+      "location_name": "库位名称",
+      "spu_code": "商品编码",
+      "spu_name": "商品名称",
+      "sku_id": "规格标识",
+      "sku_code": "规格编码",
+      "sku_name": "规格名称",
+      "qty": "数量",
+      "goods_owner_name": "货主名称",
+      "series_number": "序列号",
+      "expiry_date": "过期日期",
+      "price": "商品价格",
+      "putaway_date": "上架日期",
+      "stock_age": "库龄",
+      "stock_age_from": "库龄从",
+      "stock_age_to": "库龄至",
+      "expiry_date_from": "过期日期从",
+      "expiry_date_to": "过期日期至"
+    },
     "skuInfo": {
       "bar_code": "商品条码",
       "brand": "品牌",
@@ -593,6 +614,7 @@
       "sku_name": "规格名称",
       "sorted_qty": "分拣数量",
       "expiry_date":"过期日期",
+      "putaway_date":"上架日期",
       "spu_code": "商品编码",
       "spu_id": "商品spu标识",
       "spu_name": "商品名称",
@@ -718,7 +740,8 @@
         "target_warehouse": "目标仓库",
         "unit": "商品单位",
         "price": "商品价格",
-        "expiry_date":"过期日期"
+        "expiry_date":"过期日期",
+        "putaway_date":"上架日期"
       },
       "warehouseTaking": {
         "addFromCommodity": "选择商品",
@@ -741,7 +764,8 @@
         "unfinish": "待作业",
         "warehouse": "所在仓库",
         "price": "商品价格",
-        "expiry_date":"过期日期"
+        "expiry_date":"过期日期",
+        "putaway_date":"上架日期"
       }
     }
   }

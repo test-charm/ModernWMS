@@ -6,6 +6,13 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "1727592",
+      "name": "407饼图",
+      "font_class": "chart-pie",
+      "unicode": "e902",
+      "unicode_decimal": 59650
+    },
+    {
       "icon_id": "1526412",
       "name": "图表_折线图",
       "font_class": "chart-line",

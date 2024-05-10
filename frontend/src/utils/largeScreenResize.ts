@@ -1,70 +1,39 @@
 import { ref } from 'vue'
 
 export default function windowResize() {
-  // * 指向最外层容器
+  // * Point to the outermost container
   const screenRef = ref()
   const screenContainerRef = ref()
-  // * 定时函数
+  // * Timing function
   const timer = ref(0)
-  // * 默认缩放值
+  // * Default scaling value
   const scale = {
     width: '1',
     height: '1',
   }
-  // * 设计稿尺寸（px）
+  // * Design draft size（px）
   const baseWidth = 1920
   const baseHeight = 1080
 
-  // * 需保持的比例（默认1.77778）
-  const baseProportion = parseFloat((baseWidth / baseHeight).toFixed(5))
   const calcRate = () => {
-    const width = window.innerWidth
-    const height = window.innerHeight
-    // const diff = 0
-    // let width = screenContainerRef.value.offsetWidth
-    // let height = screenContainerRef.value.offsetHeight
-    // const fullScreen = screenContainerRef.value.dataset.screen
+    let width = screenContainerRef.value.offsetWidth
+    let height = screenContainerRef.value.offsetHeight
+    const fullScreen = screenContainerRef.value.dataset.screen
 
-    // if (fullScreen === 'true' || fullScreen === true) {
-    //   width = window.innerWidth
-    //   height = window.innerHeight
-    //   // baseWidth = 1920
-    //   // baseHeight = 1080
-    //   diff = 0.0001
-    // } else {
-    //   // baseWidth = 1428
-    //   // baseHeight = 851
-    // }
-    // console.log(width, height)
+    if (fullScreen === 'true' || fullScreen === true) {
+      width = window.innerWidth
+      height = window.innerHeight
+    }
+    
+    const widthPre = (width / baseWidth).toFixed(5)
+    const heightPre = (height / baseHeight).toFixed(5)
+    let pre = widthPre
+    if (heightPre < widthPre) {
+      pre = heightPre
+    }
 
-    // baseProportion = parseFloat((baseWidth / baseHeight).toFixed(5))
-    // 当前宽高比
-    const currentRate = parseFloat(
-      (width / height).toFixed(5)
-    )
-    console.log(window.innerWidth, window.innerHeight)
-    
-    console.log(currentRate, baseProportion)
-    
     if (screenRef.value) {
-      if (currentRate > baseProportion) {
-        // 表示更宽
-        scale.width = (
-          (height * baseProportion)
-          / baseWidth
-        ).toFixed(5)
-        scale.height = (height / baseHeight).toFixed(5)
-        screenRef.value.style.transform = `scale(${ scale.width }, ${ scale.height })`
-      } else {
-        // 表示更高
-        scale.height = (
-          width
-          / baseProportion
-          / baseHeight
-        ).toFixed(5)
-        scale.width = (width / baseWidth).toFixed(5)
-        screenRef.value.style.transform = `scale(${ scale.width }, ${ scale.height })`
-      }
+      screenRef.value.style.transform = `scale(${ pre }, ${ pre })`
     }
   }
 
@@ -72,15 +41,15 @@ export default function windowResize() {
     clearTimeout(timer.value)
     timer.value = window.setTimeout(() => {
       calcRate()
-    }, 200)
+    }, 100)
   }
 
-  // 改变窗口大小重新绘制
+  // Change window size and redraw
   const windowDraw = () => {
     window.addEventListener('resize', resize)
   }
 
-  // 改变窗口大小重新绘制
+  // Change window size and redraw
   const unWindowDraw = () => {
     window.removeEventListener('resize', resize)
   }

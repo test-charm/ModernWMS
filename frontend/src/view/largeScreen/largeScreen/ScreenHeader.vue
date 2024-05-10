@@ -5,7 +5,7 @@
       <div class="screen-header-title-section">
         <dv-decoration-8 :color="['#45a1f1', '#000000']" class="dv-dec-8" />
         <div class="title-section">
-          <p class="header-title">ModernWms 大屏</p>
+          <p class="header-title">ModernWms {{ $t('router.sideBar.largeScreen') }}</p>
         </div>
         <dv-decoration-8 :color="['#45a1f1', '#000000']" class="dv-dec-8" :reverse="true" />
       </div>
@@ -21,44 +21,7 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, onMounted, onUnmounted } from 'vue'
-import { formatDate } from '@/utils/format/formatSystem'
-
-const timeInfo = reactive({
-  setInterval: 0,
-  dateDay: '',
-  dateYear: '',
-  dateWeek: ''
-})
-const WEEK = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
-
-onMounted(() => {
-  handleTime()
-})
-
-onUnmounted(() => {
-  clearInterval(timeInfo.setInterval)
-})
-
-const handleTime = () => {
-  timeInfo.setInterval = window.setInterval(() => {
-    const date = new Date()
-    timeInfo.dateDay = formatDate(date, 'HH: mm: ss')
-    timeInfo.dateYear = formatDate(date, 'yyyy-MM-dd')
-    timeInfo.dateWeek = WEEK[date.getDay()]
-  }, 1000)
-}
-
-const downloadHandler = (type: string) => {
-  switch (type) {
-    case 'github':
-      window.open('https://github.com/dddggg123/vue3-big-screen.git')
-      break
-    case 'gitee':
-      window.open('https://gitee.com/xiaoxiang_reincarnation/vue3-big-screen.git')
-      break
-  }
-}
+import i18n from '@/languages/i18n'
 </script>
 
 <style lang="less" scoped>
