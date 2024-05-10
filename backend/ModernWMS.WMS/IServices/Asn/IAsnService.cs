@@ -187,6 +187,15 @@ namespace ModernWMS.WMS.IServices
         /// <returns></returns>
         Task<(bool flag, string msg)> DeleteAsnmasterAsync(int id);
         #endregion
+
+        #region print series number
+        /// <summary>
+        /// print series number
+        /// </summary>
+        /// <param name="input">selected asn id</param>
+        /// <returns></returns>
+        Task<List<AsnPrintSeriesNumberViewModel>> GetAsnPrintSeriesNumberAsync(List<int> input);
+        #endregion
     }
 }
  
