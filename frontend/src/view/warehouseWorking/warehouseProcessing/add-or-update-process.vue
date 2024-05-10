@@ -62,6 +62,7 @@
                   <vxe-column field="series_number" :title="$t('wms.stockLocation.series_number')"></vxe-column>
                   <vxe-column field="price" :title="$t('wms.warehouseWorking.warehouseProcessing.price')"></vxe-column>
                   <vxe-date-column field="expiry_date" :title="$t('wms.warehouseWorking.warehouseProcessing.expiry_date')"></vxe-date-column>
+                  <vxe-date-column field="putaway_date" :title="$t('wms.warehouseWorking.warehouseProcessing.putaway_date')"></vxe-date-column>
                 </vxe-table>
               </div>
             </v-col>
@@ -117,6 +118,15 @@
                       <vxe-input v-model="row.expiry_date" type="date"></vxe-input>
                     </template>
                   </vxe-column>
+                  <!-- <vxe-column
+                    field="putaway_date"
+                    :title="$t('wms.warehouseWorking.warehouseProcessing.putaway_date')"
+                    :edit-render="{ autofocus: '.vxe-input--inner' }"
+                  >
+                    <template #edit="{ row }">
+                      <vxe-input v-model="row.putaway_date" type="date"></vxe-input>
+                    </template>
+                  </vxe-column> -->
                   <vxe-column
                     field="qty"
                     :title="$t('wms.warehouseWorking.warehouseProcessing.qty')"
@@ -169,7 +179,7 @@ import i18n from '@/languages/i18n'
 import { hookComponent } from '@/components/system/index'
 import { addStockProcess } from '@/api/wms/warehouseProcessing'
 import { SYSTEM_HEIGHT, errorColor } from '@/constant/style'
-import { removeObjectNull } from '@/utils/common'
+import { removeObjectNull, removeArrayNull } from '@/utils/common'
 import { PROCESS_JOB_COMBINE, PROCESS_JOB_SPLIT } from '@/constant/warehouseWorking'
 import commoditySelect from '@/components/select/commodity-select.vue'
 import locationSelect from '@/components/select/location-select.vue'
@@ -292,7 +302,8 @@ const method = reactive({
             is_update_stock: false,
             qty_available: record.qty_available,
             price: record.price,
-            expiry_date: record.expiry_date
+            expiry_date: record.expiry_date,
+            putaway_date: record.putaway_date
           },
           -1
         )
@@ -320,7 +331,8 @@ const method = reactive({
           is_update_stock: false,
           qty_available: selectRecords[0].qty_available,
           price: selectRecords[0].price,
-          expiry_date: selectRecords[0].expiry_date
+          expiry_date: selectRecords[0].expiry_date,
+          putaway_date: selectRecords[0].putaway_date
         },
         -1
       )
@@ -351,7 +363,8 @@ const method = reactive({
           unit: selectRecords[0].unit,
           is_update_stock: false,
           price: 0,
-          expiry_date: ''
+          expiry_date: '',
+          putaway_date: ''
         },
         -1
       )
@@ -378,7 +391,8 @@ const method = reactive({
             unit: record.unit,
             is_update_stock: false,
             price: 0,
-            expiry_date: ''
+            expiry_date: '',
+            putaway_date: ''
           },
           -1
         )
@@ -401,6 +415,7 @@ const method = reactive({
   submit: async () => {
     const validSource = await method.validSourceTable()
     const validTarget = await method.validTargetTable()
+    
     if (!validSource || !validTarget) {
       return
     }
@@ -433,6 +448,7 @@ const method = reactive({
     let form = { ...data.form }
     form.detailList = [...tableSourceRecords, ...tableTargetRecords]
     form = removeObjectNull(form)
+    form.detailList = removeArrayNull(form.detailList)
 
     delete form.source_detail_list
     delete form.target_detail_list
@@ -454,7 +470,8 @@ const method = reactive({
     }
 
     // 2.The properties valid.
-    const errMap = await $table.validate()
+    const errMap = await $table.validate(true)
+    
     if (errMap) {
       hookComponent.$message({
         type: 'error',
@@ -480,7 +497,8 @@ const method = reactive({
     }
 
     // 2.The properties valid.
-    const errMap = await $table.validate()
+    const errMap = await $table.validate(true)
+    
     if (errMap) {
       hookComponent.$message({
         type: 'error',
@@ -578,8 +596,7 @@ const data = reactive({
       { required: true, message: `${ i18n.global.t('system.checkText.mustInput') }${ i18n.global.t('wms.warehouseWorking.warehouseProcessing.qty') }` },
       {
         validator: isInteger,
-        validNumerical: 'greaterThanZero',
-        trigger: 'change'
+        validNumerical: 'greaterThanZero'
       }
     ],
     location_name: [

@@ -75,6 +75,7 @@
                   <vxe-column field="qty_available" :title="$t('wms.stock.qty_available')"></vxe-column>
                   <vxe-column field="price" :title="$t('wms.stockAsnInfo.price')"></vxe-column>
                   <vxe-date-column field="expiry_date" :title="$t('wms.stockAsnInfo.expiry_date')"> </vxe-date-column>
+                  <vxe-date-column field="putaway_date" :title="$t('wms.stockAsnInfo.putaway_date')"> </vxe-date-column>
                 </vxe-table>
                 <custom-pager
                   :current-page="data.tablePage.pageIndex"

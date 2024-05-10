@@ -20,5 +20,6 @@ export interface WarehouseTakingVO extends UniformFileNaming {
   handler: string
   handle_time: string,
   price: number,
-  expiry_date: string
+  expiry_date: string,
+  putaway_date:string
 }
