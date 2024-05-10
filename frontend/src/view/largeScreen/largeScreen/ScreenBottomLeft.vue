@@ -21,6 +21,7 @@ import _ from 'lodash'
 import * as echarts from 'echarts'
 import { EChartsOption, EChartsType } from 'echarts'
 import { getStockAsnList } from '@/api/wms/stockAsn'
+import { formatDate } from '@/utils/format/formatSystem'
 import i18n from '@/languages/i18n'
 
 const chatRef = ref()
@@ -46,16 +47,16 @@ const method = reactive({
           }
         }
       },
+      calculable: true,
       legend: {
         show: true,
         textStyle: {
           color: 'white',
           fontSize: '14px'
-        }
+        },
       },
       grid: {
         width: '88%',
-        top: '5%',
         bottom: '7%'
       },
 
@@ -75,6 +76,11 @@ const method = reactive({
       yAxis: [
         {
           type: 'value',
+          axisLine: {
+            lineStyle: {
+              color: '#ffffff'
+            }
+          },
           axisLabel: {
             formatter(a) {
               return a.toLocaleString()
@@ -82,15 +88,24 @@ const method = reactive({
           }
         }
       ],
+
       series: [
         {
           name: i18n.global.t('wms.deliveryStatistic.amount'),
-          type: 'line',
-          smooth: true,
-          showAllSymbol: true,
-          symbol: 'emptyCircle',
+          type: 'bar',
+          barWidth: 20,
+          // type: 'line',
+          // smooth: true,
+          // showAllSymbol: true,
+          // symbol: 'emptyCircle',
           itemStyle: {
-            color: '#3EACE5'
+            // normal: {
+            //   barBorderRadius: 5,
+            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+              { offset: 0, color: '#e7bcf3' },
+              { offset: 1, color: '#3EACE5' }
+            ])
+            // }
           },
           data: chartData.countData
         }
@@ -101,7 +116,20 @@ const method = reactive({
   getStockAsnList: async () => {
     chartData.category = []
     chartData.countData = []
-    const { data: res } = await getStockAsnList({ total: 0, sqlTitle: 'asn_status:4', pageIndex: 1, pageSize: 9999 })
+    const myDate = new Date()
+    const nowDate = formatDate(myDate, 'yyyy-MM-dd')
+    const year = myDate.getFullYear()
+    const startDate = `${ year }-01-01`
+    const { data: res } = await getStockAsnList({
+      total: 0,
+      sqlTitle: 'asn_status:4',
+      pageIndex: 1,
+      pageSize: 999999,
+      searchObjects: [
+        { name: 'create_time', operator: 3, text: startDate, value: startDate },
+        { name: 'create_time', operator: 5, text: nowDate, value: nowDate }
+      ]
+    })
     if (res.isSuccess) {
       const groupedData = _.groupBy(res.data.rows, 'sku_name')
       _.forEach(groupedData, (group, key) => {

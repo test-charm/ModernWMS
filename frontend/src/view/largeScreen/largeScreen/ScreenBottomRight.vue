@@ -20,6 +20,7 @@ import { reactive, onMounted, ref } from 'vue'
 import _ from 'lodash'
 import * as echarts from 'echarts'
 import { EChartsOption, EChartsType } from 'echarts'
+import { formatDate } from '@/utils/format/formatSystem'
 import { list as getDeliveryStatisticList } from '@/api/wms/deliveryStatistic'
 import i18n from '@/languages/i18n'
 
@@ -55,7 +56,7 @@ const method = reactive({
       },
       grid: {
         width: '88%',
-        top: '5%',
+        // top: '5%',
         bottom: '7%'
       },
 
@@ -75,6 +76,11 @@ const method = reactive({
       yAxis: [
         {
           type: 'value',
+          axisLine: {
+            lineStyle: {
+              color: '#ffffff'
+            }
+          },
           axisLabel: {
             formatter(a) {
               return a.toLocaleString()
@@ -85,12 +91,23 @@ const method = reactive({
       series: [
         {
           name: i18n.global.t('wms.deliveryStatistic.amount'),
-          type: 'line',
-          smooth: true,
-          showAllSymbol: true,
-          symbol: 'emptyCircle',
+          type: 'bar',
+          barWidth: 20,
+          // type: 'line',
+          // smooth: true,
+          // showAllSymbol: true,
+          // symbol: 'emptyCircle',
+          // itemStyle: {
+          //   color: '#5cd9e8'
+          // },
           itemStyle: {
-            color: '#ffdb5c'
+            // normal: {
+            //   barBorderRadius: 5,
+            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+              { offset: 0, color: '#FFAE8B' },
+              { offset: 1, color: '#FFF065' }
+            ])
+            // }
           },
           data: chartData.countData
         }
@@ -101,7 +118,11 @@ const method = reactive({
   getDeliveryStatisticList: async () => {
     chartData.category = []
     chartData.countData = []
-    const { data: res } = await getDeliveryStatisticList({ pageIndex: 1, pageSize: 9999 })
+    const myDate = new Date()
+    const nowDate = formatDate(myDate, 'yyyy-MM-dd HH:mm:ss')
+    const year = myDate.getFullYear()
+    const startDate = `${ year }-01-01`
+    const { data: res } = await getDeliveryStatisticList({ pageIndex: 1, pageSize: 999999, delivery_date_from: startDate, delivery_date_to: nowDate })
     if (res.isSuccess) {
       const groupedData = _.groupBy(res.data.rows, 'sku_name')
       _.forEach(groupedData, (group, key) => {

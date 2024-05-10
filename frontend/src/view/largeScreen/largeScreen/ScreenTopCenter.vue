@@ -25,6 +25,7 @@ const config = reactive({
   header: [
     i18n.global.t('wms.stockLocation.warehouse_name'),
     i18n.global.t('wms.stockLocation.location_name'),
+    i18n.global.t('wms.stockLocation.spu_code'),
     i18n.global.t('wms.stockLocation.spu_name'),
     i18n.global.t('wms.stockLocation.sku_code'),
     i18n.global.t('wms.stockLocation.qty')
@@ -42,7 +43,7 @@ const config = reactive({
 const method = reactive({
   getStockLocationList: async () => {
     const { data: res } = await getStockLocationList({ total: 0, pageIndex: 1, pageSize: 99999 })
-    config.data = res.data.rows.map((item: StockLocationVO) => [item.warehouse_name, item.location_name, item.spu_name, item.sku_code, item.qty])
+    config.data = res.data.rows.map((item: StockLocationVO) => [item.warehouse_name, item.location_name, item.spu_code, item.spu_name, item.sku_code, item.qty])
   }
 })
 onMounted(() => {
