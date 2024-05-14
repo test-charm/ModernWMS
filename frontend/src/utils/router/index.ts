@@ -65,7 +65,7 @@ export function menusToSideBar(): SideBarMenu[] {
     }
   }
   result.push({ icon: GetModuleAndIcon('homepage'), lable: i18n.global.t('router.sideBar.vwms'), routerPath: 'vwms', showDetail: false })
-  result.push({ icon: GetModuleAndIcon('homepage'), lable: i18n.global.t('router.sideBar.largeScreen'), routerPath: 'largeScreen', showDetail: false })
+  // result.push({ icon: GetModuleAndIcon('homepage'), lable: i18n.global.t('router.sideBar.largeScreen'), routerPath: 'largeScreen', showDetail: false })
   return result
 }
 
@@ -124,6 +124,8 @@ function GetMenuNameAndModule(path: string): string {
       return i18n.global.t('router.sideBar.asnStatistic')
     case 'stockageStatistic':
       return i18n.global.t('router.sideBar.stockageStatistic')
+      case 'largeScreen':
+        return i18n.global.t('router.sideBar.largeScreen')
     default:
       return ''
   }
@@ -184,6 +186,8 @@ function GetModuleAndIcon(name: string) {
       return 'alarm-light'
     case 'stockageStatistic':
       return 'calendar-month'
+      case 'largeScreen':
+      return 'monitor-screenshot'
     default:
       return ''
   }

@@ -160,6 +160,9 @@ const method = reactive({
     if (val.hasOwnProperty('asnmaster_id')) {
       form.asnmaster_id = val.asnmaster_id
     }
+    if (val.hasOwnProperty('series_number')) {
+      form.SN = val.series_number
+    }
     return JSON.stringify(form)
   },
   closeDialog: () => {

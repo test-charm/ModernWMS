@@ -626,7 +626,8 @@
       "volume": "Volume",
       "volume_unit": "Volume Unit",
       "weight": "Weight",
-      "weight_unit": "Weight Unit"
+      "weight_unit": "Weight Unit",
+      "consecutive_number":"consecutive numbering"
     },
     "stockList": {
       "qty": "Quantity",

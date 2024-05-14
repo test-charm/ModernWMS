@@ -7,9 +7,7 @@
       </v-btn>
     </div>
     <div v-if="loading" class="mask flex-c">
-      <dv-loading>
-        <span class="loading-title">加载中...</span>
-      </dv-loading>
+      <dv-loading> </dv-loading>
     </div>
     <div ref="screenRef" class="screen-content">
       <div class="header-section">
@@ -55,7 +53,7 @@ import ScreenFooter from './ScreenFooter.vue'
 const { screenContainerRef, screenRef, calcRate, windowDraw, unWindowDraw } = windowResize()
 const loading = ref(true)
 onMounted(() => {
-  // 监听浏览器窗口尺寸变化
+  // Monitor browser window size changes
   windowDraw()
   calcRate()
   setTimeout(() => {
@@ -94,13 +92,11 @@ const toggleFullScreen = () => {
   align-items: center;
   position: relative;
   .mask {
-    position: fixed;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    right: 0;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    z-index: 999;
     background-color: #020308;
-    z-index: 9999;
     background-image: url('@/assets/img/home_bg.png');
   }
   .screenfullbtn {
@@ -114,23 +110,18 @@ const toggleFullScreen = () => {
     border-radius: 4px;
   }
   .screen-content {
-    width: 1920px !important;
-    height: 1080px !important;
+    flex: none;
+    width: 1920px ;
+    height: 1080px ;
     box-sizing: border-box;
     padding: 12px;
     background-image: url('@/assets/img/home_bg.png');
     transition: all 0.2s ease-in-out;
 
-    .loading-title {
-      font-size: 16px;
-      color: #fff;
-      margin-top: 10px;
-    }
-
     .screen-chart-section1 {
       margin-top: 10px;
       display: grid;
-      grid-template-columns: 2fr 2fr 2fr;
+      grid-template-columns: 2fr 3fr 2fr;
       grid-column-gap: 5px;
     }
 

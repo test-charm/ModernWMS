@@ -2,11 +2,11 @@
   <div class="screen-top-right2">
     <div class="screen-top-header flex-l">
       <div class="header-left flex-c">
-        <i class="iconfont icon-chart-location" />
+        <i class="iconfont icon-chart-stock" />
       </div>
       <div class="header-right flex-l">
-        <span class="header-title">{{ $t('wms.stockManagement.stockLocation') }}</span>
-        <dv-decoration-1 class="dv-dec-1" />
+        <span class="header-title">{{ $t('wms.stockManagement.stock') }}</span>
+        <dv-decoration-3 class="dv-dec-3" />
       </div>
     </div>
     <div class="screen-top-chart">
@@ -17,38 +17,38 @@
 
 <script setup lang="ts">
 import { reactive, onMounted } from 'vue'
-import { getStockLocationList } from '@/api/wms/stockManagement'
+import { getStockList } from '@/api/wms/stockManagement'
 import { StockLocationVO } from '@/types/WMS/StockManagement'
 import i18n from '@/languages/i18n'
 
 const config = reactive({
   header: [
-    i18n.global.t('wms.stockLocation.warehouse_name'),
-    i18n.global.t('wms.stockLocation.location_name'),
+    i18n.global.t('wms.stockLocation.spu_code'),
     i18n.global.t('wms.stockLocation.spu_name'),
     i18n.global.t('wms.stockLocation.sku_code'),
-    i18n.global.t('wms.stockLocation.qty')
+    i18n.global.t('wms.stockLocation.qty'),
+    i18n.global.t('wms.stockLocation.qty_available')
   ] as string[],
   data: [],
-  rowNum: 7, // 表格行数
+  rowNum: 7, // Table Rows
   headerHeight: 35,
-  headerBGC: '#0f1325', // 表头
-  oddRowBGC: '#0f1325', // 奇数行
-  evenRowBGC: '#171c33', // 偶数行
+  headerBGC: '#0f1325', // Meter header
+  oddRowBGC: '#0f1325', // Odd Rows
+  evenRowBGC: '#171c33', // Even rows
   index: true,
   columnWidth: [50],
   align: ['center']
 })
 const method = reactive({
-  getStockLocationList: async () => {
-    const { data: res } = await getStockLocationList({ total: 0, pageIndex: 1, pageSize: 99999 })
-    config.data = res.data.rows.map((item: StockLocationVO) => [item.warehouse_name, item.location_name, item.spu_name, item.sku_code, item.qty])
+  getStockList: async () => {
+    const { data: res } = await getStockList({ total: 0, pageIndex: 1, pageSize: 99999 })
+    config.data = res.data.rows.map((item: StockLocationVO) => [item.spu_code, item.spu_name, item.sku_code, item.qty, item.qty_available])
   }
 })
 onMounted(() => {
-  method.getStockLocationList()
-    setInterval(() => {
-    method.getStockLocationList()
+  method.getStockList()
+  setInterval(() => {
+    method.getStockList()
   }, 10 * 60 * 1000)
 })
 </script>
@@ -75,7 +75,7 @@ onMounted(() => {
         font-size: 13px;
       }
 
-      .dv-dec-1 {
+      .dv-dec-3 {
         width: 100px;
         height: 20px;
         margin-left: 10px;
@@ -85,7 +85,7 @@ onMounted(() => {
 
   .screen-top-chart {
     .dv-scr-board {
-      width:100%;
+      width: 100%;
       // width: calc(100% - 30px);
       height: 340px;
     }
@@ -103,7 +103,6 @@ onMounted(() => {
   justify-content: center;
   align-items: center;
 }
-// 图标
 .iconfont {
   font-size: 20px !important;
   color: #5cd9e8;

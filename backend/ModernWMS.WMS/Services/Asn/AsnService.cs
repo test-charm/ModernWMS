@@ -589,19 +589,46 @@ namespace ModernWMS.WMS.Services
             {
                 return (false, "[202]" + $"{_stringLocalizer["ASN_Status_Is_Not_Pre_Sort"]}");
             }
-            var sortEntities = viewModels.Where(v => entities.Select(e => e.id).ToList().Contains(v.asn_id))
-                .Select(v => new AsnsortEntity
+            var models = viewModels.Where(v => entities.Select(e => e.id).ToList().Contains(v.asn_id)).ToList();
+            List<AsnsortEntity> sortEntities = new List<AsnsortEntity>();
+            foreach (var v in models)
+            {
+                if (v.sorted_qty > 1 && v.is_auto_num)
                 {
-                    id = 0,
-                    asn_id = v.asn_id,
-                    sorted_qty = v.sorted_qty,
-                    series_number = v.series_number,
-                    create_time = DateTime.Now,
-                    creator = currentUser.user_name,
-                    is_valid = true,
-                    last_update_time = DateTime.Now,
-                    tenant_id = currentUser.tenant_id
-                }).ToList();
+                    List<string> snlist = await _functionHelper.GetFormNoListAsync("Asnsort", v.sorted_qty, currentUser.tenant_id, "sn");
+                    for (int i = 0; i < v.sorted_qty; i++)
+                    {
+                        sortEntities.Add(new AsnsortEntity
+                        {
+                            id = 0,
+                            asn_id = v.asn_id,
+                            sorted_qty = 1,
+                            series_number = snlist[i],
+                            create_time = DateTime.Now,
+                            creator = currentUser.user_name,
+                            is_valid = true,
+                            last_update_time = DateTime.Now,
+                            tenant_id = currentUser.tenant_id
+                        });
+                    }
+                }
+                else
+                {
+                    string sn = await _functionHelper.GetFormNoAsync("Asnsort", "sn");
+                    sortEntities.Add(new AsnsortEntity
+                    {
+                        id = 0,
+                        asn_id = v.asn_id,
+                        sorted_qty = v.sorted_qty,
+                        series_number = sn,
+                        create_time = DateTime.Now,
+                        creator = currentUser.user_name,
+                        is_valid = true,
+                        last_update_time = DateTime.Now,
+                        tenant_id = currentUser.tenant_id
+                    });
+                }
+            }
             await Asnsorts.AddRangeAsync(sortEntities);
 
             entities.ForEach(e =>
@@ -686,7 +713,7 @@ namespace ModernWMS.WMS.Services
             }
 
             var qty = await _dBContext.SaveChangesAsync();
-            if (qty > 0)
+            if (qty >= 0)
             {
                 var Asns = _dBContext.GetDbSet<AsnEntity>();
                 var asnids = entities.Select(t => t.asn_id).Distinct().ToList();
@@ -708,6 +735,10 @@ namespace ModernWMS.WMS.Services
                         if (s != null)
                         {
                             e.sorted_qty = s.sorted_qty;
+                        }
+                        else
+                        {
+                            e.sorted_qty = 0;
                         }
                     });
                     await _dBContext.SaveChangesAsync();
@@ -1350,5 +1381,44 @@ namespace ModernWMS.WMS.Services
         }
 
         #endregion Arrival list
+
+        #region print series number
+        /// <summary>
+        /// print series number
+        /// </summary>
+        /// <param name="input">selected asn id</param>
+        /// <returns></returns>
+        public async Task<List<AsnPrintSeriesNumberViewModel>> GetAsnPrintSeriesNumberAsync(List<int> input)
+        {
+            var Spus = _dBContext.GetDbSet<SpuEntity>().AsNoTracking();
+            var Skus = _dBContext.GetDbSet<SkuEntity>().AsNoTracking();
+            var Asns = _dBContext.GetDbSet<AsnEntity>().AsNoTracking();
+            var Asnmasters = _dBContext.GetDbSet<AsnmasterEntity>().AsNoTracking();
+            var sorts = _dBContext.GetDbSet<AsnsortEntity>().AsNoTracking();
+
+            var query = from m in Asnmasters
+                        join a in Asns on m.id equals a.asnmaster_id
+                        join p in Spus.AsNoTracking() on a.spu_id equals p.id
+                        join k in Skus.AsNoTracking() on a.sku_id equals k.id
+                        join s in sorts on a.id equals s.asn_id
+                        where input.Contains(a.id)
+                        select new AsnPrintSeriesNumberViewModel
+                        {
+                            asn_id = a.id,
+                            asnmaster_id = m.id,
+                            asn_no = m.asn_no,
+                            sku_id = a.sku_id,
+                            sku_code = k.sku_code,
+                            sku_name = k.sku_name,
+                            spu_code = p.spu_code,
+                            spu_name = p.spu_name,
+                            series_number = s.series_number
+                        };
+            var data = await query.OrderBy(t => t.asn_id).ToListAsync();
+            data ??= new List<AsnPrintSeriesNumberViewModel>();
+            return data;
+        }
+
+        #endregion
     }
 }

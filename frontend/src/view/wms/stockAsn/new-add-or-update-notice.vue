@@ -151,7 +151,7 @@
           </v-form>
         </v-card-text>
         <v-card-actions class="justify-end">
-          <v-btn v-show="data.form.detailList.length > 0" color="primary" variant="text" @click="method.printQrCode">
+          <v-btn v-show="data.form.detailList.length > 0&&data.form.id>0" color="primary" variant="text" @click="method.printQrCode">
             {{ $t('base.commodityManagement.printQrCode') }}
           </v-btn>
           <v-btn variant="text" @click="method.closeDialog">{{ $t('system.page.close') }}</v-btn>
@@ -253,18 +253,33 @@ const data = reactive({
 
 const method = reactive({
   // Print QR code
-  printQrCode: () => {
+  printQrCode: async () => {
     const records = data.form.detailList.filter((item: StockAsnDetailVO) => item.is_check) as any[]
     // data.selectRowData.length === 0 ? data.selectRowData = [row] : ''
     // const records:any[] = data.selectRowData
-    if (records.length > 0) {
-      for (const item of records) {
-        item.type = 'asn'
-        item.asn_id = item.id
-        item.asn_no = data.form.asn_no
-      }
 
-      qrCodeDialogRef.value.openDialog(records)
+    if (records.length > 0) {
+      // const list = records.map((item) => item.id)
+      // const { data: res } = await getPrintAsnList(list)
+      // if (!res.isSuccess) {
+      //   hookComponent.$message({
+      //     type: 'error',
+      //     content: res.errorMessage
+      //   })
+      //   return
+      // }
+      const printList = records.map((item) => ({
+        id: item.id,
+        asn_id: item.id,
+        asnmaster_id: item.asnmaster_id,
+        type: 'asn',
+        asn_no: data.form.asn_no,
+        spu_name: item.spu_name,
+        sku_code: item.sku_code,
+        sku_id: item.sku_id
+      }))
+      // const printList = res.data.map((item) => ({ id: item.asn_id, type: 'asn', ...item }))
+      qrCodeDialogRef.value.openDialog(printList)
     } else {
       hookComponent.$message({
         type: 'error',

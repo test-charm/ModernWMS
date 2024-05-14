@@ -460,6 +460,19 @@ namespace ModernWMS.WMS.Controllers
         }
         #endregion
 
+        #region print series number
+        /// <summary>
+        /// print series number
+        /// </summary>
+        /// <param name="input">selected asn id</param>
+        /// <returns></returns>
+        [HttpPost("print-sn")]
+        public async Task<ResultModel<List<AsnPrintSeriesNumberViewModel>>> GetAsnPrintSeriesNumberAsync(List<int> input)
+        {
+            var data = await _asnService.GetAsnPrintSeriesNumberAsync(input);
+            return ResultModel<List<AsnPrintSeriesNumberViewModel>>.Success(data);
+        }
+        #endregion
     }
 }
  
