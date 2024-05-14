@@ -32,6 +32,11 @@ namespace ModernWMS.WMS.Entities.ViewModels
         public int asn_id { get; set; } = 0;
 
         /// <summary>
+        /// is automatically generate series number
+        /// </summary>
+        public bool is_auto_num { get; set; } = false;
+
+        /// <summary>
         /// series_number
         /// </summary>
         public string series_number { get; set; } = string.Empty;
