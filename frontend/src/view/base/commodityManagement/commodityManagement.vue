@@ -338,6 +338,10 @@ const method = reactive({
           }
         }
       }
+      records.forEach((item) => {
+        item.sku_id = item.id
+      })
+
       qrCodeDialogRef.value.openDialog(records)
     } else {
       hookComponent.$message({
