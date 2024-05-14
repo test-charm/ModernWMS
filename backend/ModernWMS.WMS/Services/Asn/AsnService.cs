@@ -736,6 +736,10 @@ namespace ModernWMS.WMS.Services
                         {
                             e.sorted_qty = s.sorted_qty;
                         }
+                        else
+                        {
+                            e.sorted_qty = 0;
+                        }
                     });
                     await _dBContext.SaveChangesAsync();
                 }
