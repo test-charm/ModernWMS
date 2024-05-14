@@ -70,17 +70,6 @@ namespace ModernWMS.WMS.Entities.Models
         /// </summary>
         public string series_number { get; set; } = string.Empty;
 
-        /// <summary>
-        /// price
-        /// </summary>
-        public decimal price { get; set; } = 0;
-
-        /// <summary>
-        /// putaway_date
-        /// </summary>
-        public DateTime putaway_date { get; set; } = UtilConvert.MinDate;
-
-
         #endregion Property
     }
 }
