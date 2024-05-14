@@ -626,7 +626,8 @@
       "volume": "總體積",
       "volume_unit": "體積單位",
       "weight": "總重量",
-      "weight_unit": "重量單位"
+      "weight_unit": "重量單位",
+      "consecutive_number":"連續編號"
     },
     "stockList": {
       "qty": "數量",
