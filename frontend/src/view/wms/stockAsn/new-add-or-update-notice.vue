@@ -165,6 +165,7 @@
           <p>{{ $t('wms.stockAsnInfo.num') }}:{{ slotData.asn_no }}</p>
           <p>{{ $t('wms.stockAsnInfo.spu_name') }}:{{ slotData.spu_name }}</p>
           <p>{{ $t('wms.stockAsnInfo.sku_code') }}:{{ slotData.sku_code }}</p>
+          <p>SN:{{ slotData.series_number }}</p>
         </template>
       </qr-code-dialog>
     </template>
@@ -176,7 +177,7 @@ import { reactive, computed, ref, watch } from 'vue'
 import i18n from '@/languages/i18n'
 import { errorColor } from '@/constant/style'
 import { hookComponent } from '@/components/system/index'
-import { addAsnNew, updateAsnNew } from '@/api/wms/stockAsn'
+import { addAsnNew, updateAsnNew, getPrintAsnList } from '@/api/wms/stockAsn'
 import tooltipBtn from '@/components/tooltip-btn.vue'
 import skuSelect from '@/components/select/sku-select.vue'
 import { CommodityDetailJoinMainVO } from '@/types/Base/CommodityManagement'
@@ -253,18 +254,42 @@ const data = reactive({
 
 const method = reactive({
   // Print QR code
-  printQrCode: () => {
+  printQrCode: async () => {
     const records = data.form.detailList.filter((item: StockAsnDetailVO) => item.is_check) as any[]
     // data.selectRowData.length === 0 ? data.selectRowData = [row] : ''
     // const records:any[] = data.selectRowData
-    if (records.length > 0) {
-      for (const item of records) {
-        item.type = 'asn'
-        item.asn_id = item.id
-        item.asn_no = data.form.asn_no
-      }
 
-      qrCodeDialogRef.value.openDialog(records)
+    if (records.length > 0) {
+      const list = records.map((item) => item.id)
+      const { data: res } = await getPrintAsnList(list)
+      if (!res.isSuccess) {
+        hookComponent.$message({
+          type: 'error',
+          content: res.errorMessage
+        })
+        return
+      }
+      const printList = res.data.map((item) => ({ id: item.asn_id, type: 'asn', ...item }))
+      for (const item of records) {
+        const option = printList.filter((i) => item.id === i.id)
+        if (option.length === 0) {
+          printList.push({
+            id: item.id,
+            type: 'asn',
+            asn_id: item.id,
+            asnmaster_id: item.asnmaster_id,
+            sku_id: item.sku_id,
+            asn_no: data.form.asn_no,
+            spu_code: item.spu_code,
+            spu_name: item.spu_name,
+            sku_code: item.sku_code,
+            sku_name: item.sku_name,
+            series_number: ''
+          })
+        }
+      }
+      
+      qrCodeDialogRef.value.openDialog(printList)
     } else {
       hookComponent.$message({
         type: 'error',
