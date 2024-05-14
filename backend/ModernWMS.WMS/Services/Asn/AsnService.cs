@@ -713,7 +713,7 @@ namespace ModernWMS.WMS.Services
             }
 
             var qty = await _dBContext.SaveChangesAsync();
-            if (qty > 0)
+            if (qty >= 0)
             {
                 var Asns = _dBContext.GetDbSet<AsnEntity>();
                 var asnids = entities.Select(t => t.asn_id).Distinct().ToList();
