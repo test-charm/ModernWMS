@@ -636,6 +636,7 @@ namespace ModernWMS.WMS.Services
                                     && (input.warehouse_id == 0 || gl.warehouse_id == input.warehouse_id)
                                     && (input.spu_name == "" || spu.spu_name.Contains(input.spu_name))
                                     && (input.location_name == "" || gl.location_name.Contains(input.location_name))
+                                    && (input.series_number == "" || stock.series_number == input.series_number)
                                     group new { stock, gw } by new { stock.sku_id, stock.goods_location_id, stock.goods_owner_id, gw.goods_owner_name, stock.series_number, stock.expiry_date, stock.price, stock.putaway_date } into sg
                                     select new
                                     {
