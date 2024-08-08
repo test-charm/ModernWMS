@@ -151,7 +151,7 @@
           </v-form>
         </v-card-text>
         <v-card-actions class="justify-end">
-          <v-btn v-show="data.form.detailList.length > 0&&data.form.id>0" color="primary" variant="text" @click="method.printQrCode">
+          <v-btn v-show="showQRPrint" color="primary" variant="text" @click="method.printQrCode">
             {{ $t('base.commodityManagement.printQrCode') }}
           </v-btn>
           <v-btn variant="text" @click="method.closeDialog">{{ $t('system.page.close') }}</v-btn>
@@ -200,6 +200,7 @@ const props = defineProps<{
 }>()
 
 const isShow = computed(() => props.showDialog)
+const showQRPrint = computed(() => data.form.detailList.length > 0 && (data.form?.id as number) > 0)
 
 const data = reactive({
   curSelectType: '',
