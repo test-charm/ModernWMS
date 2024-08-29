@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ModernWMS.Core.Utility;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -78,6 +79,22 @@ namespace ModernWMS.WMS.Entities.ViewModels
         [Display(Name = "series_number")]
         [MaxLength(64, ErrorMessage = "MaxLength")]
         public string series_number { get; set; } = string.Empty;
+
+        /// <summary>
+        /// expiry_date
+        /// </summary>
+        public DateTime expiry_date { get; set; } = UtilConvert.MinDate;
+
+        /// <summary>
+        /// price
+        /// </summary>
+        public decimal price { get; set; } = 0;
+
+        /// <summary>
+        /// putaway_date
+        /// </summary>
+        public DateTime putaway_date { get; set; } = UtilConvert.MinDate;
+
 
         #endregion Property
     }
