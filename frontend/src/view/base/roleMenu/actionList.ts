@@ -32,6 +32,7 @@ export const actionDict: any = {
     'notice-delete',
     'notice-export',
     'notice-printQrCode',
+    'putOnTheShelf-printQrCode',
     'delivered-confirm',
     'delivered-export',
     'unloaded-confirm',

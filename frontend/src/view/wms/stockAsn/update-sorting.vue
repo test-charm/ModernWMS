@@ -20,11 +20,7 @@
               {{ i18n.global.t('system.page.noData') }}
             </template>
             <vxe-column type="seq" width="60"></vxe-column>
-            <vxe-column field="series_number" :title="$t('wms.stockAsnInfo.series_number')" :edit-render="{ autofocus: '.vxe-input--inner' }">
-              <template #edit="{ row }">
-                <vxe-input v-model="row.series_number" type="text"></vxe-input>
-              </template>
-            </vxe-column>
+            <vxe-column field="series_number" :title="$t('wms.stockAsnInfo.series_number')"> </vxe-column>
             <vxe-column field="sorted_qty" :title="$t('wms.stockAsnInfo.sorted_qty')" :edit-render="{ autofocus: '.vxe-input--inner' }">
               <template #edit="{ row }">
                 <vxe-input v-model="row.sorted_qty" type="text"></vxe-input>

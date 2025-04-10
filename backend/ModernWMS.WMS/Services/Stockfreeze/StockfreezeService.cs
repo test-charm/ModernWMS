@@ -106,7 +106,6 @@ namespace ModernWMS.WMS.Services
                             location_name = location.location_name,
                             warehouse_name = location.warehouse_name,
                             series_number = m.series_number,
-                            price = m.price,
                         };
             query = query
                 .Where(t => t.tenant_id.Equals(currentUser.tenant_id))
@@ -160,8 +159,6 @@ namespace ModernWMS.WMS.Services
                                   location_name = location.location_name,
                                   warehouse_name = location.warehouse_name,
                                   series_number = m.series_number,
-                                  price = m.price,
-                                  putaway_date = m.putaway_date,
                               }).FirstOrDefaultAsync();
 
             return data;
@@ -184,7 +181,7 @@ namespace ModernWMS.WMS.Services
             entity.tenant_id = currentUser.tenant_id;
             entity.job_code = await _functionHelper.GetFormNoAsync("Stockfreeze");
             var stock_DBSet = _dBContext.GetDbSet<StockEntity>();
-            var stocks = await stock_DBSet.Where(t => t.goods_location_id == entity.goods_location_id && t.goods_owner_id == entity.goods_owner_id && t.sku_id == entity.sku_id && t.series_number == entity.series_number  && t.price == entity.price && t.putaway_date == entity.putaway_date).ToListAsync();
+            var stocks = await stock_DBSet.Where(t => t.goods_location_id == entity.goods_location_id && t.goods_owner_id == entity.goods_owner_id && t.sku_id == entity.sku_id && t.series_number == entity.series_number  ).ToListAsync();
             foreach (var stock in stocks)
             {
                 if (entity.job_type == true)
@@ -242,8 +239,6 @@ namespace ModernWMS.WMS.Services
             entity.handle_time = viewModel.handle_time;
             entity.last_update_time = DateTime.Now;
             entity.series_number = viewModel.series_number;
-            entity.price = viewModel.price;
-            entity.putaway_date = viewModel.putaway_date;
             var qty = await _dBContext.SaveChangesAsync();
             if (qty > 0)
             {
