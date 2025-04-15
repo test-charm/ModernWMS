@@ -757,10 +757,11 @@ namespace ModernWMS.WMS.Services
                         join spu in spu_DBSet.AsNoTracking() on sku.spu_id equals spu.id
                         join location in location_DBSet.AsNoTracking() on dpp.goods_location_id equals location.id
                         join wh in warehouse_DBSet.AsNoTracking() on location.warehouse_id equals wh.id
-                        join go in owner_DbSet.AsNoTracking() on dpp.goods_owner_id equals go.id
+                        join go in owner_DbSet.AsNoTracking() on dpp.goods_owner_id equals go.id into go_left
+                        from go in go_left.DefaultIfEmpty()
                         where dp.dispatch_status >= 6 && spu.spu_name.Contains(input.spu_name) && spu.spu_code.Contains(input.spu_code)
                         && sku.sku_name.Contains(input.sku_name) && sku.sku_code.Contains(input.sku_code) && wh.warehouse_name.Contains(input.warehouse_name)
-                        && dp.customer_name.Contains(input.customer_name) && go.goods_owner_name.Contains(input.goods_owner_name)
+                        && dp.customer_name.Contains(input.customer_name) && (go.goods_owner_name == null ? "" : go.goods_owner_name).Contains(input.goods_owner_name)
                         group new { dpp, dp, spu, sku } by
                         new
                         {
@@ -778,7 +779,7 @@ namespace ModernWMS.WMS.Services
                             dp.customer_name,
                             dp.create_time,
                             dpp.goods_owner_id,
-                            go.goods_owner_name,
+                            goods_owner_name =(go.goods_owner_name == null ? "" : go.goods_owner_name) 
                         }
                         into dg
                         select new DeliveryStatisticViewModel
@@ -796,7 +797,7 @@ namespace ModernWMS.WMS.Services
                             putaway_date = dg.Key.putaway_date,
                             customer_name = dg.Key.customer_name,
                             delivery_date = dg.Key.create_time,
-                            goods_owner_name = dg.Key.goods_owner_name,
+                            goods_owner_name = dg.Key.goods_owner_name == null?"": dg.Key.goods_owner_name,
                             delivery_qty = dg.Sum(t => t.dpp.picked_qty),
                             delivery_amount = dg.Sum(t => t.dpp.picked_qty * t.sku.price)
                         };
