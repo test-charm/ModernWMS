@@ -165,7 +165,7 @@
   ```
   + 第四步，初始化数据库
   
-   1) 修改后端目录/ModernWMS/backend/中的 appsettings.json 文件，sudo vi /ModernWMS/backend/appsettins.json 参考 <a href="https://modernwms.ikeyly.com/problem-contents.html?fileurl=/assets/markdown/problem-usingPgsql_zh.md">修改配置文件操作流程</a> ，连接池配置时注意修改数据库IP地址、端口、账号、密码，确保可以正确连接数据库
+   1) 修改后端目录C:\ModernWMS\frontend\中的 appsettings.json 文件, 参考 <a href="https://modernwms.ikeyly.com/problem-contents.html?fileurl=/assets/markdown/problem-usingPgsql_zh.md">修改配置文件操作流程</a> ，连接池配置时注意修改数据库IP地址、端口、账号、密码，确保可以正确连接数据库
    2) 下载数据库脚本，初始化数据库，提供 <a href="https://modernwms.ikeyly.com/assets/staticFile/database_mysql.sql">MySql</a>，  <a href="https://modernwms.ikeyly.com/assets/staticFile/database_mssql.sql">SQLServer</a>，   <a href="https://modernwms.ikeyly.com/assets/staticFile/database_postgresql.sql">Postgresql</a>
 
   + 第五步，安装nginx
