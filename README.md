@@ -52,9 +52,10 @@
     - [Linux OS](#linux-os)
     - [Windows OS](#windows-os)
   - [Installation](#installation)
-    - [Linux](#linux)
-    - [Windows](#windows)
+    - [Linux shell](#linux-shell)
+    - [Windows PowerShell](#windows-powershell)
     - [Docker(Optional)](#dockeroptional)
+  - [Frequently Asked Questions (FAQ)](#frequently-asked-questions-faq)
   - [Usage](#usage)
   - [Contact](#contact)
   - [License](#license)
@@ -81,7 +82,7 @@
 
 ## Installation
 
-### Linux
+### Linux shell
 
 + download the source code and compile
   + Step 1, download the source code
@@ -107,27 +108,31 @@
   ```bash
   sudo apt install unzip
   cd /tmp/ && unzip master.zip && cd ./ModernWMS-master
-  mkdir -p /ModernWMS/frontend/ /ModernWMS/backend/
+  sudo mkdir -p /ModernWMS/frontend/ /ModernWMS/backend/
   cd /tmp/ModernWMS-master/frontend/ 
-  sed -i 's#http://127.0.0.1#http://IP address#g' ./.env.production
-  yarn && yarn build && cp -rf /tmp/ModernWMS-master/frontend/dist/* /ModernWMS/frontend/
-  cd /tmp/ModernWMS-master/backend/ && sudo dotnet publish && cp -rf /tmp/ModernWMS-master/backend/ModernWMS/bin/Debug/net7.0/publish/* /ModernWMS/backend/
-  cp -rf /tmp/ModernWMS-master/backend/ModernWMS/wms.db /ModernWMS/backend/
-  ```  
+  sudo sed -i 's#http://127.0.0.1#http://IP address#g' ./.env.production
+  sudo yarn && sudo yarn build && sudo cp -rf /tmp/ModernWMS-master/frontend/dist/* /ModernWMS/frontend/
+  cd /tmp/ModernWMS-master/backend/ && sudo dotnet publish && sudo cp -rf /tmp/ModernWMS-master/backend/ModernWMS/bin/Debug/net7.0/publish/* /ModernWMS/backend/
 
-  + Step 4, Install Nginx
+  ```  
+  + Step 4, database initialization 
+  1) Modify <font color=red>`/ModernWMS/backend/appsettings.json`</font>，you can reference <a href="https://modernwms.ikeyly.com/problem-contents.html?fileurl=/assets/markdown/problem-usingPgsql_en.md">operation process</a> ，When configuring the connection pool, ensure to update the database IP address, port, username, and password to establish a successful connection.
+   2) Download the database script and initialize the database <a href="https://modernwms.ikeyly.com/assets/staticFile/database_mysql.sql">MySql</a>，  <a href="https://modernwms.ikeyly.com/assets/staticFile/database_mssql.sql">SQLServer</a>，   <a href="https://modernwms.ikeyly.com/assets/staticFile/database_postgresql.sql">Postgresql</a>
+
+  
+  + Step 5, Install Nginx
 
   ```bash
   cd /tmp/ && wget http://nginx.org/download/nginx-1.18.0.tar.gz 
   tar -zxvf nginx-1.18.0.tar.gz && cd nginx-1.18.0
-  ./configure --prefix=/etc/nginx --with-http_secure_link_module --with-http_stub_status_module --with-http_realip_module --without-http_rewrite_module --without-http_gzip_module
-  make && make install
-  cp -rf /ModernWMS/frontend/* /etc/nginx/html/
-  nohup /etc/nginx/sbin/nginx -g 'daemon off;' &
-  cd /ModernWMS/backend/ && dotnet ModernWMS.dll --urls http://0.0.0.0:20011
+  sudo ./configure --prefix=/etc/nginx --with-http_secure_link_module --with-http_stub_status_module --with-http_realip_module --without-http_rewrite_module --without-http_gzip_module
+  sudo make && sudo make install
+  sudo cp -rf /ModernWMS/frontend/* /etc/nginx/html/
+  nohup sudo /etc/nginx/sbin/nginx -g 'daemon off;' &
+  cd /ModernWMS/backend/ && nohup sudo dotnet ModernWMS.dll --urls http://0.0.0.0:20011 &
   ```  
   
-### Windows
+### Windows PowerShell
 
 + download the source code and compile
   + Step 1, download the source code
@@ -137,7 +142,7 @@
   Expand-Archive -Path C:\master.zip -DestinationPath C:\
   ```
   + Step 2, Install .NET SDK and NodeJS
-  ```CMD
+  ```PowerShell
   wget -Uri https://download.visualstudio.microsoft.com/download/pr/35660869-0942-4c5d-8692-6e0d4040137a/4921a36b578d8358dac4c27598519832/dotnet-sdk-7.0.101-win-x64.exe  -OutFile dotnet-sdk-7.0.101-win-x64.exe
   .\dotnet-sdk-7.0.101-win-x64.exe /install /quiet /norestart
   wget -Uri https://nodejs.org/dist/v16.13.1/node-v16.13.1-x64.msi  -OutFile node-v16.13.1-x64.msi
@@ -145,7 +150,7 @@
   npm install -g yarn
   ```
   + Step 3, compile frontend and backend
-  ```
+  ```PowerShell
   md C:\ModernWMS\frontend\
   md C:\ModernWMS\backend\
   cd C:\ModernWMS-master\backend
@@ -157,8 +162,13 @@
   yarn build 
   copy-item -path "C:\ModernWMS-master\frontend\dist\*" -destination "C:\ModernWMS\frontend\" -recurse
   ```
-  + Step 4, Install Nginx
-  ```
+  + Step 4, database initialization 
+  1) Modify <font color=red>`C:\ModernWMS\frontend\appsettings.json`</font>，you can reference <a href="https://modernwms.ikeyly.com/problem-contents.html?fileurl=/assets/markdown/problem-usingPgsql_en.md">operation process</a> ，When configuring the connection pool, ensure to update the database IP address, port, username, and password to establish a successful connection.
+   2) Download the database script and initialize the database <a href="https://modernwms.ikeyly.com/assets/staticFile/database_mysql.sql">MySql</a>，  <a href="https://modernwms.ikeyly.com/assets/staticFile/database_mssql.sql">SQLServer</a>，   <a href="https://modernwms.ikeyly.com/assets/staticFile/database_postgresql.sql">Postgresql</a>
+
+  
+  + Step 5, Install Nginx
+  ```PowerShell
   cd C:\
   wget -Uri http://nginx.org/download/nginx-1.16.1.zip -OutFile nginx-1.16.1.zip
   Expand-Archive -Path C:\nginx-1.16.1.zip -DestinationPath C:\
@@ -166,7 +176,7 @@
   cd C:\nginx-1.16.1\
   start nginx.exe
   cd C:\ModernWMS\backend\
-  dotnet ModernWMS.dll --urls http://0.0.0.0:20011
+  Start-Process -WindowStyle hidden -FilePath "dotnet ModernWMS.dll --urls http://0.0.0.0:20011" 
   ```
 
 ### Docker(Optional)
@@ -239,6 +249,10 @@
   docker build -t modernwms:1.0 .
   docker run -d -p 20011:20011 -p 80:80  modernwms:1.0 ./run.sh
   ```
+## Frequently Asked Questions (FAQ)
+  1) Open ports 80 and 20011 on the deployment server.For cloud servers (e.g., Aliyun, Huawei Cloud), ensure both security group rules and firewall settings allow access to these ports  :bangbang: :bangbang: :bangbang:
+  2) Errors during installation of dotnet-sdk-7.0 on unsupported OS versions，If encountering dependency issues, modify the download path of dpkg packages (e.g., use official Microsoft repositories or compatible OS-specific sources)
+  3) Errors in sudo yarn && sudo yarn build. Switch to Taobao Registry to resolve dependency installation failures.
 
 ## Usage
 
@@ -270,7 +284,7 @@
 
 ## License
 
-Distributed under the [MIT](https://opensource.org/licenses/MIT/) License. See [LICENSE.txt](https://gitee.com/modernwms/ModernWMS/blob/master/LICENSE) for more information.This must be observed.
+Distributed under the [Apache2.0](https://opensource.org/license/apache-2-0/) License. See [LICENSE.txt](https://gitee.com/modernwms/ModernWMS/blob/master/LICENSE) for more information.This must be observed.
 
 ## Donate
 
