@@ -585,7 +585,7 @@ namespace ModernWMS.WMS.Services
             var location_DBSet = _dBContext.GetDbSet<GoodslocationEntity>();
             var stock_group_datas = from stock in stock_DbSet.AsNoTracking()
                                     join gl in _dBContext.GetDbSet<GoodslocationEntity>().AsNoTracking() on stock.goods_location_id equals gl.id
-                                    where stock.tenant_id == currentUser.user_id
+                                    where stock.tenant_id == currentUser.tenant_id
                                     group stock by new { stock.id, stock.sku_id, stock.goods_location_id, stock.goods_owner_id, stock.series_number, stock.expiry_date, stock.price,stock.putaway_date } into sg
                                     select new
                                     {
