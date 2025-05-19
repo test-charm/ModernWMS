@@ -52,8 +52,9 @@
     - [Linux OS](#linux-os)
     - [Windows OS](#windows-os)
   - [安装](#安装)
-    - [Linux](#linux)
-    - [Windows](#windows)
+    - [Linux shell](#linux-shell)
+    - [Windows PowerShell](#windows-powershell)
+  - [常见问题](#常见问题)
   - [使用方法](#使用方法)
   - [联系我们](#联系我们)
   - [版权信息](#版权信息)
@@ -81,7 +82,7 @@
 
 ## 安装
 
-### Linux
+### Linux shell
 
 + 下载源码后编译
   + 第一步，下载源码
@@ -107,26 +108,30 @@
   ```bash
   sudo apt install unzip
   cd /tmp/ && unzip master.zip && cd ./ModernWMS-master
-  mkdir -p /ModernWMS/frontend/ /ModernWMS/backend/
+  sudo mkdir -p /ModernWMS/frontend/ /ModernWMS/backend/
   cd /tmp/ModernWMS-master/frontend/ 
-  sed -i 's#http://127.0.0.1#http://前部署服务器的IP地址#g' ./.env.production
-  yarn && yarn build && cp -rf /tmp/ModernWMS-master/frontend/dist/* /ModernWMS/frontend/
-  cd /tmp/ModernWMS-master/backend/ && sudo dotnet publish && cp -rf /tmp/ModernWMS-master/backend/ModernWMS/bin/Debug/net7.0/publish/* /ModernWMS/backend/
-  cp -rf /tmp/ModernWMS-master/backend/ModernWMS/wms.db /ModernWMS/backend/
+  sed -i 's#http://127.0.0.1#http://当前部署服务器的IP地址#g' ./.env.production
+  sudo yarn && sudo yarn build && sudo cp -rf /tmp/ModernWMS-master/frontend/dist/* /ModernWMS/frontend/
+  cd /tmp/ModernWMS-master/backend/ && sudo dotnet publish && sudo cp -rf /tmp/ModernWMS-master/backend/ModernWMS/bin/Debug/net7.0/publish/* /ModernWMS/backend/
   ```  
 
-  + 第四步，安装nginx
+  + 第四步，初始化数据库
+  
+   1) 修改后端目录<font color="red">`/ModernWMS/backend/appsettings.json`</font>文件，参考 <a href="https://modernwms.ikeyly.com/problem-contents.html?fileurl=/assets/markdown/problem-usingPgsql_zh.md">修改配置文件操作流程</a> ，连接池配置时注意修改数据库IP地址、端口、账号、密码，确保可以正确连接数据库
+   2) 下载数据库脚本，初始化数据库，提供 <a href="https://modernwms.ikeyly.com/assets/staticFile/database_mysql.sql">MySql</a>，  <a href="https://modernwms.ikeyly.com/assets/staticFile/database_mssql.sql">SQLServer</a>，   <a href="https://modernwms.ikeyly.com/assets/staticFile/database_postgresql.sql">Postgresql</a>
+
+  + 第五步，安装nginx
 
   ```bash
   cd /tmp/ && wget http://nginx.org/download/nginx-1.18.0.tar.gz 
   tar -zxvf nginx-1.18.0.tar.gz && cd nginx-1.18.0
-  ./configure --prefix=/etc/nginx --with-http_secure_link_module --with-http_stub_status_module --with-http_realip_module --without-http_rewrite_module --without-http_gzip_module
-  make && make install
-  cp -rf /ModernWMS/frontend/* /etc/nginx/html/
-  nohup /etc/nginx/sbin/nginx -g 'daemon off;' &
-  cd /ModernWMS/backend/ && dotnet ModernWMS.dll --urls http://0.0.0.0:20011
+  sudo ./configure --prefix=/etc/nginx --with-http_secure_link_module --with-http_stub_status_module --with-http_realip_module --without-http_rewrite_module --without-http_gzip_module
+  sudo make && sudo make install
+  sudo cp -rf /ModernWMS/frontend/* /etc/nginx/html/
+  nohup sudo /etc/nginx/sbin/nginx -g 'daemon off;' &
+  cd /ModernWMS/backend/ && nohup sudo dotnet ModernWMS.dll --urls http://0.0.0.0:20011 &
   ```  
-### Windows
+### Windows PowerShell
 
 + 下载源码后编译部署
   + 第一步，下载源码
@@ -136,7 +141,7 @@
   Expand-Archive -Path C:\master.zip -DestinationPath C:\
   ```
   + 第二步，安装.NET SDK 和 NodeJS
-  ```CMD
+  ```PowerShell
   wget -Uri https://download.visualstudio.microsoft.com/download/pr/35660869-0942-4c5d-8692-6e0d4040137a/4921a36b578d8358dac4c27598519832/dotnet-sdk-7.0.101-win-x64.exe  -OutFile dotnet-sdk-7.0.101-win-x64.exe
   .\dotnet-sdk-7.0.101-win-x64.exe /install /quiet /norestart
   wget -Uri https://nodejs.org/dist/v16.13.1/node-v16.13.1-x64.msi  -OutFile node-v16.13.1-x64.msi
@@ -144,7 +149,7 @@
   npm install -g yarn
   ```
   + 第三步，编译前端和后端
-  ```
+  ```PowerShell
   md C:\ModernWMS\frontend\
   md C:\ModernWMS\backend\
   cd C:\ModernWMS-master\backend
@@ -156,8 +161,13 @@
   yarn build 
   copy-item -path "C:\ModernWMS-master\frontend\dist\*" -destination "C:\ModernWMS\frontend\" -recurse
   ```
-  + 第四步，安装nginx并启动
-  ```
+  + 第四步，初始化数据库
+  
+   1) 修改后端目录<font color="red">`C:\ModernWMS\frontend\appsettings.json`</font>文件, 参考 <a href="https://modernwms.ikeyly.com/problem-contents.html?fileurl=/assets/markdown/problem-usingPgsql_zh.md">修改配置文件操作流程</a> ，连接池配置时注意修改数据库IP地址、端口、账号、密码，确保可以正确连接数据库
+   2) 下载数据库脚本，初始化数据库，提供 <a href="https://modernwms.ikeyly.com/assets/staticFile/database_mysql.sql">MySql</a>，  <a href="https://modernwms.ikeyly.com/assets/staticFile/database_mssql.sql">SQLServer</a>，   <a href="https://modernwms.ikeyly.com/assets/staticFile/database_postgresql.sql">Postgresql</a>
+
+  + 第五步，安装nginx
+  ```PowerShell
   cd C:\
   wget -Uri http://nginx.org/download/nginx-1.16.1.zip -OutFile nginx-1.16.1.zip
   Expand-Archive -Path C:\nginx-1.16.1.zip -DestinationPath C:\
@@ -165,14 +175,17 @@
   cd C:\nginx-1.16.1\
   start nginx.exe
   cd C:\ModernWMS\backend\
-  dotnet ModernWMS.dll --urls http://0.0.0.0:20011
+  Start-Process -WindowStyle hidden -FilePath "dotnet ModernWMS.dll --urls http://0.0.0.0:20011" 
   ```
-
+## 常见问题
+  1) 打开部署服务器的80 和 20011 端口，如果采用的是云服务器，需开放防火墙对这两个端口的访问限制  :bangbang: :bangbang: :bangbang:
+  2) 采用必要条件中之外其他版本的操作系统，安装dotnet-sdk-7.0时报错，请更换dpkg包的下载路径
+  3) sudo yarn && sudo yarn build 时报错，注意更改源，建议采用淘宝源
 
 ## 使用方法
 
   ```shell
-  打开浏览器，进入：http://127.0.0.1 或者http://部署电脑的IP地址  
+  打开浏览器，进入：http://127.0.0.1 或者http://当前部署服务器的IP地址  
   
   初始账号: admin 密码: 1
   ```
