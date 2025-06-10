@@ -75,9 +75,9 @@
   var buildUrl = 'Build'
   var loaderUrl = buildUrl + '/wms.loader.js'
   var config = {
-    dataUrl: buildUrl + '/wms.data.unityweb',
-    frameworkUrl: buildUrl + '/wms.framework.js.unityweb',
-    codeUrl: buildUrl + '/wms.wasm.unityweb',
+    dataUrl: buildUrl + '/wms.data',
+    frameworkUrl: buildUrl + '/wms.framework.js',
+    codeUrl: buildUrl + '/wms.wasm',
     streamingAssetsUrl: 'StreamingAssets',
     companyName: 'DefaultCompany',
     productName: 'My project',
@@ -120,15 +120,8 @@
   script.src = loaderUrl
   var WMSUnityInstance
   script.onload = () => {
-    let timer = null;
     createUnityInstance(canvas, config, (progress) => {
-      if (!timer) {
-        timer = setTimeout(() => {
-          LoadingProgress(progress)
-          timer = null;
-        }, 500);
-      }
-    })
+      })
       .then((unityInstance) => {
         loadingBar.style.display = 'none'
         WMSUnityInstance = unityInstance
@@ -139,14 +132,6 @@
       })
   }
   document.body.appendChild(script)
-
-  function LoadingProgress(progress) {
-    console.log(progress)
-    window.parent.postMessage({
-      guid: progress,
-      event: 'loadingProgress'
-    }, '*')
-  }
 
   function LoadSuccess() {
     window.parent.postMessage({

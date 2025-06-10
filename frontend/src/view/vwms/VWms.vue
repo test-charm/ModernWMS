@@ -1,6 +1,6 @@
 <!--
  @name : VWms.vue
- @Description : 
+ @Description :
  @author : saal
  @date : 2023/10/6
 -->
@@ -370,7 +370,6 @@ watch(selectObjectList, () => {
     shelf: getShelfData,
     shelfItem: getShelfItemData
   }
-  console.log(targetData)
   presentData.value = handleMap[targetData.itemName](targetData.itemId)
 })
 
