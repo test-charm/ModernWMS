@@ -120,7 +120,7 @@ namespace ModernWMS.Core.JWT
         }
 
         #region TokenHelper
-        public bool Is_Token_Exist<T>(int userID, string type, int expireMinute)
+        public bool Is_Token_Exist<T>(int userID, string type, int expireMinute, string RefreshToken = "")
         {
             var  key = $"ModernWMS_{type}_{userID}";
             if (string.IsNullOrWhiteSpace(key))
@@ -128,6 +128,14 @@ namespace ModernWMS.Core.JWT
             T value;
             if (_cache.TryGetValue<T>(key, out value))
             {
+                if (value == null)
+                {
+                    return false;
+                }
+                if(!string.IsNullOrEmpty(RefreshToken) && !RefreshToken.Equals(value.ToString()))
+                {
+                    return false;
+                }
                 Set_SlidingExpire(key, value,  TimeSpan.FromMinutes(expireMinute) );
                 return true;
             }
