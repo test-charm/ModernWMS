@@ -113,7 +113,8 @@ namespace ModernWMS.Core.Controller
         {
             var currentUser = this._tokenManager.GetCurrentUser(inPutViewModel.AccessToken);
 
-            var flag = _cacheManager.Is_Token_Exist<string>(currentUser.user_id, "WebRefreshToken", _tokenManager.GetRefreshTokenExpireMinute());
+            var flag = _cacheManager.Is_Token_Exist<string>(currentUser.user_id, "WebRefreshToken"
+                , _tokenManager.GetRefreshTokenExpireMinute(), inPutViewModel.RefreshToken);
             if (!flag)
             {
                 return ResultModel<string>.Error("refreshtoken_failure");
