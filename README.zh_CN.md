@@ -175,7 +175,7 @@
   cd C:\nginx-1.16.1\
   start nginx.exe
   cd C:\ModernWMS\backend\
-  Start-Process -WindowStyle hidden -FilePath "dotnet ModernWMS.dll --urls http://0.0.0.0:20011" 
+  Start-Process -WindowStyle hidden -FilePath "dotnet" "ModernWMS.dll --urls http://0.0.0.0:20011" 
   ```
 ## 常见问题
   1) 打开部署服务器的80 和 20011 端口，如果采用的是云服务器，需开放防火墙对这两个端口的访问限制  :bangbang: :bangbang: :bangbang:
