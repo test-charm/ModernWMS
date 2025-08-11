@@ -386,3 +386,8 @@ FodyWeavers.xsd
 # JetBrains Rider
 .idea/
 *.sln.iml
+/backend/.vscode
+/backend/ModernWMS/appsettings.json
+/frontend/.env.development
+/frontend/.env.production
+/.gitignore
