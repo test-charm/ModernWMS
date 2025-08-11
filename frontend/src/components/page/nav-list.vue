@@ -64,7 +64,7 @@ const method = reactive({
 }
 
 .nav-list {
-  height: 100%;
+  height: 94%;
   overflow-y: scroll;
 }
 .nav-list::-webkit-scrollbar {

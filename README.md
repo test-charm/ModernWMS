@@ -176,7 +176,7 @@
   cd C:\nginx-1.16.1\
   start nginx.exe
   cd C:\ModernWMS\backend\
-  Start-Process -WindowStyle hidden -FilePath "dotnet ModernWMS.dll --urls http://0.0.0.0:20011" 
+  Start-Process -WindowStyle hidden -FilePath "dotnet" "ModernWMS.dll --urls http://0.0.0.0:20011" 
   ```
 
 ### Docker(Optional)
