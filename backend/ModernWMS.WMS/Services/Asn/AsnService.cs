@@ -1069,20 +1069,12 @@ namespace ModernWMS.WMS.Services
         /// <returns></returns>
         public async Task<(List<AsnmasterBothViewModel> data, int totals)> PageAsnmasterAsync(PageSearch pageSearch, CurrentUser currentUser)
         {
-            string supplierNameFilter = "";
-            string skuNameFilter = "";
             QueryCollection queries = new QueryCollection();
-            
             if (pageSearch.searchObjects.Any())
             {
                 pageSearch.searchObjects.ForEach(s =>
                 {
-                    if (s.Name == "supplier_name")
-                        supplierNameFilter = s.Text?.Trim() ?? "";
-                    else if (s.Name == "sku_name")
-                        skuNameFilter = s.Text?.Trim() ?? "";
-                    else
-                        queries.Add(s);
+                    queries.Add(s);
                 });
             }
             Byte asn_status = 255;
@@ -1144,14 +1136,6 @@ namespace ModernWMS.WMS.Services
                                           }).ToList()
                         };
             query = query.Where(queries.AsExpression<AsnmasterBothViewModel>());
-            if (!string.IsNullOrEmpty(supplierNameFilter))
-            {
-                query = query.Where(vm => vm.detailList.Any(detail => detail.supplier_name.Contains(supplierNameFilter)));
-            }
-            if (!string.IsNullOrEmpty(skuNameFilter))
-            {
-                query = query.Where(vm => vm.detailList.Any(detail => detail.sku_name.Contains(skuNameFilter)));
-            }
             int totals = await query.CountAsync();
             var list = await query.OrderByDescending(t => t.last_update_time)
                        .Skip((pageSearch.pageIndex - 1) * pageSearch.pageSize)
