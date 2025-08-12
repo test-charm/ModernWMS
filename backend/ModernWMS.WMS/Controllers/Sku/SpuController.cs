@@ -143,7 +143,24 @@ namespace ModernWMS.WMS.Controllers
                 return ResultModel<int>.Error(msg);
             }
         }
-
+        /// <summary>
+        /// add new record list
+        /// </summary>
+        /// <param name="viewModels">viewmodel</param>
+        /// <returns></returns>
+        [HttpPost("addlist")]
+        public async Task<ResultModel<int>> AddListAsync(List<SpuBothViewModel> viewModels)
+        {
+            var (count, msg) = await _spuService.AddListAsync(viewModels, CurrentUser);
+            if (count > 0)
+            {
+                return ResultModel<int>.Success(count);
+            }
+            else
+            {
+                return ResultModel<int>.Error(msg);
+            }
+        }
         /// <summary>
         /// update a record
         /// </summary>

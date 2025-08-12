@@ -324,7 +324,8 @@ namespace ModernWMS.WMS.Services
                     queries.Add(s);
                 });
             }
-
+            // 添加仓库表WareHouse的DBSet
+            var warehouse_DBSet = _dBContext.GetDbSet<WarehouseEntity>().AsNoTracking();
             var DbSet = _dBContext.GetDbSet<StockEntity>().Where(t => t.tenant_id.Equals(currentUser.tenant_id));
             var dispatchpick_DBSet = _dBContext.GetDbSet<DispatchpicklistEntity>();
             var dispatch_DBSet = _dBContext.GetDbSet<DispatchlistEntity>().Where(t => t.tenant_id.Equals(currentUser.tenant_id));
@@ -337,7 +338,7 @@ namespace ModernWMS.WMS.Services
             var stock_group_datas = from stock in DbSet.AsNoTracking()
                                     join gl in location_DBSet.AsNoTracking() on stock.goods_location_id equals gl.id
                                     where stock.tenant_id == currentUser.tenant_id
-                                    group new { stock, gl } by new { stock.sku_id, gl.warehouse_id } into sg
+                                    group new { stock,gl } by new { stock.sku_id, gl.warehouse_id } into sg
                                     select new
                                     {
                                         sku_id = sg.Key.sku_id,
@@ -387,6 +388,9 @@ namespace ModernWMS.WMS.Services
                         from m in m_left.DefaultIfEmpty()
                         join sku in sku_DBSet on sg.sku_id equals sku.id
                         join spu in spu_DBSet on sku.spu_id equals spu.id
+                        //关联仓库表，用于显示仓库名称
+                        join wh in warehouse_DBSet on sg.warehouse_id equals wh.id
+                        //库位表，用于计算库存？？
                         join gl in location_DBSet on sg.warehouse_id equals gl.id
                         join sss in sku_safety_DBSet on new { sg.sku_id, sg.warehouse_id } equals new { sss.sku_id, sss.warehouse_id } into sss_left
                         from sss in sss_left.DefaultIfEmpty()
@@ -401,7 +405,7 @@ namespace ModernWMS.WMS.Services
                             qty_frozen = sg.qty_frozen,
                             qty_locked = (dp.qty_locked == null ? 0 : dp.qty_locked) + (pl.qty_locked == null ? 0 : pl.qty_locked) + (m.qty_locked == null ? 0 : m.qty_locked),
                             qty = sg.qty,
-                            warehouse_name = gl.warehouse_name,
+                            warehouse_name = wh.warehouse_name,
                             safety_stock_qty = sss.safety_stock_qty == null ? 0 : sss.safety_stock_qty,
                         };
             query = query.Where(queries.AsExpression<SafetyStockManagementViewModel>());
