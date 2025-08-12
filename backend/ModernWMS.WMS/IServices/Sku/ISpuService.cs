@@ -51,6 +51,13 @@ using ModernWMS.WMS.Entities.ViewModels;
         /// <returns></returns>
         Task<(int id, string msg)> AddAsync(SpuBothViewModel viewModel, CurrentUser currentUser);
         /// <summary>
+        /// add new record list
+        /// </summary>
+        /// <param name="viewModels">viewmodel</param>
+        /// <param name="currentUser">currentUser</param>
+        /// <returns></returns>
+        Task<(int count, string msg)> AddListAsync(List<SpuBothViewModel> viewModels, CurrentUser currentUser);
+        /// <summary>
         /// update a record
         /// </summary>
         /// <param name="viewModel">viewmodel</param>
