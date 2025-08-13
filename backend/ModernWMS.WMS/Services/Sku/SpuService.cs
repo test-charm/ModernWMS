@@ -360,8 +360,8 @@ namespace ModernWMS.WMS.Services
         /// <summary>
         /// add new record list
         /// </summary>
-        /// <param name="viewModels">viewmodel</param>
-        /// <param name="currentUser">currentUser</param>
+        /// <param name="viewModels"></param>
+        /// <param name="currentUser"></param>
         /// <returns></returns>
         public async Task<(int count, string msg)> AddListAsync(List<SpuBothViewModel> viewModels, CurrentUser currentUser)
         {
@@ -372,6 +372,13 @@ namespace ModernWMS.WMS.Services
             var dbSet = _dBContext.GetDbSet<SpuEntity>();
             var tenantId = currentUser.tenant_id;
             var spuCodes = viewModels.Select(vm => vm.spu_code?.Trim()).ToList();
+            var invalidSpuCodes = viewModels.Where(vm => string.IsNullOrWhiteSpace(vm.spu_code?.Trim()))
+                                            .Select((vm, idx) => $"第{idx + 1}条数据")
+                                            .ToList();
+            if (invalidSpuCodes.Any())
+            {
+                return (0, string.Format(_stringLocalizer["spu_code_required"], string.Join("、", invalidSpuCodes)));
+            }
             var duplicateCodes = spuCodes
                 .GroupBy(code => code)
                 .Where(group => group.Count() > 1 && !string.IsNullOrEmpty(group.Key))
@@ -385,18 +392,65 @@ namespace ModernWMS.WMS.Services
                 .Where(t => t.tenant_id == tenantId && spuCodes.Contains(t.spu_code))
                 .Select(t => t.spu_code)
                 .ToListAsync();
+            List<SpuBothViewModel> newVms = new();
+            List<SpuBothViewModel> existingVms = new();
+            List<string> inconsistentCodes = new();
+            Dictionary<string, SpuEntity> existingSpuDict = new();
             if (existingCodes.Any())
             {
-                return (0, string.Format(_stringLocalizer["exists_spu_codes"], string.Join(",", existingCodes)));
+                existingSpuDict = await dbSet.AsNoTracking()
+                    .Include(spu => spu.detailList)
+                    .Where(t => t.tenant_id == tenantId && existingCodes.Contains(t.spu_code))
+                    .ToDictionaryAsync(s => s.spu_code.Trim(), s => s);
+
+                foreach (var vm in viewModels)
+                {
+                    var spuCode = vm.spu_code!.Trim();
+                    if (existingSpuDict.ContainsKey(spuCode))
+                    {
+                        var existingSpu = existingSpuDict[spuCode];
+                        bool isNameConsistent = string.Equals(
+                            vm.spu_name?.Trim(),
+                            existingSpu.spu_name?.Trim(),
+                            StringComparison.OrdinalIgnoreCase
+                        );
+                        bool isSupplierConsistent = string.Equals(
+                            vm.supplier_name?.Trim(),
+                            existingSpu.supplier_name?.Trim(),
+                            StringComparison.OrdinalIgnoreCase
+                        );
+                        if (!isNameConsistent || !isSupplierConsistent)
+                        {
+                            inconsistentCodes.Add(spuCode);
+                        }
+                        else
+                        {
+                            existingVms.Add(vm);
+                        }
+                    }
+                    else
+                    {
+                        newVms.Add(vm);
+                    }
+                }
+                if (inconsistentCodes.Any())
+                {
+                    return (0, string.Format(_stringLocalizer["spu_info_inconsistent"], string.Join(",", inconsistentCodes)));
+                }
             }
-            var supplierNames = viewModels.Select(vm => vm.supplier_name?.Trim())
-                                         .Where(name => !string.IsNullOrEmpty(name))
-                                         .Distinct()
-                                         .ToList();
-            var categoryNames = viewModels.Select(vm => vm.category_name?.Trim())
-                                         .Where(name => !string.IsNullOrEmpty(name))
-                                         .Distinct()
-                                         .ToList();
+            else
+            {
+                newVms = viewModels.ToList();
+            }
+            var allVms = newVms.Concat(existingVms).ToList();
+            var supplierNames = allVms.Select(vm => vm.supplier_name?.Trim())
+                                     .Where(name => !string.IsNullOrEmpty(name))
+                                     .Distinct()
+                                     .ToList();
+            var categoryNames = allVms.Select(vm => vm.category_name?.Trim())
+                                     .Where(name => !string.IsNullOrEmpty(name))
+                                     .Distinct()
+                                     .ToList();
             var existingSuppliers = await _dBContext.GetDbSet<SupplierEntity>().AsNoTracking()
                 .Where(s => s.tenant_id == tenantId && supplierNames.Contains(s.supplier_name))
                 .Select(s => new { s.supplier_name, s.id })
@@ -405,58 +459,108 @@ namespace ModernWMS.WMS.Services
                 .Where(c => c.tenant_id == tenantId && categoryNames.Contains(c.category_name))
                 .Select(c => new { c.category_name, c.id })
                 .ToDictionaryAsync(key => key.category_name.Trim(), value => value.id);
-            foreach (var vm in viewModels)
+            foreach (var vm in allVms)
             {
                 var supplierName = vm.supplier_name?.Trim();
-                if (string.IsNullOrEmpty(supplierName))
+                if (string.IsNullOrEmpty(supplierName) || !existingSuppliers.TryGetValue(supplierName, out var supplierId))
                 {
-                    return (0, _stringLocalizer["supplier_name_required"]);
-                }
-                if (!existingSuppliers.TryGetValue(supplierName, out var supplierId))
-                {
-                    return (0, supplierName + string.Format(_stringLocalizer[",supplier_not_exists"]));
+                    return (0, string.Format(_stringLocalizer["supplier_not_exists"], supplierName));
                 }
                 vm.supplier_id = supplierId;
+
                 var categoryName = vm.category_name?.Trim();
-                if (string.IsNullOrEmpty(categoryName))
+                if (string.IsNullOrEmpty(categoryName) || !existingCategories.TryGetValue(categoryName, out var categoryId))
                 {
-                    return (0, _stringLocalizer["category_name_required"]);
-                }
-                if (!existingCategories.TryGetValue(categoryName, out var categoryId))
-                {
-                    return (0, categoryName + string.Format(_stringLocalizer[",category_not_exists"]));
+                    return (0, string.Format(_stringLocalizer["category_not_exists"], categoryName));
                 }
                 vm.category_id = categoryId;
-            }
-            var spuEntities = new List<SpuEntity>();
-            foreach (var vm in viewModels)
-            {
-                var entity = vm.Adapt<SpuEntity>();
-                entity.id = 0;
-                entity.creator = currentUser.user_name;
-                entity.create_time = DateTime.Now;
-                entity.last_update_time = DateTime.Now;
-                entity.tenant_id = tenantId;
-
-                if (entity.detailList?.Any() ?? false)
-                {
-                    decimal unitConvert = ChangeLengthUnit(entity.length_unit, entity.volume_unit);
-                    foreach (var sku in entity.detailList)
-                    {
-                        sku.id = 0;
-                        sku.volume = Math.Round(sku.lenght * unitConvert * sku.width * unitConvert * sku.height * unitConvert, 3);
-                    }
-                }
-                spuEntities.Add(entity);
             }
             using (var transaction = await _dBContext.Database.BeginTransactionAsync())
             {
                 try
                 {
-                    await dbSet.AddRangeAsync(spuEntities);
-                    var saveCount = await _dBContext.SaveChangesAsync();
+                    int totalAffected = 0;
+                    foreach (var vm in existingVms)
+                    {
+                        var spuCode = vm.spu_code!.Trim();
+                        var existingSpu = existingSpuDict[spuCode];
+                        var skuDbSet = _dBContext.GetDbSet<SkuEntity>();
+                        var newSkus = vm.detailList?.Select(skuVm =>
+                        {
+                            var sku = skuVm.Adapt<SkuEntity>();
+                            sku.id = 0;
+                            sku.spu_id = existingSpu.id;
+                            decimal unitConvert = ChangeLengthUnit(existingSpu.length_unit, existingSpu.volume_unit);
+                            sku.volume = Math.Round(
+                                sku.lenght * unitConvert *
+                                sku.width * unitConvert *
+                                sku.height * unitConvert, 3);
+                            return sku;
+                        }).Where(sku => sku != null).ToList();
+                        if (newSkus?.Any() ?? false)
+                        {
+                            var duplicateSkuCodes = newSkus
+                                .GroupBy(s => s.sku_code?.Trim())
+                                .Where(g => g.Count() > 1 && !string.IsNullOrEmpty(g.Key))
+                                .Select(g => g.Key)
+                                .ToList();
+                            if (duplicateSkuCodes.Any())
+                            {
+                                return (0, string.Format(_stringLocalizer["duplicate_sku_in_batch"],
+                                    spuCode, string.Join(",", duplicateSkuCodes)));
+                            }
+                            var existingSkuCodes = existingSpu.detailList?
+                                .Select(s => s.sku_code?.Trim())
+                                .Where(c => !string.IsNullOrEmpty(c))
+                                .ToList() ?? new List<string>();
+                            var conflictSkuCodes = newSkus
+                                .Where(s => !string.IsNullOrEmpty(s.sku_code?.Trim()) &&
+                                           existingSkuCodes.Contains(s.sku_code.Trim()))
+                                .Select(s => s.sku_code!.Trim())
+                                .ToList();
+                            if (conflictSkuCodes.Any())
+                            {
+                                return (0, string.Format(_stringLocalizer["sku_code_exists"],
+                                    spuCode, string.Join(",", conflictSkuCodes)));
+                            }
+                            await skuDbSet.AddRangeAsync(newSkus);
+                            existingSpu.last_update_time = DateTime.Now;
+                            dbSet.Update(existingSpu);
+
+                            totalAffected += newSkus.Count;
+                        }
+                    }
+                    if (newVms.Any())
+                    {
+                        var newSpuEntities = newVms.Select(vm =>
+                        {
+                            var entity = vm.Adapt<SpuEntity>();
+                            entity.id = 0;
+                            entity.creator = currentUser.user_name;
+                            entity.create_time = DateTime.Now;
+                            entity.last_update_time = DateTime.Now;
+                            entity.tenant_id = tenantId;
+                            if (entity.detailList?.Any() ?? false)
+                            {
+                                decimal unitConvert = ChangeLengthUnit(entity.length_unit, entity.volume_unit);
+                                foreach (var sku in entity.detailList)
+                                {
+                                    sku.id = 0;
+                                    sku.volume = Math.Round(
+                                        sku.lenght * unitConvert *
+                                        sku.width * unitConvert *
+                                        sku.height * unitConvert, 3);
+                                }
+                            }
+                            return entity;
+                        }).ToList();
+
+                        await dbSet.AddRangeAsync(newSpuEntities);
+                        totalAffected += newSpuEntities.Count;
+                    }
+                    await _dBContext.SaveChangesAsync();
                     await transaction.CommitAsync();
-                    return (saveCount, _stringLocalizer["batch_save_success"]);
+                    return (totalAffected, _stringLocalizer["batch_save_success"]);
                 }
                 catch (Exception ex)
                 {
