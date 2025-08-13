@@ -11,9 +11,11 @@
                 <!-- <tooltip-btn icon="mdi-plus" :tooltip-text="$t('system.page.add')" @click="method.add()"></tooltip-btn>
                 <tooltip-btn icon="mdi-refresh" :tooltip-text="$t('system.page.refresh')" @click="method.refresh()"></tooltip-btn>
                 <tooltip-btn icon="mdi-export-variant" :tooltip-text="$t('system.page.export')" @click="method.exportTable"></tooltip-btn> -->
-
+                
                 <!-- new version -->
                 <BtnGroup :authority-list="data.authorityList" :btn-list="data.btnList" />
+                <tooltip-btn icon="mdi-database-import-outline" :tooltip-text="$t('system.page.import')" @click="method.openDialogImport">
+                </tooltip-btn>
               </v-col>
 
               <!-- Search Input -->
@@ -241,6 +243,7 @@
     <!-- Print barcode -->
     <bar-code-dialog ref="barCodeDialogRef" :menu="'commodityManagement'" />
     <hprintDialog ref="hprintDialogRef" :form="printDate.printForm" :tab-page="'print_page_main'" />
+    <importCommodityTable :show-dialog="data.showDialogImport" @close="method.closeDialogImport" @saveSuccess="method.saveSuccessImport" />
   </div>
 </template>
 
@@ -263,6 +266,7 @@ import { DEBOUNCE_TIME } from '@/constant/system'
 import BtnGroup from '@/components/system/btnGroup.vue'
 import updateSkuSafetyStock from './update-sku-safety-stock.vue'
 // import qrCodeDialogDialog from './qrCodeDialog.vue'
+import importCommodityTable from './import-commodity-table.vue'
 import BarCodeDialog from '@/components/codeDialog/barCodeDialog.vue'
 import QrCodeDialog from '@/components/codeDialog/qrCodeDialog.vue'
 import hprintDialog from '@/components/hiprint/hiprintFast.vue'
@@ -293,6 +297,7 @@ const data: DataProps = reactive({
   },
   // Dialog info
   showDialog: false,
+  showDialogImport: false,
   dialogForm: {
     id: 0,
     spu_code: '',
@@ -318,6 +323,17 @@ const printDate = reactive({
   printForm: {} as any
 })
 const method = reactive({
+    // Import Dialog
+  openDialogImport: () => {
+    data.showDialogImport = true
+  },
+  closeDialogImport: () => {
+    data.showDialogImport = false
+  },
+  saveSuccessImport: () => {
+    method.refresh()
+    method.closeDialog()
+  },
   // Check if the checkbox can be checked
   getCheckBoxDisableState: ({ row }: { row: any }): boolean => row.parent_id,
   // Print QR code
