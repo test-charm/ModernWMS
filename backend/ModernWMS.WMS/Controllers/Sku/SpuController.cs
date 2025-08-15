@@ -2,12 +2,13 @@
  * date：2022-12-21
  * developer：NoNo
  */
+using Microsoft.AspNetCore.Http;
  using Microsoft.AspNetCore.Mvc;
+ using Microsoft.Extensions.Localization;
  using ModernWMS.Core.Controller;
  using ModernWMS.Core.Models;
  using ModernWMS.WMS.Entities.ViewModels;
  using ModernWMS.WMS.IServices;
- using Microsoft.Extensions.Localization;
 
 namespace ModernWMS.WMS.Controllers
 {
@@ -161,6 +162,55 @@ namespace ModernWMS.WMS.Controllers
                 return ResultModel<int>.Error(msg);
             }
         }
+        /// <summary>
+        ///  upload sku img
+        /// </summary>
+        /// <param name="img"></param>
+        /// <returns></returns>
+        [HttpPost("uploadimg")]
+        public async Task<ResultModel<string>> UploadImg(IFormFile img)
+        {
+            // 1. 验证参数
+            if (img == null || img.Length == 0)
+            {
+                return ResultModel<string>.Error("请选择要上传的图片文件");
+            }
+
+            // 2. 验证文件类型
+            var allowedContentTypes = new[] { "image/jpeg", "image/png", "image/gif", "image/bmp" };
+            if (!allowedContentTypes.Contains(img.ContentType))
+            {
+                return ResultModel<string>.Error("只允许上传JPG、PNG、GIF、BMP格式的图片");
+            }
+
+            // 3. 验证文件大小（例如限制5MB以内）
+            long maxFileSize = 50 * 1024 * 1024; 
+            if (img.Length > maxFileSize)
+            {
+                return ResultModel<string>.Error("图片大小不能超过50MB");
+            }
+            try
+            {
+                // 5. 调用服务层处理上传
+                var (url, msg) = await _spuService.UploadImg(img, CurrentUser);
+                // 6. 处理服务返回结果
+                if (!string.IsNullOrEmpty(url))
+                {
+                    return ResultModel<string>.Success(url, "图片上传成功");
+                }
+                else
+                {
+                    return ResultModel<string>.Error(msg ?? "图片上传失败，请稍后重试");
+                }
+            }
+            catch (Exception ex)
+            {
+                // 7. 异常处理（实际项目中建议记录日志）
+                Console.WriteLine($"图片上传异常: {ex.Message}，堆栈信息: {ex.StackTrace}");
+                return ResultModel<string>.Error("服务器处理图片上传时发生错误");
+            }
+        }
+
         /// <summary>
         /// update a record
         /// </summary>
