@@ -1,4 +1,3 @@
-import { CommodityImportVO } from './../../types/Base/CommodityManagement';
 import http from '@/utils/http/request'
 import { PageConfigProps } from '@/types/System/Form'
 import { CommodityVO, UpdateSaftyStockReqBodyVO } from '@/types/Base/CommodityManagement'
@@ -37,11 +36,5 @@ export const deleteSpu = (id: number) => http({
 export const updateSaftyStock = (data: { sku_id: number; detailList: UpdateSaftyStockReqBodyVO[] }) => http({
     url: '/spu/sku-safety-stock',
     method: 'put',
-    data
-  })
-
-export const excelImport = (data: Array<CommodityImportVO>) => http({
-    url: '/spu/addlist',
-    method: 'post',
     data
   })

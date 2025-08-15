@@ -47,53 +47,6 @@ export interface CommodityDetailJoinMainVO {
   unit: string
 }
 
-export interface CommodityExcelVO {
-  spu_code: string
-  spu_name: string
-  category_name: string
-  spu_description: string
-  supplier_name: string
-  brand: string
-  sku_code: string
-  sku_name: string
-  bar_code: string
-  unit: string
-  weight: string
-  lenght: string
-  width: string
-  height: string
-  cost: string
-  price: string
-}
-
-export interface CommodityImportVO {
-  id: number
-  spu_code: string
-  spu_name: string
-  category_name: string
-  spu_description?: string
-  supplier_name: string
-  brand?: string
-  length_unit: number
-  volume_unit: number
-  weight_unit: number
-  detailList: CommodityImportDetailVO[]
-}
-
-export interface CommodityImportDetailVO {
-  id: number
-  sku_code: string
-  sku_name: string
-  bar_code?: string
-  unit: string
-  cost?: number
-  price?: number
-  weight?: number
-  lenght?: number
-  width?: number
-  height?: number
-}
-
 export interface DataProps {
   tableData: CommodityVO[]
   tableTreeConfig: VxeTablePropTypes.TreeConfig

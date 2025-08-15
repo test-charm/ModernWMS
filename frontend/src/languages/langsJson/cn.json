@@ -369,7 +369,6 @@
       "beforeOperation": "您确定要进行此操作吗?",
       "detailHasItemRepeat": "明细中含有重复项目!",
       "detailLengthIsZero": "请添加明细数据!",
-      "RequiredFieldsIsEmpty": "必填字段不能为空!",
       "fail": "失败!",
       "noData": "暂无数据",
       "requestFail": "接口请求失败，请重试",

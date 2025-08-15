@@ -369,7 +369,6 @@
       "beforeOperation": "Are you sure to proceed?",
       "detailHasItemRepeat": "The details contain duplicate items!",
       "detailLengthIsZero": "Details verification before document submission!",
-      "RequiredFieldsIsEmpty": "Required fields cannot be left blank!",
       "fail": " fail!",
       "noData": "no data",
       "requestFail": "Request fail.Please try it again",
