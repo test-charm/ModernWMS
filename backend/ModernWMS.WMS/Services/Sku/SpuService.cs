@@ -34,7 +34,51 @@ namespace ModernWMS.WMS.Services
         /// </summary>
         private readonly IStringLocalizer<Core.MultiLanguage> _stringLocalizer;
         #endregion
+        #region 图片路径常量与辅助方法
+        /// <summary>
+        /// 图片存储相对路径
+        /// </summary>
+        private readonly string[] _imageRelativePath = new[] { "wwwroot", "assets", "sku-images" };
 
+        /// <summary>
+        /// 获取图片存储根目录
+        /// </summary>
+        /// <returns>图片存储根目录绝对路径</returns>
+        private string GetImageStorageDirectory()
+        {
+            // 组合基础目录与相对路径
+            var directoryParts = new List<string> { AppContext.BaseDirectory };
+            directoryParts.AddRange(_imageRelativePath);
+
+            return Path.Combine(directoryParts.ToArray());
+        }
+
+        /// <summary>
+        /// 从URL获取图片文件名
+        /// </summary>
+        /// <param name="imageUrl">图片URL</param>
+        /// <returns>文件名</returns>
+        private string GetFileNameFromUrl(string imageUrl)
+        {
+            if (string.IsNullOrEmpty(imageUrl))
+                return string.Empty;
+
+            // 从URL中提取文件名
+            return Path.GetFileName(imageUrl);
+        }
+
+        /// <summary>
+        /// 验证图片文件名格式
+        /// </summary>
+        /// <param name="fileName">文件名</param>
+        /// <returns>是否有效</returns>
+        private bool IsValidImageFileName(string fileName)
+        {
+            return !string.IsNullOrEmpty(fileName)
+                   && fileName.StartsWith("sku-img_")
+                   && Path.HasExtension(fileName);
+        }
+        #endregion
         #region constructor
         /// <summary>
         ///Spu  constructor
@@ -584,7 +628,7 @@ namespace ModernWMS.WMS.Services
             // 验证文件是否存在
             if (img == null || img.Length == 0)
             {
-                return (null, _stringLocalizer["请选择要上传的图片文件"]);
+                return (null, _stringLocalizer["img_required"]);
             }
 
             try
@@ -593,56 +637,112 @@ namespace ModernWMS.WMS.Services
                 var allowedContentTypes = new[] { "image/jpeg", "image/png", "image/gif", "image/bmp" };
                 if (!allowedContentTypes.Contains(img.ContentType))
                 {
-                    return (null, _stringLocalizer["不支持的图片类型，仅允许JPG、PNG、GIF、BMP格式"]);
+                    return (null, _stringLocalizer["Unsupported image types, only JPG, PNG, GIF, BMP formats are allowed"]);
                 }
 
                 // 验证文件大小（限制5MB以内）
                 var maxFileSize = 5 * 1024 * 1024; // 5MB
                 if (img.Length > maxFileSize)
                 {
-                    return (null, string.Format(_stringLocalizer["图片大小不能超过{0}MB"], maxFileSize / 1024 / 1024));
+                    return (null, string.Format(_stringLocalizer["The size of the image cannot be exceeded{0}MB"], maxFileSize / 1024 / 1024));
                 }
 
-                // 直接在方法中定义存储路径（前端assets目录）
-                // 注意：根据实际项目结构调整此路径
-                var uploadDir = Path.Combine(
-                    AppContext.BaseDirectory,  // 应用程序基础目录
-                    "wwwroot",                  // Web根目录
-                    "assets",                   // 前端assets目录
-                    "sku-images"                // SKU图片专用目录
-                );
+                // 获取图片存储目录
+                var uploadDir = GetImageStorageDirectory();
 
-                // 确保目录存在，不存在则创建
+                // 确保目录存在
                 if (!Directory.Exists(uploadDir))
                 {
                     Directory.CreateDirectory(uploadDir);
                 }
 
-                // 生成唯一文件名（避免重名覆盖）
+                // 生成唯一文件名
                 var fileExtension = Path.GetExtension(img.FileName).ToLowerInvariant();
                 var uniqueFileName = $"sku-img_{Guid.NewGuid()}{fileExtension}";
                 var filePath = Path.Combine(uploadDir, uniqueFileName);
 
-                // 保存文件到服务器
+                // 保存文件
                 using (var stream = new FileStream(filePath, FileMode.Create))
                 {
                     await img.CopyToAsync(stream);
                 }
 
-                // 生成可访问的图片URL（前端可直接访问的路径）
+                // 生成访问URL
                 var imageUrl = $"/assets/sku-images/{uniqueFileName}";
 
-                return (imageUrl, _stringLocalizer["图片上传成功"]);
+                return (imageUrl, _stringLocalizer["Upload sucess"]);
             }
             catch (IOException)
             {
-                return (null, _stringLocalizer["图片保存失败，请检查服务器存储设置"]);
+                return (null, _stringLocalizer["Upload failed"]);
             }
             catch (Exception ex)
             {
-                return (null, string.Format(_stringLocalizer["上传失败: {0}"], ex.Message));
+                return (null, string.Format(_stringLocalizer["Upload failed: {0}"], ex.Message));
             }
         }
+        /// <summary>
+        /// 删除SKU图片
+        /// </summary>
+        /// <param name="imageUrl">图片URL</param>
+        /// <param name="currentUser">当前用户信息</param>
+        /// <returns>操作结果和消息</returns>
+        public async Task<(bool flag, string msg)> DeleteImg(string imageUrl, CurrentUser currentUser)
+        {
+            // 验证URL是否有效
+            if (string.IsNullOrEmpty(imageUrl))
+            {
+                return (false, _stringLocalizer["image_url_required"]);
+            }
+
+            try
+            {
+                // 从URL获取文件名
+                var fileName = GetFileNameFromUrl(imageUrl);
+
+                // 验证文件名格式
+                if (!IsValidImageFileName(fileName))
+                {
+                    return (false, _stringLocalizer["invalid_image_url"]);
+                }
+
+                // 获取图片存储目录并构建文件路径
+                var uploadDir = GetImageStorageDirectory();
+                var filePath = Path.Combine(uploadDir, fileName);
+
+                // 检查文件是否存在
+                if (!File.Exists(filePath))
+                {
+                    return (false, _stringLocalizer["image_file_not_found"]);
+                }
+
+                // 删除文件
+                File.Delete(filePath);
+
+                // 同步更新数据库中关联的图片路径
+                var skuEntity = await _dBContext.GetDbSet<SkuEntity>()
+                    .FirstOrDefaultAsync(s => s.img_path == imageUrl);
+
+                if (skuEntity != null)
+                {
+                    skuEntity.img_path = null;
+                    skuEntity.last_update_time = DateTime.Now;
+                    await _dBContext.SaveChangesAsync();
+                }
+
+                return (true, _stringLocalizer["image_delete_success"]);
+            }
+            catch (IOException)
+            {
+                return (false, _stringLocalizer["image_delete_failed_file_in_use"]);
+            }
+            catch (Exception ex)
+            {
+                return (false, string.Format(_stringLocalizer["image_delete_failed: {0}"], ex.Message));
+            }
+        }
+
+
         /// change to the volume unit
         /// </summary>
         /// <param name="length_unit">length_unit</param>

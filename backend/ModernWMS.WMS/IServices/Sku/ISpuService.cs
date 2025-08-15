@@ -65,6 +65,8 @@ using ModernWMS.WMS.Entities.ViewModels;
         /// <param name="currentUser"></param>
         /// <returns></returns>
         Task<(string url , string msg)> UploadImg(IFormFile img, CurrentUser currentUser);
+
+        Task<(bool flag, string msg)> DeleteImg(string imageUrl, CurrentUser currentUser);
         /// <summary>
         /// update a record
         /// </summary>
