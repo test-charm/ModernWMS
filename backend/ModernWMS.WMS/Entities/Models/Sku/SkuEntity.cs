@@ -98,7 +98,7 @@ namespace ModernWMS.WMS.Entities.Models
         /// </summary>
         public DateTime last_update_time { get; set; } = UtilConvert.MinDate;
 
-
+        public string img_path { get; set; } = string.Empty;
         #endregion
 
         #region Sku Safety Stock

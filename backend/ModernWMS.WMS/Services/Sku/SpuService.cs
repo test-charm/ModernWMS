@@ -3,17 +3,18 @@
  * developer：AMo
  */
  using Mapster;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
  using Microsoft.EntityFrameworkCore;
+ using Microsoft.Extensions.Localization;
  using ModernWMS.Core.DBContext;
+using ModernWMS.Core.DynamicSearch;
+using ModernWMS.Core.JWT;
+using ModernWMS.Core.Models;
  using ModernWMS.Core.Services;
  using ModernWMS.WMS.Entities.Models;
  using ModernWMS.WMS.Entities.ViewModels;
  using ModernWMS.WMS.IServices;
- using Microsoft.Extensions.Localization;
-using ModernWMS.Core.DynamicSearch;
-using ModernWMS.Core.Models;
-using ModernWMS.Core.JWT;
-using Microsoft.AspNetCore.Mvc;
 
 namespace ModernWMS.WMS.Services
 {
@@ -59,7 +60,9 @@ namespace ModernWMS.WMS.Services
         /// <returns></returns>
         public async Task<(List<SpuBothViewModel> data, int totals)> PageAsync(PageSearch pageSearch, CurrentUser currentUser)
         {
-            QueryCollection queries = new QueryCollection();
+            //QueryCollection queries = new QueryCollection();
+            // 在PageAsync方法中，将原来的声明改为：
+            ModernWMS.Core.DynamicSearch.QueryCollection queries = new ModernWMS.Core.DynamicSearch.QueryCollection();
             if (pageSearch.searchObjects.Any())
             {
                 pageSearch.searchObjects.ForEach(s =>
@@ -101,6 +104,7 @@ namespace ModernWMS.WMS.Services
                                              spu_id = t.spu_id,
                                              sku_code = t.sku_code,
                                              sku_name = t.sku_name,
+                                             img_path = t.img_path,
                                              bar_code = t.bar_code,
                                              weight = t.weight,
                                              lenght = t.lenght,
@@ -567,6 +571,76 @@ namespace ModernWMS.WMS.Services
                     await transaction.RollbackAsync();
                     return (0, string.Format(_stringLocalizer["batch_save_failed"], ex.Message));
                 }
+            }
+        }
+        /// <summary>
+        /// 上传SKU图片（直接在方法中定义存储路径）
+        /// </summary>
+        /// <param name="img">图片文件</param>
+        /// <param name="currentUser">当前用户信息</param>
+        /// <returns>图片URL和操作消息</returns>
+        public async Task<(string url, string msg)> UploadImg(IFormFile img, CurrentUser currentUser)
+        {
+            // 验证文件是否存在
+            if (img == null || img.Length == 0)
+            {
+                return (null, _stringLocalizer["请选择要上传的图片文件"]);
+            }
+
+            try
+            {
+                // 验证文件类型（仅允许常见图片格式）
+                var allowedContentTypes = new[] { "image/jpeg", "image/png", "image/gif", "image/bmp" };
+                if (!allowedContentTypes.Contains(img.ContentType))
+                {
+                    return (null, _stringLocalizer["不支持的图片类型，仅允许JPG、PNG、GIF、BMP格式"]);
+                }
+
+                // 验证文件大小（限制5MB以内）
+                var maxFileSize = 5 * 1024 * 1024; // 5MB
+                if (img.Length > maxFileSize)
+                {
+                    return (null, string.Format(_stringLocalizer["图片大小不能超过{0}MB"], maxFileSize / 1024 / 1024));
+                }
+
+                // 直接在方法中定义存储路径（前端assets目录）
+                // 注意：根据实际项目结构调整此路径
+                var uploadDir = Path.Combine(
+                    AppContext.BaseDirectory,  // 应用程序基础目录
+                    "wwwroot",                  // Web根目录
+                    "assets",                   // 前端assets目录
+                    "sku-images"                // SKU图片专用目录
+                );
+
+                // 确保目录存在，不存在则创建
+                if (!Directory.Exists(uploadDir))
+                {
+                    Directory.CreateDirectory(uploadDir);
+                }
+
+                // 生成唯一文件名（避免重名覆盖）
+                var fileExtension = Path.GetExtension(img.FileName).ToLowerInvariant();
+                var uniqueFileName = $"sku-img_{Guid.NewGuid()}{fileExtension}";
+                var filePath = Path.Combine(uploadDir, uniqueFileName);
+
+                // 保存文件到服务器
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await img.CopyToAsync(stream);
+                }
+
+                // 生成可访问的图片URL（前端可直接访问的路径）
+                var imageUrl = $"/assets/sku-images/{uniqueFileName}";
+
+                return (imageUrl, _stringLocalizer["图片上传成功"]);
+            }
+            catch (IOException)
+            {
+                return (null, _stringLocalizer["图片保存失败，请检查服务器存储设置"]);
+            }
+            catch (Exception ex)
+            {
+                return (null, string.Format(_stringLocalizer["上传失败: {0}"], ex.Message));
             }
         }
         /// change to the volume unit
