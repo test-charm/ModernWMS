@@ -150,6 +150,22 @@
                     {{ i18n.global.t('system.page.noData') }}
                   </template>
                   <vxe-column type="seq" width="60"></vxe-column>
+                  <vxe-column field="image_url" :title="$t('base.commodityManagement.image')" width="100">
+                    <template #default="{ row }">
+                      <div class="image-cell">
+                        <template v-if="row.image_url">
+                          <div class="thumb-wrapper">
+                            <img :src="`${BASE_URL}${row.image_url}`" class="thumb-img" />
+                            <!-- <img :src="row.image_url" class="thumb-img" /> -->
+                            <v-btn icon="mdi-close" size="x-small" variant="text" color="error" class="remove-btn" @click="method.removeImage(row)"></v-btn>
+                          </div>
+                        </template>
+                        <template v-else>
+                          <v-btn icon="mdi-upload" size="small" variant="outlined" @click="method.triggerImageUpload(row)"></v-btn>
+                        </template>
+                      </div>
+                    </template>
+                  </vxe-column>
                   <vxe-column field="sku_code" :title="$t('base.commodityManagement.sku_code')" :edit-render="{ autofocus: '.vxe-input--inner' }">
                     <template #edit="{ row }">
                       <vxe-input v-model="row.sku_code" type="text"></vxe-input>
@@ -235,7 +251,7 @@ import { reactive, computed, ref, watch } from 'vue'
 import { CommodityVO, CommodityDetailVO } from '@/types/Base/CommodityManagement'
 import i18n from '@/languages/i18n'
 import { hookComponent } from '@/components/system/index'
-import { addSpu, updateSpu } from '@/api/base/commodityManagementSetting'
+import { submitImage, deleteImage, addSpu, updateSpu } from '@/api/base/commodityManagementSetting'
 import { getCategoryAll } from '@/api/base/commodityCategorySetting'
 import { getSupplierAll } from '@/api/base/supplier'
 import { CategoryVO } from '@/types/Base/CommodityCategorySetting'
@@ -246,6 +262,7 @@ import { removeArrayNull, removeObjectNull } from '@/utils/common'
 import { StringLength } from '@/utils/dataVerification/formRule'
 import { isDecimal } from '@/utils/dataVerification/tableRule'
 import { exportData } from '@/utils/exportTable'
+import { BASE_URL } from '@/constant/filePathBase'
 import hprintDialog from '@/components/hiprint/hiprintFast.vue'
 
 const formRef = ref()
@@ -505,6 +522,57 @@ const method = reactive({
       data.form.supplier_id = data.combobox.supplier_name.filter((item) => item.label === val)[0].value
     }
   },
+  // Trigger image upload
+  triggerImageUpload: async (row: any) => {
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.accept = 'image/*'
+    input.onchange = async (e: any) => {
+      const file = e.target.files[0]
+      if (!file) return
+      try {
+        // 假设 submitImage 返回 { data: { path: string } }
+        const res = await submitImage(file)
+        // 上传成功后把后端返回的路径赋值给 row.imagesPath
+        row.image_url = res.data.data
+      } catch (err) {
+        hookComponent.$message({
+          type: 'error',
+          content: '上传失败，请重试'
+        })
+      }
+    }
+    input.click()
+  },
+
+  // Remove image
+  removeImage: async (row: any) => {
+    if (!row.image_url) return
+    
+    try {
+      const { data: res } = await deleteImage(row.image_url)
+      if (!res.isSuccess) {
+        hookComponent.$message({
+          type: 'error',
+          content: res.errorMessage || '删除图片失败'
+        })
+        return
+      }
+      // 删除成功，前端置空
+      row.image_url = ''
+      hookComponent.$message({
+        type: 'success',
+        content: '图片已删除'
+      })
+    } catch (error) {
+      hookComponent.$message({
+        type: 'error',
+        content: '删除图片请求失败'
+      })
+      console.error(error)
+    }
+  },
+
   // Get the options required by the drop-down box
   getCombobox: async () => {
     data.combobox.category_name = []
@@ -580,6 +648,7 @@ const method = reactive({
 
       form = removeObjectNull(form)
       form.detailList = removeArrayNull(form.detailList)
+      // console.log('提交的表单数据', form)
       const { data: res } = dialogTitle.value === 'add' ? await addSpu(form) : await updateSpu(form)
       if (!res.isSuccess) {
         hookComponent.$message({
@@ -643,5 +712,36 @@ watch(
 
 .toolbar {
   height: 40px;
+}
+
+.image-cell {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 6px; // 给四周留白
+
+  .thumb-wrapper {
+    position: relative;
+    display: inline-block;
+  }
+
+  .thumb-img {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 4px;
+    display: block;
+  }
+
+  .remove-btn {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    background-color: white;
+    border-radius: 50%;
+    min-width: 20px;
+    height: 20px;
+    padding: 0;
+  }
 }
 </style>

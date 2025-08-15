@@ -40,8 +40,29 @@ export const updateSaftyStock = (data: { sku_id: number; detailList: UpdateSafty
     data
   })
 
+// Import commodity data from Excel
 export const excelImport = (data: Array<CommodityImportVO>) => http({
     url: '/spu/addlist',
     method: 'post',
     data
+  })
+
+// Submit image for commodity
+export const submitImage = (data: File) => {
+  const formData = new FormData()
+  formData.append('img', data)
+  return http({
+    url: '/spu/uploadimg',
+    method: 'post',
+    data: formData
+  })
+}
+
+// Submit image for commodity
+export const deleteImage = (imageUrl: string) => http({
+    url: '/spu/deleteimg',
+    method: 'delete',
+    params: {
+      imageUrl
+    }
   })

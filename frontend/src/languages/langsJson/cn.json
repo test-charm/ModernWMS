@@ -8,6 +8,7 @@
     },
     "commodityManagement": {
       "bar_code": "商品条码",
+      "image": "商品图片",
       "brand": "品牌",
       "category_name": "商品类别",
       "cost": "商品成本",

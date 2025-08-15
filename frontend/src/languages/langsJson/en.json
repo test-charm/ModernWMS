@@ -8,6 +8,7 @@
     },
     "commodityManagement": {
       "bar_code": "Specification Code",
+      "image": "Commodity image",
       "brand": "Brand",
       "category_name": "Commodity Category",
       "cost": "Commodity Cost",

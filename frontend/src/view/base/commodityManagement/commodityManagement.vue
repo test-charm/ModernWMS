@@ -104,7 +104,10 @@
               </vxe-column>
               <vxe-column field="spu_code" width="150px" :title="$t('base.commodityManagement.spu_code')">
                 <template #default="{ row }">
-                  <span v-if="row.parent_id > 0">{{ row.sku_code }}</span>
+                  <!-- // Todo : HoverImagePreview 组件的图片地址需要根据实际情况修改 -->
+                  <!-- <HoverImagePreview v-if="row.parent_id > 0" image-url="https://tse3.mm.bing.net/th/id/OIP.g9UbVfyVZX-SfD09JcYr5QHaEK?rs=1&pid=ImgDetMain&o=7&rm=3" :slot-text="row.sku_code" /> -->
+                  <HoverImagePreview v-if="row.parent_id > 0" :image-url="row.image_url" :slot-text="row.sku_code" />
+                  <!-- <span v-if="row.parent_id > 0">{{ row.sku_code }}</span> -->
                   <span v-else>{{ row.spu_code }}</span>
                 </template>
               </vxe-column>

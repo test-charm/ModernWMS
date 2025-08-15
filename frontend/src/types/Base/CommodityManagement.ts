@@ -20,6 +20,7 @@ export interface CommodityVO extends UniformFileNaming {
 
 export interface CommodityDetailVO {
   id: number
+  image_url?: string
   sku_code: string
   sku_name: string
   unit: string
