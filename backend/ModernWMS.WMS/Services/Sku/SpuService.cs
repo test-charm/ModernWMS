@@ -3,14 +3,15 @@
  * developer：AMo
  */
  using Mapster;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+ using Microsoft.AspNetCore.Mvc;
  using Microsoft.EntityFrameworkCore;
  using Microsoft.Extensions.Localization;
  using ModernWMS.Core.DBContext;
-using ModernWMS.Core.DynamicSearch;
-using ModernWMS.Core.JWT;
-using ModernWMS.Core.Models;
+ using ModernWMS.Core.DynamicSearch;
+ using ModernWMS.Core.JWT;
+ using ModernWMS.Core.Models;
  using ModernWMS.Core.Services;
  using ModernWMS.WMS.Entities.Models;
  using ModernWMS.WMS.Entities.ViewModels;
@@ -33,12 +34,16 @@ namespace ModernWMS.WMS.Services
         /// Localizer Service
         /// </summary>
         private readonly IStringLocalizer<Core.MultiLanguage> _stringLocalizer;
+        /// <summary>
+        /// Web环境信息（用于获取wwwroot路径）
+        /// </summary>
+        private readonly IWebHostEnvironment _webHostEnvironment;
         #endregion
-        #region 图片路径常量与辅助方法
+        #region nstants for image paths and helper methods
         /// <summary>
         /// 图片存储相对路径
         /// </summary>
-        private readonly string[] _imageRelativePath = new[] { "wwwroot", "assets", "sku-images" };
+        private readonly string[] _imageRelativePath = new[] { "sku_images" };
 
         /// <summary>
         /// 获取图片存储根目录
@@ -46,11 +51,16 @@ namespace ModernWMS.WMS.Services
         /// <returns>图片存储根目录绝对路径</returns>
         private string GetImageStorageDirectory()
         {
-            // 组合基础目录与相对路径
-            var directoryParts = new List<string> { AppContext.BaseDirectory };
-            directoryParts.AddRange(_imageRelativePath);
+            var directoryParts = new List<string> { _webHostEnvironment.WebRootPath }; // 使用wwwroot路径
+            directoryParts.AddRange(_imageRelativePath); // 拼接子目录
+            string fullPath = Path.Combine(directoryParts.ToArray());
 
-            return Path.Combine(directoryParts.ToArray());
+            // 确保目录存在
+            if (!Directory.Exists(fullPath))
+            {
+                Directory.CreateDirectory(fullPath);
+            }
+            return fullPath;
         }
 
         /// <summary>
@@ -86,12 +96,14 @@ namespace ModernWMS.WMS.Services
         /// <param name="dBContext">The DBContext</param>
         /// <param name="stringLocalizer">Localizer</param>
         public SpuService(
-            SqlDBContext dBContext
-          , IStringLocalizer<Core.MultiLanguage> stringLocalizer
-            )
+    SqlDBContext dBContext
+  , IStringLocalizer<Core.MultiLanguage> stringLocalizer
+  , IWebHostEnvironment webHostEnvironment // 新增参数
+    )
         {
             this._dBContext = dBContext;
             this._stringLocalizer = stringLocalizer;
+            this._webHostEnvironment = webHostEnvironment; // 赋值给私有字段
         }
         #endregion
 
@@ -148,7 +160,7 @@ namespace ModernWMS.WMS.Services
                                              spu_id = t.spu_id,
                                              sku_code = t.sku_code,
                                              sku_name = t.sku_name,
-                                             img_path = t.img_path,
+                                             image_url = t.image_url,
                                              bar_code = t.bar_code,
                                              weight = t.weight,
                                              lenght = t.lenght,
@@ -224,6 +236,7 @@ namespace ModernWMS.WMS.Services
                                              sku_code = t.sku_code,
                                              sku_name = t.sku_name,
                                              bar_code = t.bar_code,
+                                             image_url = t.image_url,
                                              weight = t.weight,
                                              lenght = t.lenght,
                                              width = t.width,
@@ -291,6 +304,7 @@ namespace ModernWMS.WMS.Services
                             sku_code = d.sku_code,
                             sku_name = d.sku_name,
                             bar_code = d.bar_code,
+                            image_url = d.image_url,
                             weight = d.weight,
                             lenght = d.lenght,
                             width = d.width,
@@ -345,6 +359,7 @@ namespace ModernWMS.WMS.Services
                             sku_code = d.sku_code,
                             sku_name = d.sku_name,
                             bar_code = d.bar_code,
+                            image_url = d.image_url,
                             weight = d.weight,
                             lenght = d.lenght,
                             width = d.width,
@@ -628,28 +643,24 @@ namespace ModernWMS.WMS.Services
             // 验证文件是否存在
             if (img == null || img.Length == 0)
             {
-                return (null, _stringLocalizer["img_required"]);
+                return (string.Empty, _stringLocalizer["img_required"]);
             }
-
             try
             {
                 // 验证文件类型（仅允许常见图片格式）
                 var allowedContentTypes = new[] { "image/jpeg", "image/png", "image/gif", "image/bmp" };
                 if (!allowedContentTypes.Contains(img.ContentType))
                 {
-                    return (null, _stringLocalizer["Unsupported image types, only JPG, PNG, GIF, BMP formats are allowed"]);
+                    return (string.Empty, _stringLocalizer["Unsupported image types, only JPG, PNG, GIF, BMP formats are allowed"]);
                 }
-
                 // 验证文件大小（限制5MB以内）
                 var maxFileSize = 5 * 1024 * 1024; // 5MB
                 if (img.Length > maxFileSize)
                 {
-                    return (null, string.Format(_stringLocalizer["The size of the image cannot be exceeded{0}MB"], maxFileSize / 1024 / 1024));
+                    return (string.Empty, string.Format(_stringLocalizer["The size of the image cannot be exceeded{0}MB"], maxFileSize / 1024 / 1024));
                 }
-
                 // 获取图片存储目录
                 var uploadDir = GetImageStorageDirectory();
-
                 // 确保目录存在
                 if (!Directory.Exists(uploadDir))
                 {
@@ -660,25 +671,21 @@ namespace ModernWMS.WMS.Services
                 var fileExtension = Path.GetExtension(img.FileName).ToLowerInvariant();
                 var uniqueFileName = $"sku-img_{Guid.NewGuid()}{fileExtension}";
                 var filePath = Path.Combine(uploadDir, uniqueFileName);
-
                 // 保存文件
                 using (var stream = new FileStream(filePath, FileMode.Create))
                 {
                     await img.CopyToAsync(stream);
                 }
-
-                // 生成访问URL
-                var imageUrl = $"/assets/sku-images/{uniqueFileName}";
-
+                var imageUrl = $"/{string.Join("/", _imageRelativePath)}/{uniqueFileName}"; // 拼接为/assets/sku-images/文件名
                 return (imageUrl, _stringLocalizer["Upload sucess"]);
             }
             catch (IOException)
             {
-                return (null, _stringLocalizer["Upload failed"]);
+                return (string.Empty, _stringLocalizer["Upload failed"]);
             }
             catch (Exception ex)
             {
-                return (null, string.Format(_stringLocalizer["Upload failed: {0}"], ex.Message));
+                return (string.Empty, string.Format(_stringLocalizer["Upload failed: {0}"], ex.Message));
             }
         }
         /// <summary>
@@ -721,11 +728,11 @@ namespace ModernWMS.WMS.Services
 
                 // 同步更新数据库中关联的图片路径
                 var skuEntity = await _dBContext.GetDbSet<SkuEntity>()
-                    .FirstOrDefaultAsync(s => s.img_path == imageUrl);
+                    .FirstOrDefaultAsync(s => s.image_url == imageUrl);
 
                 if (skuEntity != null)
                 {
-                    skuEntity.img_path = null;
+                    skuEntity.image_url = null;
                     skuEntity.last_update_time = DateTime.Now;
                     await _dBContext.SaveChangesAsync();
                 }
@@ -917,6 +924,7 @@ namespace ModernWMS.WMS.Services
                         d.sku_code = vm.sku_code;
                         d.sku_name = vm.sku_name;
                         d.bar_code = vm.bar_code;
+                        d.image_url = vm.image_url;
                         d.weight = vm.weight;
                         d.lenght = vm.lenght;
                         d.width = vm.width;

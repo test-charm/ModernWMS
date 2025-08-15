@@ -182,24 +182,24 @@ namespace ModernWMS.WMS.Controllers
             
         }
         /// <summary>
-        ///  upload sku img
+        ///  delete sku img
         /// </summary>
         /// <param name="imageUrl"></param>
         /// <returns></returns>
-        [HttpPost("deleteImg")]
-public async Task<ResultModel<bool>> DeleteImg(string imageUrl)
-{
-    // 先验证参数是否为空
-    if (string.IsNullOrEmpty(imageUrl))
-    {
-        return ResultModel<bool>.Error("url 参数不能为空", 400, false);
-    }
+        [HttpDelete("deleteImg")]
+        public async Task<ResultModel<bool>> DeleteImg(string imageUrl)
+        {
+            // 先验证参数是否为空
+            if (string.IsNullOrEmpty(imageUrl))
+            {
+                return ResultModel<bool>.Error("url 参数不能为空", 400, false);
+            }
 
-    var (flag, msg) = await _spuService.DeleteImg(imageUrl, CurrentUser);
-    return flag 
-        ? ResultModel<bool>.Success(flag) 
-        : ResultModel<bool>.Error(msg, 400, flag);
-}
+            var (flag, msg) = await _spuService.DeleteImg(imageUrl, CurrentUser);
+            return flag 
+                ? ResultModel<bool>.Success(flag) 
+                : ResultModel<bool>.Error(msg, 400, flag);
+        }
         /// <summary>
         /// update a record
         /// </summary>

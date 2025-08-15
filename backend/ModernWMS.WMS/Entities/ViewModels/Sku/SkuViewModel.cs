@@ -61,8 +61,8 @@ namespace ModernWMS.WMS.Entities.ViewModels
         [MaxLength(64, ErrorMessage = "MaxLength")]
         public string bar_code { get; set; } = string.Empty;
 
-        [Display(Name = "img_path")]
-        public string img_path { get; set; } = string.Empty;
+        [Display(Name = "image_url")]
+        public string image_url { get; set; } = string.Empty;
         /// <summary>
         /// weight
         /// </summary>
