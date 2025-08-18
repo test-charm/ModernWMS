@@ -116,8 +116,6 @@ namespace ModernWMS.WMS.Services
         /// <returns></returns>
         public async Task<(List<SpuBothViewModel> data, int totals)> PageAsync(PageSearch pageSearch, CurrentUser currentUser)
         {
-            //QueryCollection queries = new QueryCollection();
-            // 在PageAsync方法中，将原来的声明改为：
             ModernWMS.Core.DynamicSearch.QueryCollection queries = new ModernWMS.Core.DynamicSearch.QueryCollection();
             if (pageSearch.searchObjects.Any())
             {
@@ -141,7 +139,7 @@ namespace ModernWMS.WMS.Services
                             spu_name = m.spu_name,
                             category_id = m.category_id,
                             category_name = c.category_name,
-                            spu_description = m.spu_description,
+                            spu_description = m.spu_code,
                             supplier_id = m.supplier_id,
                             supplier_name = m.supplier_name,
                             brand = m.brand,

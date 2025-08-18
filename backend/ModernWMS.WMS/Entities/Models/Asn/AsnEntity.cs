@@ -54,7 +54,10 @@ namespace ModernWMS.WMS.Entities.Models
         /// sku_id
         /// </summary>
         public int sku_id { get; set; }  = 0;
-
+        /// <summary>
+        /// image_url
+        /// </summary>
+        public string image_url { get; set; } = string.Empty;
         /// <summary>
         /// asn_qty
         /// </summary>

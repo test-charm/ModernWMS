@@ -2,8 +2,9 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using System;
 using ModernWMS.Core.Extentions;
+using System;
+using ModernWMS.Core.Filters;
 namespace ModernWMS
 {
     public class Startup
@@ -26,6 +27,7 @@ namespace ModernWMS
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddExtensionsService(Configuration);
+            services.AddScoped<ApiLogFilter>();
         }
 
         /// <summary>

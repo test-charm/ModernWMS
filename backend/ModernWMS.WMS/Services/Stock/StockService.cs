@@ -598,6 +598,7 @@ namespace ModernWMS.WMS.Services
                             brand = spu.brand,
                             origin = spu.origin,
                             sku_id = sku.id,
+                            image_url = sku.image_url
                         };
             query = query.Where(queries.AsExpression<SkuSelectViewModel>());
             int totals = await query.CountAsync();
