@@ -110,6 +110,7 @@ namespace ModernWMS.WMS.Services
                             sku_code = sku.sku_code,
                             sku_name = sku.sku_name,
                             spu_code = spu.spu_code,
+                            image_url = sku.image_url,
                             spu_name = spu.spu_name,
                             dest_googs_location_name = dest_location.location_name,
                             dest_googs_warehouse = dest_location.warehouse_name,

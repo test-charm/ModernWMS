@@ -96,6 +96,7 @@ namespace ModernWMS.WMS.Services
                             tenant_id = sj.tenant_id,
                             sku_id = sku.id,
                             sku_code = sku.sku_code,
+                            image_url = sku.image_url,
                             sku_name = sku.sku_name,
                             spu_code = spu.spu_code,
                             spu_name = spu.spu_name,

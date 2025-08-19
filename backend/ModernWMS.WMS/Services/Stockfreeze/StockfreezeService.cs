@@ -101,6 +101,7 @@ namespace ModernWMS.WMS.Services
                             last_update_time = m.last_update_time,
                             tenant_id = m.tenant_id,
                             sku_code = sku.sku_code,
+                            image_url = sku.image_url,
                             spu_code = spu.spu_code,
                             spu_name = spu.spu_name,
                             location_name = location.location_name,
