@@ -73,8 +73,10 @@ namespace ModernWMS.Core.Controller
         [HttpPost("/login")]
         public async Task<ResultModel<LoginOutputViewModel>> LoginAsync(LoginInputViewModel loginAccount)
         {
+            var user = await _accountService.Login(loginAccount, CurrentUser);
+            var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+            var loginLogger = NLog.LogManager.GetLogger("LoginLogger");
 
-            var user = await _accountService.Login(loginAccount,CurrentUser);
             if (user != null)
             {
                 var result = _tokenManager.GenerateToken(
@@ -86,7 +88,7 @@ namespace ModernWMS.Core.Controller
                         user_role = user.user_role,
                         tenant_id = user.tenant_id
                     }
-                    );
+                );
                 string rt = this._tokenManager.GenerateRefreshToken();
 
                 user.access_token = result.token;
@@ -95,13 +97,27 @@ namespace ModernWMS.Core.Controller
 
                 await _cacheManager.TokenSet(user.user_id, "WebRefreshToken", rt, _tokenManager.GetRefreshTokenExpireMinute());
 
+                using (NLog.ScopeContext.PushProperty("user", user.user_name))
+                using (NLog.ScopeContext.PushProperty("ip", ip))
+                {
+                    loginLogger.Info($"Login success: user={user.user_name}, user_id={user.user_id}, ip={ip}");
+                }
+
                 return ResultModel<LoginOutputViewModel>.Success(user);
             }
             else
             {
+                using (NLog.ScopeContext.PushProperty("user", loginAccount?.user_name ?? "unknown"))
+                using (NLog.ScopeContext.PushProperty("ip", ip))
+                {
+                    loginLogger.Warn($"Login failed: user={loginAccount?.user_name ?? "unknown"}, ip={ip}");
+                }
+
                 return ResultModel<LoginOutputViewModel>.Error(_stringLocalizer["login_failed"]);
             }
         }
+
+
         /// <summary>
         /// get a new token
         /// </summary>

@@ -71,6 +71,25 @@ namespace ModernWMS.WMS.Controllers
                 Totals = totals
             });
         }
+        /// <summary>
+        /// add recode
+        /// </summary>
+        /// <param name="viewModel"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<ResultModel<int>> AddAsync(ActionLogViewModel viewModel)
+        {
+            var (id,msg) = await _actionLogService.AddLogAsync(viewModel.vue_path,viewModel.action_content, CurrentUser);
+            if (id > 0)
+            {
+                return ResultModel<int>.Success(id);
+            }
+            else
+            {
+                return ResultModel<int>.Error(msg);
+            }
+        }
+
 
         #endregion Api
     }

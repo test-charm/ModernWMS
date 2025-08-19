@@ -60,7 +60,7 @@ namespace ModernWMS.WMS.Services
         /// add a new log record
         /// </summary>
         /// <returns></returns>
-        public async Task<bool> AddLogAsync(string vue_path, string content, CurrentUser currentUser)
+        public async Task<(int id, string msg)> AddLogAsync(string vue_path, string content, CurrentUser currentUser)
         {
             var DbSet = _dBContext.GetDbSet<ActionLogEntity>();
             var entity = new ActionLogEntity();
@@ -74,11 +74,11 @@ namespace ModernWMS.WMS.Services
             await _dBContext.SaveChangesAsync();
             if (entity.id > 0)
             {
-                return (true);
+                return (entity.id, _stringLocalizer["save_success"]);
             }
             else
             {
-                return (false);
+                return (0, _stringLocalizer["save_failed"]);
             }
         }
 

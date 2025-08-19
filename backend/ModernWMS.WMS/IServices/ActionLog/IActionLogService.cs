@@ -30,7 +30,7 @@ namespace ModernWMS.WMS.IServices
         /// add a new log record
         /// </summary>
         /// <returns></returns>
-        Task<bool> AddLogAsync(string vue_path, string content, CurrentUser currentUser);
+        Task<(int id, string msg)> AddLogAsync(string vue_path, string content, CurrentUser currentUser);
 
         #endregion Api
     }
