@@ -52,7 +52,11 @@
                   <vxe-column field="spu_code" :title="$t('wms.saftyStock.spu_code')"></vxe-column>
                   <vxe-column field="spu_name" :title="$t('wms.saftyStock.spu_name')"></vxe-column>
                   <vxe-column field="sku_id" :title="$t('wms.saftyStock.sku_id')"></vxe-column>
-                  <vxe-column field="sku_code" :title="$t('wms.saftyStock.sku_code')"></vxe-column>
+                  <vxe-column field="sku_code" :title="$t('wms.saftyStock.sku_code')">
+                    <template #default="{ row }">
+                      <HoverImagePreview :image-url="row.image_url" :slot-text="row.sku_code" />
+                    </template>
+                  </vxe-column>
                   <vxe-column field="sku_name" :title="$t('wms.saftyStock.sku_name')"></vxe-column>
                   <vxe-column field="qty" :title="$t('wms.saftyStock.qty')"></vxe-column>
                   <vxe-column field="qty_available" :title="$t('wms.saftyStock.qty_available')"></vxe-column>

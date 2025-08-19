@@ -15,7 +15,10 @@
         />
       </div>
       <!-- 无预览图 -->
-      <span v-else-if="isHovering && !imageUrl" class="no-image-text">
+      <span 
+        v-else-if="isHovering && !imageUrl" 
+        class="no-image-text"
+        :style="hoverStyle">
         无预览图
       </span>
     </div>
@@ -110,7 +113,7 @@ onUnmounted(() => {
   object-fit: contain;
 }
 
-.no-image-text {
+/* .no-image-text {
   position: absolute;
   z-index: 1000;
   background: #fff;
@@ -118,10 +121,29 @@ onUnmounted(() => {
   border: 1px solid #ccc;
   border-radius: 4px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-  bottom: 100%;
-  top: auto;
   left: 50%;
   transform: translateX(-50%);
   white-space: nowrap;
+} */
+ 
+.no-image-text {
+  position: absolute;
+  z-index: 1000;
+  width: 110px;
+  height: 110px;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  left: 50%;
+  transform: translateX(-50%);
 }
+
 </style>

@@ -156,7 +156,6 @@
                         <template v-if="row.image_url">
                           <div class="thumb-wrapper">
                             <img :src="`${BASE_URL}${row.image_url}`" class="thumb-img" />
-                            <!-- <img :src="row.image_url" class="thumb-img" /> -->
                             <v-btn icon="mdi-close" size="x-small" variant="text" color="error" class="remove-btn" @click="method.removeImage(row)"></v-btn>
                           </div>
                         </template>

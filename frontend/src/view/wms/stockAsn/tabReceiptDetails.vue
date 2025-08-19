@@ -60,8 +60,13 @@
       <vxe-column field="spu_code" :title="$t('wms.stockAsnInfo.spu_code')"></vxe-column>
       <vxe-column field="spu_name" :title="$t('wms.stockAsnInfo.spu_name')"></vxe-column>
       <vxe-column field="sku_code" :title="$t('wms.stockAsnInfo.sku_code')">
-        <template #default="{ row }">
+        <!-- <template #default="{ row }">
           <div :class="'text-decoration-none'" @click="method.showSkuInfo(row)"> {{ row.sku_code }}</div>
+        </template> -->
+        <template #default="{ row }">
+          <div :class="'text-decoration-none'" @click="method.showSkuInfo(row)">
+            <HoverImagePreview :image-url="row.image_url" :slot-text="row.sku_code" />
+          </div>
         </template>
       </vxe-column>
       <vxe-column field="sku_name" :title="$t('wms.stockAsnInfo.sku_name')"></vxe-column>

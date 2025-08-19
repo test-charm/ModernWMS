@@ -84,7 +84,7 @@
               </template>
               <vxe-column type="checkbox" width="50" fixed="left"></vxe-column>
               <vxe-column type="seq" width="60"></vxe-column>
-              <vxe-column tree-node width="60">
+              <vxe-column field="expend" tree-node width="60">
                 <template #header>
                   <div
                     style="height: 100%; display: flex; align-items: center; justify-content: flex-start; cursor: pointer"
@@ -104,10 +104,7 @@
               </vxe-column>
               <vxe-column field="spu_code" width="150px" :title="$t('base.commodityManagement.spu_code')">
                 <template #default="{ row }">
-                  <!-- // Todo : HoverImagePreview 组件的图片地址需要根据实际情况修改 -->
-                  <!-- <HoverImagePreview v-if="row.parent_id > 0" image-url="https://tse3.mm.bing.net/th/id/OIP.g9UbVfyVZX-SfD09JcYr5QHaEK?rs=1&pid=ImgDetMain&o=7&rm=3" :slot-text="row.sku_code" /> -->
                   <HoverImagePreview v-if="row.parent_id > 0" :image-url="row.image_url" :slot-text="row.sku_code" />
-                  <!-- <span v-if="row.parent_id > 0">{{ row.sku_code }}</span> -->
                   <span v-else>{{ row.spu_code }}</span>
                 </template>
               </vxe-column>
@@ -524,7 +521,7 @@ const method = reactive({
       table: $table,
       filename: i18n.global.t('router.sideBar.commodityManagement'),
       columnFilterMethod({ column }: any) {
-        return !['checkbox'].includes(column?.type) && !['operate'].includes(column?.field)
+        return !['checkbox'].includes(column?.type) && !['operate', 'expend'].includes(column?.field)
       }
     })
   },

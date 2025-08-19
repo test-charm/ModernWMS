@@ -72,7 +72,11 @@
                   <vxe-column field="location_name" width="150px" :title="$t('wms.warehouseWorking.warehouseFreeze.location_name')"></vxe-column>
                   <vxe-column field="spu_code" width="150px" :title="$t('base.commodityManagement.spu_code')"></vxe-column>
                   <vxe-column field="spu_name" width="150px" :title="$t('base.commodityManagement.spu_name')"></vxe-column>
-                  <vxe-column field="sku_code" width="150px" :title="$t('base.commodityManagement.sku_code')"></vxe-column>
+                  <vxe-column field="sku_code" width="150px" :title="$t('base.commodityManagement.sku_code')">
+                    <template #default="{ row }">
+                      <HoverImagePreview :image-url="row.image_url" :slot-text="row.sku_code" />
+                    </template>
+                  </vxe-column>
                   <vxe-column field="series_number" width="150px" :title="$t('wms.stockLocation.series_number')"></vxe-column>
                   <vxe-column field="handler" width="150px" :title="$t('wms.warehouseWorking.warehouseFreeze.handler')"></vxe-column>
                   <vxe-date-column

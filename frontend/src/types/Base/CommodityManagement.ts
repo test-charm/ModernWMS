@@ -51,6 +51,7 @@ export interface CommodityDetailJoinMainVO {
 export interface CommodityExcelVO {
   spu_code: string
   spu_name: string
+  image_url?: string
   category_name: string
   spu_description: string
   supplier_name: string
@@ -84,6 +85,7 @@ export interface CommodityImportVO {
 export interface CommodityImportDetailVO {
   id: number
   sku_code: string
+  image_url?: string
   sku_name: string
   bar_code?: string
   unit: string

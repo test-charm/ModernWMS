@@ -40,24 +40,21 @@
                 ></tooltip-btn>
               </template>
             </vxe-column>
-            <!-- <vxe-column tree-node width="60">
-              <template #header>
-                <div
-                  style="height: 100%; display: flex; align-items: center; justify-content: flex-start; cursor: pointer"
-                  @click="method.expandAllRows()"
-                >
-                  <v-tooltip location="bottom">
-                    <template #activator="{ props }">
-                      <div v-bind="props">
-                        <v-icon v-if="!isExpandAll" size="large">mdi-menu-right</v-icon>
-                        <v-icon v-else size="large">mdi-menu-down</v-icon>
-                      </div>
-                    </template>
-                    <span>{{ $t('base.roleMenu.expandRow') }}</span>
-                  </v-tooltip>
+            <vxe-column field="image_url" :title="$t('base.commodityManagement.image')" width="100">
+              <template #default="{ row }">
+                <div class="image-cell">
+                  <template v-if="row.image_url">
+                    <div class="thumb-wrapper">
+                      <img :src="`${BASE_URL}${row.image_url}`" class="thumb-img" />
+                      <v-btn icon="mdi-close" size="x-small" variant="text" color="error" class="remove-btn" @click="method.removeImage(row)"></v-btn>
+                    </div>
+                  </template>
+                  <template v-else>
+                    <v-btn icon="mdi-upload" size="small" variant="outlined" @click="method.triggerImageUpload(row)"></v-btn>
+                  </template>
                 </div>
               </template>
-            </vxe-column> -->
+            </vxe-column>
             <vxe-column field="spu_code" width="150px" :title="$t('base.commodityManagement.spu_code')">
             </vxe-column>
             <vxe-column field="spu_name" :title="$t('base.commodityManagement.spu_name')">
@@ -107,11 +104,12 @@ import { VxeTablePropTypes } from 'vxe-table'
 import * as XLSX from 'xlsx'
 import i18n from '@/languages/i18n'
 import { hookComponent } from '@/components/system/index'
-import { excelImport } from '@/api/base/commodityManagementSetting'
+import { excelImport, submitImage, deleteImage } from '@/api/base/commodityManagementSetting'
 import { SYSTEM_HEIGHT, errorColor } from '@/constant/style'
 import tooltipBtn from '@/components/tooltip-btn.vue'
 import { CommodityExcelVO, CommodityImportVO } from '@/types/Base/CommodityManagement'
 import { exportData } from '@/utils/exportTable'
+import { BASE_URL } from '@/constant/filePathBase'
 
 const emit = defineEmits(['close', 'saveSuccess'])
 const uploadExcel = ref()
@@ -142,6 +140,56 @@ const method = reactive({
       xTable.value.setAllTreeExpand(false)
     } else {
       xTable.value.setAllTreeExpand(true)
+    }
+  },
+    // Trigger image upload
+  triggerImageUpload: async (row: any) => {
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.accept = 'image/*'
+    input.onchange = async (e: any) => {
+      const file = e.target.files[0]
+      if (!file) return
+      try {
+        // 假设 submitImage 返回 { data: { path: string } }
+        const res = await submitImage(file)
+        // 上传成功后把后端返回的路径赋值给 row.imagesPath
+        row.image_url = res.data.data
+      } catch (err) {
+        hookComponent.$message({
+          type: 'error',
+          content: '上传失败，请重试'
+        })
+      }
+    }
+    input.click()
+  },
+
+  // Remove image
+  removeImage: async (row: any) => {
+    if (!row.image_url) return
+    
+    try {
+      const { data: res } = await deleteImage(row.image_url)
+      if (!res.isSuccess) {
+        hookComponent.$message({
+          type: 'error',
+          content: res.errorMessage || '删除图片失败'
+        })
+        return
+      }
+      // 删除成功，前端置空
+      row.image_url = ''
+      hookComponent.$message({
+        type: 'success',
+        content: '图片已删除'
+      })
+    } catch (error) {
+      hookComponent.$message({
+        type: 'error',
+        content: '删除图片请求失败'
+      })
+      console.error(error)
     }
   },
   closeDialog: () => {
@@ -240,6 +288,7 @@ const method = reactive({
       spu.detailList.push({
         id: spu.detailList.length + 1,
         sku_code: item.sku_code,
+        image_url: item.image_url?.trim() ? item.image_url : undefined,
         sku_name: item.sku_name,
         bar_code: item.bar_code,
         unit: item.unit,
@@ -252,7 +301,6 @@ const method = reactive({
       })
     }
 
-  // 对获取到的表格数据进行处理，转化为我们所需的数据
     const { data: res } = await excelImport(Array.from(spuMap.values()))
     if (!res.isSuccess) {
       hookComponent.$message({
@@ -266,7 +314,7 @@ const method = reactive({
       content: `${ i18n.global.t('system.page.submit') }${ i18n.global.t('system.tips.success') }`
     })
     emit('saveSuccess')
-    // emit('close') // 关闭对话框
+    emit('close')
   },
 
   valid: () => {
@@ -342,7 +390,7 @@ const method = reactive({
       filename: i18n.global.t('router.sideBar.commodityManagement'),
       mode: 'header',
       columnFilterMethod({ column }: any) {
-        return !['checkbox', 'seq'].includes(column?.type) && !['operate'].includes(column?.field)
+        return !['checkbox', 'seq'].includes(column?.type) && !['operate', 'image_url'].includes(column?.field)
       }
     })
   },
@@ -374,6 +422,36 @@ watch(
 .v-form {
   div {
     margin-bottom: 7px;
+  }
+}
+.image-cell {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 6px;
+
+  .thumb-wrapper {
+    position: relative;
+    display: inline-block;
+  }
+
+  .thumb-img {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 4px;
+    display: block;
+  }
+
+  .remove-btn {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    background-color: white;
+    border-radius: 50%;
+    min-width: 20px;
+    height: 20px;
+    padding: 0;
   }
 }
 </style>

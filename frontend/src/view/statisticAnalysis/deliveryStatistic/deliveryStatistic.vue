@@ -45,7 +45,11 @@
                   <vxe-column field="location_name" :title="$t('wms.deliveryStatistic.location_name')"></vxe-column>
                   <vxe-column field="spu_code" :title="$t('wms.deliveryStatistic.spu_code')"></vxe-column>
                   <vxe-column field="spu_name" :title="$t('wms.deliveryStatistic.spu_name')"></vxe-column>
-                  <vxe-column field="sku_code" :title="$t('wms.deliveryStatistic.sku_code')"></vxe-column>
+                  <vxe-column field="sku_code" :title="$t('wms.deliveryStatistic.sku_code')">
+                    <template #default="{ row }">
+                      <HoverImagePreview :image-url="row.image_url" :slot-text="row.sku_code" />
+                    </template>
+                  </vxe-column>
                   <vxe-column field="sku_name" :title="$t('wms.deliveryStatistic.sku_name')"></vxe-column>
                   <vxe-column field="customer_name" :title="$t('wms.deliveryStatistic.customer_name')"></vxe-column>
                   <vxe-column field="series_number" :title="$t('wms.deliveryStatistic.series_number')"></vxe-column>

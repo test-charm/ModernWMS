@@ -45,13 +45,18 @@
       <vxe-column type="checkbox" width="50"></vxe-column>
       <vxe-column field="warehouse_name" :title="$t('wms.stockLocation.warehouse_name')"></vxe-column>
       <vxe-column field="location_name" :title="$t('wms.stockLocation.location_name')"></vxe-column>
-      <vxe-column field="spu_code" :title="$t('wms.stockLocation.spu_code')">
-        <template #default="{ row }">
+      <vxe-column field="spu_code" :title="$t('wms.stockLocation.spu_code')"></vxe-column>
+      <vxe-column field="spu_name" :title="$t('wms.stockLocation.spu_name')"></vxe-column>
+      <vxe-column field="sku_code" :title="$t('wms.stockLocation.sku_code')">
+        <!-- <template #default="{ row }">
           <div :class="'text-decoration-none'" @click="method.showSkuInfo(row)"> {{ row.sku_code }}</div>
+        </template> -->
+        <template #default="{ row }">
+          <div :class="'text-decoration-none'" @click="method.showSkuInfo(row)">
+            <HoverImagePreview :image-url="row.image_url" :slot-text="row.sku_code" />
+          </div>
         </template>
       </vxe-column>
-      <vxe-column field="spu_name" :title="$t('wms.stockLocation.spu_name')"></vxe-column>
-      <vxe-column field="sku_code" :title="$t('wms.stockLocation.sku_code')"></vxe-column>
       <vxe-column field="sku_name" :title="$t('wms.stockLocation.sku_name')"></vxe-column>
       <vxe-column field="series_number" :title="$t('wms.stockLocation.series_number')"></vxe-column>
       <vxe-column field="qty" :title="$t('wms.stockLocation.qty')"></vxe-column>
