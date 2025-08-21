@@ -7,6 +7,7 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using ModernWMS.Core.Models;
+using ModernWMS.Core.Interfaces;
 
 namespace ModernWMS.Core.Middleware
 {
@@ -24,20 +25,18 @@ namespace ModernWMS.Core.Middleware
         /// log manager
         /// </summary>
         private readonly ILogger<RequestResponseMiddleware> _logger;
-
-        #endregion
-
-        #region Constructor
         /// <summary>
-        /// Constructor
+        /// request Logger
         /// </summary>
-        /// <param name="next">Delegate</param>
-        /// <param name="logger">log manager</param>
-        public RequestResponseMiddleware(RequestDelegate next
-            , ILogger<RequestResponseMiddleware> logger)
+        private readonly IRequestLogger _requestLogger;
+
+        public RequestResponseMiddleware(RequestDelegate next,
+                                         ILogger<RequestResponseMiddleware> logger,
+                                         IRequestLogger requestLogger)
         {
             _next = next;
             _logger = logger;
+            _requestLogger = requestLogger;
         }
 
         #endregion
@@ -49,74 +48,75 @@ namespace ModernWMS.Core.Middleware
         /// <returns></returns>
         public async Task Invoke(HttpContext context)
         {
-            if (ModernWMS.Core.Utility.GlobalConsts.IsRequestResponseMiddleware)
-            {
-                string requestInfo = "", responseInfo = "";
-                var originalBodyStream = context.Response.Body;
-                var stopwach = Stopwatch.StartNew();
-                try
-                {
-
-                    requestInfo = await FormatRequest(context.Request);
-
-                    using (var responseBody = new MemoryStream())
-                    {
-                        context.Response.Body = responseBody;
-
-                        await _next(context);
-                        stopwach.Stop();
-
-                        responseInfo = await FormatResponse(context.Response);
-
-                        await responseBody.CopyToAsync(originalBodyStream);
-                    }
-
-
-                    var logMsg = $@"request information: {requestInfo} ;time spent: {stopwach.ElapsedMilliseconds}ms";
-                    _logger.LogInformation(logMsg);
-
-                }
-                catch (Exception ex)
-                {
-                    stopwach.Stop();
-                    if (ex != null)
-                    {
-                        var logMsg = $@"request information: {requestInfo}{Environment.NewLine}exception: {ex.ToString()}{Environment.NewLine}time spent: {stopwach.ElapsedMilliseconds}ms";
-
-                        _logger.LogError(logMsg);
-                        _logger.LogError(ex.ToString());
-
-                        string result = Utility.JsonHelper.SerializeObject(ResultModel<object>.Error(ex.Message));
-                        var bytes = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(result));
-                        await originalBodyStream.WriteAsync(bytes, 0, bytes.Length);
-
-                    }
-                }
-
-
-            }
-            else
+            if (!ModernWMS.Core.Utility.GlobalConsts.IsRequestResponseMiddleware)
             {
                 await _next(context);
+                return;
             }
-           
 
+            string requestInfo = "", responseInfo = "";
+            var originalBodyStream = context.Response.Body;
+            var stopwatch = Stopwatch.StartNew();
+            try
+            {
+                requestInfo = await FormatRequest(context.Request);
+
+                using (var responseBody = new MemoryStream())
+                {
+                    context.Response.Body = responseBody;
+
+                    await _next(context);
+                    stopwatch.Stop();
+
+                    responseInfo = await FormatResponse(context.Response);
+      
+                    await responseBody.CopyToAsync(originalBodyStream);
+                }
+                string vuePath = context.Request.Headers["X-Vue-Path"];
+                string encodedActionContent = context.Request.Headers["X-Action-Content"];
+                string actionContent = string.IsNullOrEmpty(encodedActionContent)
+                    ? ""
+                    : System.Net.WebUtility.UrlDecode(encodedActionContent);
+                if (!string.IsNullOrEmpty(vuePath) || !string.IsNullOrEmpty(actionContent))
+                {
+                    try
+                    {
+                        await _requestLogger.LogAsync(vuePath ?? "", actionContent ?? "");
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning("Failed to record operation logs: " + ex.Message);
+                    }
+                }
+
+                var logMsg = $@"request information: {requestInfo} ;time spent: {stopwatch.ElapsedMilliseconds}ms";
+                _logger.LogInformation(logMsg);
+
+            }
+            catch (Exception ex)
+            {
+                stopwatch.Stop();
+                var logMsg = $@"request information: {requestInfo}{Environment.NewLine}exception: {ex}{Environment.NewLine}time spent: {stopwatch.ElapsedMilliseconds}ms";
+                _logger.LogError(logMsg);
+                context.Response.StatusCode = 500;
+                context.Response.ContentType = "application/json";
+                string result = Utility.JsonHelper.SerializeObject(ResultModel<object>.Error(ex.Message));
+                var bytes = Encoding.UTF8.GetBytes(result);
+                await originalBodyStream.WriteAsync(bytes, 0, bytes.Length);
+            }
         }
         /// <summary>
-        /// format request
+        /// FormatRequest
         /// </summary>
-        /// <param name="request">request</param>
+        /// <param name="request"></param>
         /// <returns></returns>
         private async Task<string> FormatRequest(HttpRequest request)
         {
             HttpRequestRewindExtensions.EnableBuffering(request);
-            var body = request.Body;
-
             var buffer = new byte[Convert.ToInt32(request.ContentLength)];
             await request.Body.ReadAsync(buffer, 0, buffer.Length);
             var bodyAsText = Encoding.UTF8.GetString(buffer);
-            body.Seek(0, SeekOrigin.Begin);
-            request.Body = body;
+            request.Body.Seek(0, SeekOrigin.Begin);
 
             return $" {request.Method} {request.Scheme}://{request.Host}{request.Path} {request.QueryString} {bodyAsText}";
         }

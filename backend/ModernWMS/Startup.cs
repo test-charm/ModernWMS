@@ -27,6 +27,9 @@ namespace ModernWMS
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddExtensionsService(Configuration);
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            services.AddScoped<ModernWMS.Core.Interfaces.IRequestLogger, ModernWMS.WMS.Services.RequestLogger>();
+            services.AddScoped<ModernWMS.WMS.IServices.IActionLogService, ModernWMS.WMS.Services.ActionLogService>();
             services.AddScoped<ApiLogFilter>();
         }
 
