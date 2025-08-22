@@ -31,11 +31,12 @@ export const updateFreight = (data: FreightVO) => http({
   })
 
 // Delete freightfee
-export const deleteFreight = (id: number) => http({
+export const deleteFreight = (id: number, logTemp: any) => http({
     url: '/freightfee',
     method: 'delete',
     params: {
-      id
+      id,
+      logTemp
     }
   })
 

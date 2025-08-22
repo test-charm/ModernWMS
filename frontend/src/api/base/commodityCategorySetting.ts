@@ -22,10 +22,11 @@ export const updateCategory = (data: CategoryVO) => http({
   })
 
 // Delete form
-export const deleteCategory = (id: number) => http({
+export const deleteCategory = (id: number, logTemp:string) => http({
     url: '/category',
     method: 'delete',
     params: {
-      id
+      id,
+      logTemp
     }
   })

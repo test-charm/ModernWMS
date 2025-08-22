@@ -22,10 +22,11 @@ export const updateCompany = (data: CompanyVO) => http({
   })
 
 // Delete form
-export const deleteCompany = (id: number) => http({
+export const deleteCompany = (id: number, logTemp: string) => http({
     url: '/company',
     method: 'delete',
     params: {
-      id
+      id,
+      logTemp
     }
   })

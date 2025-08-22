@@ -311,7 +311,7 @@ const method = reactive({
       content: i18n.global.t('system.tips.beforeDeleteMessage'),
       handleConfirm: async () => {
         if (row.id) {
-          const { data: res } = await deleteStockTaking(row.id)
+          const { data: res } = await deleteStockTaking(row.id, row.job_code)
           if (!res.isSuccess) {
             hookComponent.$message({
               type: 'error',
@@ -370,7 +370,7 @@ const method = reactive({
       content: i18n.global.t('wms.warehouseWorking.warehouseTaking.beforeConfirmAdjust'),
       handleConfirm: async () => {
         if (row.id) {
-          const { data: res } = await confirmAdjustment(row.id)
+          const { data: res } = await confirmAdjustment(row.id, row.job_code)
           if (!res.isSuccess) {
             hookComponent.$message({
               type: 'error',

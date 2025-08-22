@@ -46,10 +46,11 @@ export const updateRoleMenu = (data: RoleMenuVO) => http({
   })
 
 // Delete form
-export const deleteRoleMenu = (userrole_id: number) => http({
+export const deleteRoleMenu = (userrole_id: number, logTemp) => http({
     url: '/rolemenu',
     method: 'delete',
     params: {
-      userrole_id
+      userrole_id,
+      logTemp
     }
   })

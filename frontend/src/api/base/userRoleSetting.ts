@@ -1,5 +1,6 @@
 import http from '@/utils/http/request'
 import { UserRoleVO } from '@/types/Base/UserRoleSetting'
+import { log } from 'console'
 
 // Get all
 export const getUserRoleAll = () => http({
@@ -22,10 +23,11 @@ export const updateUserRole = (data: UserRoleVO) => http({
   })
 
 // Delete form
-export const deleteUserRole = (id: number) => http({
+export const deleteUserRole = (id: number, logTemp:string) => http({
     url: '/userrole',
     method: 'delete',
     params: {
-      id
+      id,
+      logTemp
     }
   })

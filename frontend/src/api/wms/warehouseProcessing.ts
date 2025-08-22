@@ -39,28 +39,31 @@ export const updateStockProcess = (data: WarehouseProcessingVO) => http({
   })
 
 // Delete form
-export const deleteStockProcess = (id: number) => http({
+export const deleteStockProcess = (id: number, logTemp: string) => http({
     url: '/stockprocess',
     method: 'delete',
     params: {
-      id
+      id,
+      logTemp
     }
   })
 
 // Confirm process
-export const confirmProcess = (id: number) => http({
+export const confirmProcess = (id: number, logTemp: any) => http({
     url: '/stockprocess/process-confirm',
     method: 'put',
     params: {
-      id
+      id,
+      logTemp
     }
   })
 
 // Confirm adjustment
-export const confirmAdjustment = (id: number) => http({
+export const confirmAdjustment = (id: number, logTemp: any) => http({
     url: '/stockprocess/adjustment-confirm',
     method: 'put',
     params: {
-      id
+      id,
+      logTemp
     }
   })

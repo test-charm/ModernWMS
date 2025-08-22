@@ -248,8 +248,13 @@ const method = reactive({
     hookComponent.$dialog({
       content: i18n.global.t('system.tips.beforeDeleteMessage'),
       handleConfirm: async () => {
-        if (row.id) {
-          const { data: res } = await deleteFreight(row.id)
+        if (row.id) {         
+          const logTemp = {
+            carrier: row.carrier,
+            departure: row.departure_city,
+            arrival: row.arrival_city
+          }
+          const { data: res } = await deleteFreight(row.id, logTemp)
           if (!res.isSuccess) {
             hookComponent.$message({
               type: 'error',

@@ -260,7 +260,7 @@ const method = reactive({
       content: i18n.global.t('system.tips.beforeDeleteMessage'),
       handleConfirm: async () => {
         if (row.id) {
-          const { data: res } = await deletePrintSolution(row.id)
+          const { data: res } = await deletePrintSolution(row.id, row.solution_name)
           if (!res.isSuccess) {
             hookComponent.$message({
               type: 'error',

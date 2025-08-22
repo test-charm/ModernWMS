@@ -25,11 +25,12 @@ export const updateSpu = (data: CommodityVO) => http({
   })
 
 // Delete form
-export const deleteSpu = (id: number) => http({
+export const deleteSpu = (id: number, logTemp:string) => http({
     url: '/spu',
     method: 'delete',
     params: {
-      id
+      id,
+      logTemp
     }
   })
 

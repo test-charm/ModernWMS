@@ -309,7 +309,7 @@ const method = reactive({
       content: i18n.global.t('system.tips.beforeDeleteMessage'),
       handleConfirm: async () => {
         if (row.id) {
-          const { data: res } = await deleteStockProcess(row.id)
+          const { data: res } = await deleteStockProcess(row.id, row.job_code)
           if (!res.isSuccess) {
             hookComponent.$message({
               type: 'error',
@@ -362,7 +362,8 @@ const method = reactive({
       content: i18n.global.t('wms.warehouseWorking.warehouseProcessing.beforeConfirmProcess'),
       handleConfirm: async () => {
         if (row.id) {
-          const { data: res } = await confirmProcess(row.id)
+          const logTemp = data.tableData.find(item => item.id === row.id)?.job_code
+          const { data: res } = await confirmProcess(row.id, logTemp)
           if (!res.isSuccess) {
             hookComponent.$message({
               type: 'error',
@@ -385,7 +386,8 @@ const method = reactive({
       content: i18n.global.t('wms.warehouseWorking.warehouseProcessing.beforeConfirmAdjust'),
       handleConfirm: async () => {
         if (row.id) {
-          const { data: res } = await confirmAdjustment(row.id)
+          const logTemp = data.tableData.find(item => item.id === row.id)?.job_code
+          const { data: res } = await confirmAdjustment(row.id, logTemp)
           if (!res.isSuccess) {
             hookComponent.$message({
               type: 'error',

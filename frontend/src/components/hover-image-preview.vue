@@ -112,19 +112,6 @@ onUnmounted(() => {
   max-height: 100%;
   object-fit: contain;
 }
-
-/* .no-image-text {
-  position: absolute;
-  z-index: 1000;
-  background: #fff;
-  padding: 2px 6px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-  left: 50%;
-  transform: translateX(-50%);
-  white-space: nowrap;
-} */
  
 .no-image-text {
   position: absolute;

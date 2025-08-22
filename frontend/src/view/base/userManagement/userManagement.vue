@@ -246,7 +246,7 @@ const method = reactive({
       content: i18n.global.t('system.tips.beforeDeleteMessage'),
       handleConfirm: async () => {
         if (row.id) {
-          const { data: res } = await deleteUser(row.id)
+          const { data: res } = await deleteUser(row.id, row.user_name)
           if (!res.isSuccess) {
             hookComponent.$message({
               type: 'error',
@@ -288,7 +288,8 @@ const method = reactive({
         content: i18n.global.t('base.userManagement.beforeResetPwd'),
         handleConfirm: async () => {
           const idList = checkRecord.map((item) => item.id)
-          const { data: res } = await resetPassword(idList)
+          const logTemp = checkRecord.map((item) => item.user_name)
+          const { data: res } = await resetPassword(idList, logTemp)
           if (!res.isSuccess) {
             hookComponent.$message({
               type: 'error',

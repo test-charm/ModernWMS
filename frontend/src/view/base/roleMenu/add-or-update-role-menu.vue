@@ -190,6 +190,8 @@ const method = reactive({
         }
         return item
       })
+      const selectedRole = data.combobox.role_name.find(item => item.value === data.form.userrole_id)
+      form.role_name = selectedRole ? selectedRole.label : ''
 
       form = removeObjectNull(form)
 

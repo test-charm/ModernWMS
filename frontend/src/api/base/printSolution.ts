@@ -21,11 +21,12 @@ export const updatePrintSolution = (data: PrintSolutionVO) => http({
   data
 })
 // Delete form
-export const deletePrintSolution = (id: number) => http({
+export const deletePrintSolution = (id: number, logTemp: string) => http({
   url: '/PrintSolution',
   method: 'delete',
   params: {
-    id
+    id,
+    logTemp
   }
 })
 export const listByPath = (data: PrintSolutionGetByPathVo) => http({
