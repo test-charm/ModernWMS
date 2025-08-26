@@ -122,8 +122,6 @@ export function parseOperation(config): string {
         } else if (REQ_METHOD === 'delete') {
             str = `[删除] ${ RES.logTemp.warehouse }仓库中${ RES.logTemp.area }库区的编码为${ RES.logTemp.location }的库位`
         }
-    // ToDo：收货管理
-    // ToDo：发货管理
     } else if (URL === '/stockprocess') {
         if (REQ_METHOD === 'post') {
             str = '[新增] 一份仓内加工的作业'
@@ -162,6 +160,84 @@ export function parseOperation(config): string {
         }
     } else if (URL === '/stocktaking/adjustment-confirm') {
         str = `[确认] 作业单号为${ RES.logTemp }的库存盘点调整`
+    } else if (URL === '/asn/asnmaster') {
+        if (REQ_METHOD === 'post') {
+            str = '[新增] 一条到货通知'
+        } else if (REQ_METHOD === 'put') {
+            str = `[修改] 通知书编号为${ RES.asn_no }的到货通知信息`
+        } else if (REQ_METHOD === 'delete') {
+            str = `[删除] 通知书编号为${ RES.logTemp }的到货通知`
+        }
+    } else if (URL === '/asn/confirm') {
+        const temp = RES.map(item => `通知书编号为${ item.asn_no }中的商品编号为${ item.spu_code }规格编号为${ item.sku_code }的商品`).join(', ')
+        str = `[确认] ${ temp }的到货`
+    } else if (URL === '/asn/confirm-cancel') {
+        const temp = config.logTemp.map(item => `通知书编号为${ item.asn_no }中的商品编号为${ item.spu_code }规格编号为${ item.sku_code }的商品`).join(', ')
+        str = `[撤销] ${ temp }的到货`
+    } else if (URL === '/asn/unload') {
+        const temp = RES.map(item => `通知书编号为${ item.asn_no }中的商品编号为${ item.spu_code }规格编号为${ item.sku_code }的商品`).join(', ')
+        str = `[确认] ${ temp }的卸货`
+    } else if (URL === '/asn/unload-cancel') {
+        const temp = config.logTemp.map(item => `通知书编号为${ item.asn_no }中的商品编号为${ item.spu_code }规格编号为${ item.sku_code }的商品`).join(', ')
+        str = `[撤销] ${ temp }的卸货`
+    } else if (URL === '/asn/sorted') {
+        str = `[确认] 通知书编号为${ config.logTemp.asn_no }中的商品编号为${ config.logTemp.spu_code }规格编号为${ config.logTemp.sku_code }的商品的分拣`
+    } else if (URL === '/asn/sorted-cancel') {
+        const temp = config.logTemp.map(item => `通知书编号为${ item.asn_no }中的商品编号为${ item.spu_code }规格编号为${ item.sku_code }的商品`).join(', ')
+        str = `[撤销] ${ temp }的分拣`
+    } else if (URL === '/asn/putaway') {
+        str = `[确认] 通知书编号为${ config.logTemp.asn_no }中的商品编号为${ config.logTemp.spu_code }规格编号为${ config.logTemp.sku_code }的商品的上架`
+    } else if (URL === '/dispatchlist') {
+        if (REQ_METHOD === 'post') {
+            str = '[新增] 一条发货单'
+        } else if (REQ_METHOD === 'delete') {
+            str = `[删除] 发货单号为${ RES.dispatch_no }的发货单`
+        }
+    } else if (URL === '/dispatchlist/confirm-order') {
+        str = `[确认] 发货单号为${ RES[0].dispatch_no }的商品发货`
+    } else if (URL === '/dispatchlist/cancel-order') {
+        if (RES.dispatch_status === 2) {
+            str = `[撤销] 发货单号为${ RES.dispatch_no }的商品发货`
+        } else if (RES.dispatch_status === 3) {
+            str = `[撤销] 发货单号为${ RES.dispatch_no }的商品拣货`
+        } else {
+            str = `[撤销] 发货单号为${ RES.logTemp }的商品的打包/称重`
+        }
+    } else if (URL === '/dispatchlist/confirm-pick-dispatchlistno') {
+        str = `[确认] 发货单号为${ RES.dispatch_no }的商品拣货`
+    } else if (URL === '/dispatchlist/package') {
+        const temp = RES.map(item => `发货单号为${ item.dispatch_no }的商品`).join(', ')
+        str = `[确认] ${ temp }的打包`
+    } else if (URL === '/dispatchlist/weight') {
+        const temp = RES.map(item => `发货单号为${ item.dispatch_no }的商品`).join(', ')
+        str = `[确认] ${ temp }的称重`
+    } else if (URL === '/dispatchlist/delivery') {
+        const temp = RES.map(item => `发货单号为${ item.dispatch_no }的商品`).join(', ')
+        str = `[确认] ${ temp }的出库`
+    } else if (URL === '/dispatchlist/sign') {
+        const temp = RES.map(item => `发货单号为${ item.dispatch_no }的商品`).join(', ')
+        str = `[确认] ${ temp }的签收`
+    } else if (URL === '/user/excel') {
+        const temp = RES.map(item => `${ item.user_name }`).join(', ')
+        str = `[新增] 名称为${ temp }的用户`
+    } else if (URL === '/spu/addlist') {
+        const temp = RES.map(item => `${ item.spu_code }`).join(', ')
+        str = `[新增] 商品编号为${ temp }的商品`
+    } else if (URL === '/supplier/excel') {
+        const temp = RES.map(item => `${ item.supplier_name }`).join(', ')
+        str = `[新增] 名称为${ temp }的供应商`
+    } else if (URL === '/warehouse/excel') {
+        const temp = RES.map(item => `${ item.warehouse_name }`).join(', ')
+        str = `[新增] 名称为${ temp }的仓库`
+    } else if (URL === '/goodsowner/excel') {
+        const temp = RES.map(item => `${ item.goods_owner_name }`).join(', ')
+        str = `[新增] 名称为${ temp }的货主`
+    } else if (URL === '/freightfee/excel') {
+        const temp = RES.map(item => `名称为${ item.carrier }的承运商从${ item.departure_city }到${ item.arrival_city }`).join(', ')
+        str = `[新增] ${ temp }的运费信息`
+    } else if (URL === '/customer/excel') {
+        const temp = RES.map(item => `${ item.customer_name }`).join(', ')
+        str = `[新增] 名称为${ temp }的客户`
     }
     return str
 }

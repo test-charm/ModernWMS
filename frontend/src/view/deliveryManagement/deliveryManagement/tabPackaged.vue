@@ -213,7 +213,7 @@ const method = reactive({
     hookComponent.$dialog({
       content: `${ i18n.global.t('wms.deliveryManagement.confirmBack') }?`,
       handleConfirm: async () => {
-        const { data: res } = await cancelOrderByDetail(row.id)
+        const { data: res } = await cancelOrderByDetail(row.id, row.dispatch_no!)
         if (!res.isSuccess) {
           hookComponent.$message({
             type: 'error',

@@ -176,10 +176,11 @@ const method = reactive({
     const checkRecords = xTableStockLocation.value.getCheckboxRecords()
     if (checkRecords.length > 0) {
       const idList = checkRecords.map((item: StockAsnVO) => item.id)
+      const logTemp = checkRecords.map((item: StockAsnVO) => ({ asn_no: item.asn_no, sku_code: item.sku_code, spu_code: item.spu_code }))
       hookComponent.$dialog({
         content: i18n.global.t('system.tips.beforeOperation'),
         handleConfirm: async () => {
-          const { data: res } = await unconfirmArrival(idList)
+          const { data: res } = await unconfirmArrival(idList, logTemp)
           if (!res.isSuccess) {
             // 2023-12-06 Add automatic refresh of expired data
             if (httpCodeJudge(res.errorMessage)) {
@@ -223,7 +224,7 @@ const method = reactive({
   // After confirmation
   sureBackUnloadConfirm: async (form: { unloadTime: string; unloadPerson: string; unloadPersonID: number }) => {
     const checkRecords = xTableStockLocation.value.getCheckboxRecords()
-    const reqBody = checkRecords.map((item: StockAsnVO) => ({ id: item.id, ...form }))
+    const reqBody = checkRecords.map((item: StockAsnVO) => ({ id: item.id, ...form, asn_no: item.asn_no, sku_code: item.sku_code, spu_code: item.spu_code }))
 
     const { data: res } = await confirmUnload(reqBody)
     if (!res.isSuccess) {

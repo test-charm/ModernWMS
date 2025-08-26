@@ -219,10 +219,11 @@ const method = reactive({
     const checkRecords = xTableStockLocation.value.getCheckboxRecords()
     if (checkRecords.length > 0) {
       const idList = checkRecords.map((item: StockAsnVO) => item.id)
+      const logTemp = checkRecords.map((item: StockAsnVO) => ({ asn_no: item.asn_no, sku_code: item.sku_code, spu_code: item.spu_code }))
       hookComponent.$dialog({
         content: i18n.global.t('system.tips.beforeOperation'),
         handleConfirm: async () => {
-          const { data: res } = await revokeUnload(idList)
+          const { data: res } = await revokeUnload(idList, logTemp)
           if (!res.isSuccess) {
             // 2023-12-06 Add automatic refresh of expired data
             if (httpCodeJudge(res.errorMessage)) {
@@ -296,7 +297,8 @@ const method = reactive({
       content: i18n.global.t('system.tips.beforeAsnSorted'),
       handleConfirm: async () => {
         if (row.id) {
-          const { data: res } = await confirmSorted(row.id)
+          const logTemp = { asn_no: row.asn_no, sku_code: row.sku_code, spu_code: row.spu_code }
+          const { data: res } = await confirmSorted(row.id, logTemp)
           if (!res.isSuccess) {
             // 2023-12-06 Add automatic refresh of expired data
             if (httpCodeJudge(res.errorMessage)) {

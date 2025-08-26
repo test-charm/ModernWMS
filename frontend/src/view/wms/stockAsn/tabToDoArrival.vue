@@ -178,7 +178,7 @@ const method = reactive({
   // Confirm arrival
   sureBackArrival: async (dateStr: string) => {
     const checkRecords = xTableStockLocation.value.getCheckboxRecords()
-    const reqBody = checkRecords.map((item: StockAsnVO) => ({ id: item.id, arrival_time: dateStr }))
+    const reqBody = checkRecords.map((item: StockAsnVO) => ({ id: item.id, arrival_time: dateStr, asn_no: item.asn_no, sku_code: item.sku_code, spu_code: item.spu_code }))
 
     const { data: res } = await confirmArrival(reqBody)
     if (!res.isSuccess) {

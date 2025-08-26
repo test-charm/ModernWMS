@@ -150,6 +150,7 @@ import QrCodeDialog from '@/components/codeDialog/qrCodeDialog.vue'
 const xTableStockLocation = ref()
 const confirmGroudingDialogRef = ref()
 const qrCodeDialogRef = ref()
+const currentRow = ref<StockAsnVO | null>(null)
 
 const data = reactive({
   showDialog: false,
@@ -216,7 +217,8 @@ const method = reactive({
   },
   // Confirm listing data
   confirmGroudingSure: async (tableData: any) => {
-    const { data: res } = await confirmPutaway(tableData)
+    const logTemp = currentRow.value
+    const { data: res } = await confirmPutaway(tableData, logTemp)
     if (!res.isSuccess) {
       // 2023-12-06 Add automatic refresh of expired data
       if (httpCodeJudge(res.errorMessage)) {
@@ -245,10 +247,11 @@ const method = reactive({
     const checkRecords = xTableStockLocation.value.getCheckboxRecords()
     if (checkRecords.length > 0) {
       const idList = checkRecords.map((item: StockAsnVO) => item.id)
+      const logTemp = checkRecords.map((item: StockAsnVO) => ({ asn_no: item.asn_no, sku_code: item.sku_code, spu_code: item.spu_code }))
       hookComponent.$dialog({
         content: i18n.global.t('system.tips.beforeOperation'),
         handleConfirm: async () => {
-          const { data: res } = await revokeSorting(idList)
+          const { data: res } = await revokeSorting(idList, logTemp)
           if (!res.isSuccess) {
             // 2023-12-06 Add automatic refresh of expired data
             if (httpCodeJudge(res.errorMessage)) {
@@ -296,7 +299,7 @@ const method = reactive({
   editRow(row: StockAsnVO) {
     // data.dialogForm = JSON.parse(JSON.stringify(row))
     // data.showDialog = true
-
+    currentRow.value = row
     confirmGroudingDialogRef.value.openDialog(row.id)
   },
   deleteRow(row: StockAsnVO) {

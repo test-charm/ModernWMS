@@ -159,6 +159,9 @@ http.interceptors.request.use(
       if (config.params.logTemp) {
         delete config.params.logTemp
       }
+      if (config.logTemp) {
+        delete config.logTemp
+      }
       return config
     }
 
