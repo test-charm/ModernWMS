@@ -117,10 +117,19 @@ namespace ModernWMS.WMS.Services
                 .Where(t => t.tenant_id.Equals(currentUser.tenant_id))
                 .Where(queries.AsExpression<StockprocessGetViewModel>());
             int totals = await query.CountAsync();
-            var list = await query.OrderByDescending(t => t.last_update_time)
+            List<StockprocessGetViewModel> list;
+            if(pageSearch.pageSize<=0 || pageSearch.pageIndex <= 0)
+            {
+                list = await query.OrderByDescending(t => t.last_update_time)
+                       .ToListAsync();
+            }
+            else
+            {
+                list = await query.OrderByDescending(t => t.last_update_time)
                        .Skip((pageSearch.pageIndex - 1) * pageSearch.pageSize)
                        .Take(pageSearch.pageSize)
                        .ToListAsync();
+            }
             return (list, totals);
         }
 

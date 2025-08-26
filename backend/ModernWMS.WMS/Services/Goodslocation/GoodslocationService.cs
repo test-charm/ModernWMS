@@ -4,15 +4,15 @@
  */
  using Mapster;
  using Microsoft.EntityFrameworkCore;
+ using Microsoft.Extensions.Localization;
  using ModernWMS.Core.DBContext;
+ using ModernWMS.Core.DynamicSearch;
+ using ModernWMS.Core.JWT;
+ using ModernWMS.Core.Models;
  using ModernWMS.Core.Services;
  using ModernWMS.WMS.Entities.Models;
  using ModernWMS.WMS.Entities.ViewModels;
  using ModernWMS.WMS.IServices;
- using ModernWMS.Core.Models;
- using ModernWMS.Core.JWT;
- using Microsoft.Extensions.Localization;
- using ModernWMS.Core.DynamicSearch;
  
  namespace ModernWMS.WMS.Services
  {
@@ -98,10 +98,19 @@
                 query = query.Where(t => t.is_valid == true);
             }
             int totals = await query.CountAsync();
-             var list = await query.OrderByDescending(t => t.create_time)
-                        .Skip((pageSearch.pageIndex - 1) * pageSearch.pageSize)
-                        .Take(pageSearch.pageSize)
-                        .ToListAsync();
+            List<GoodslocationEntity> list;
+            if (pageSearch.pageIndex <= 0 || pageSearch.pageSize <= 0)
+            {
+                list = await query.OrderByDescending(t => t.create_time)
+                       .ToListAsync();
+            }
+            else
+            {
+                list = await query.OrderByDescending(t => t.create_time)
+                                       .Skip((pageSearch.pageIndex - 1) * pageSearch.pageSize)
+                                       .Take(pageSearch.pageSize)
+                                       .ToListAsync();
+            }
              return (list.Adapt<List<GoodslocationViewModel>>(), totals);
          }
          

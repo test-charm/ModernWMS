@@ -186,10 +186,18 @@ namespace ModernWMS.WMS.Services
                         };
             query = query.Where(queries.AsExpression<SpuBothViewModel>());
             int totals = await query.CountAsync();
-            var list = await query.OrderByDescending(t => t.create_time)
-                       .Skip((pageSearch.pageIndex - 1) * pageSearch.pageSize)
-                       .Take(pageSearch.pageSize)
-                       .ToListAsync();
+            List<SpuBothViewModel> list;
+            if (pageSearch.pageIndex <= 0 || pageSearch.pageSize <= 0)
+            {
+                list = await query.OrderByDescending(t => t.create_time).ToListAsync();
+            }
+            else
+            {
+                list = await query.OrderByDescending(t => t.create_time)
+                                  .Skip((pageSearch.pageIndex - 1) * pageSearch.pageSize)
+                                  .Take(pageSearch.pageSize)
+                                  .ToListAsync();
+            }
             return (list, totals);
         }
 

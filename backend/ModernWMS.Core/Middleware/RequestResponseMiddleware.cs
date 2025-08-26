@@ -29,7 +29,12 @@ namespace ModernWMS.Core.Middleware
         /// request Logger
         /// </summary>
         private readonly IRequestLogger _requestLogger;
-
+        /// <summary>
+        /// RequestResponseMiddleware
+        /// </summary>
+        /// <param name="next"></param>
+        /// <param name="logger"></param>
+        /// <param name="requestLogger"></param>
         public RequestResponseMiddleware(RequestDelegate next,
                                          ILogger<RequestResponseMiddleware> logger,
                                          IRequestLogger requestLogger)
@@ -72,11 +77,12 @@ namespace ModernWMS.Core.Middleware
       
                     await responseBody.CopyToAsync(originalBodyStream);
                 }
-                string vuePath = context.Request.Headers["X-Vue-Path"];
-                string encodedActionContent = context.Request.Headers["X-Action-Content"];
+                string vuePath = context.Request.Headers["X-Vue-Path"].FirstOrDefault() ?? "";
+                string encodedActionContent = context.Request.Headers["X-Action-Content"].FirstOrDefault() ?? "";
                 string actionContent = string.IsNullOrEmpty(encodedActionContent)
                     ? ""
                     : System.Net.WebUtility.UrlDecode(encodedActionContent);
+
                 if (!string.IsNullOrEmpty(vuePath) || !string.IsNullOrEmpty(actionContent))
                 {
                     try

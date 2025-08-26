@@ -159,11 +159,19 @@ namespace ModernWMS.WMS.Services
                  .Where(queries.AsExpression<DispatchlistViewModel>());
 
             int totals = await query.CountAsync();
-            var list = await query.OrderBy(t => t.is_todo == true ? 0 : 1).ThenByDescending(t => t.last_update_time)
+            List<DispatchlistViewModel> list;
+            if(pageSearch.pageIndex<=0 || pageSearch.pageSize <= 0)
+            {
+                list = await query.OrderBy(t => t.is_todo == true ? 0 : 1).ThenByDescending(t => t.last_update_time)
+                       .ToListAsync();
+            }
+            else
+            {
+                list = await query.OrderBy(t => t.is_todo == true ? 0 : 1).ThenByDescending(t => t.last_update_time)
                        .Skip((pageSearch.pageIndex - 1) * pageSearch.pageSize)
                        .Take(pageSearch.pageSize)
                        .ToListAsync();
-
+            }
             return (list, totals);
         }
 
@@ -417,14 +425,23 @@ namespace ModernWMS.WMS.Services
                 query = query.Where(t => t.dispatch_status >= 2 && t.dispatch_status <= 5);
             }
             int totals = await query.CountAsync();
-            var list = await query.OrderByDescending(t => t.dispatch_no)
+            List<PreDispatchlistViewModel> list;
+            if(pageSearch.pageIndex<=0 || pageSearch.pageSize <= 0)
+            {
+                list = await query.OrderByDescending(t => t.dispatch_no)
+                       .ToListAsync();
+            }
+            else
+            {
+                list = await query.OrderByDescending(t => t.dispatch_no)
                        .Skip((pageSearch.pageIndex - 1) * pageSearch.pageSize)
                        .Take(pageSearch.pageSize)
                        .ToListAsync();
+            }
 
-            #region sqlite cannot sum data of decimal type
+                #region sqlite cannot sum data of decimal type
 
-            var dispatch_no_list = list.Select(t => t.dispatch_no).Distinct().ToList();
+                var dispatch_no_list = list.Select(t => t.dispatch_no).Distinct().ToList();
             var d_datas = await (from d in DbSet.AsNoTracking()
                                  join sku in _dBContext.GetDbSet<SkuEntity>().AsNoTracking() on d.sku_id equals sku.id
                                  join spu in _dBContext.GetDbSet<SpuEntity>().AsNoTracking() on sku.spu_id equals spu.id

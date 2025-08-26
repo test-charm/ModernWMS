@@ -175,10 +175,19 @@ namespace ModernWMS.WMS.Services
                         };
             query = query.Where(t => t.qty_asn > 0 || t.qty > 0).Where(queries.AsExpression<StockManagementViewModel>());
             int totals = await query.CountAsync();
-            var list = await query.OrderBy(t => t.sku_code)
-                       .Skip((pageSearch.pageIndex - 1) * pageSearch.pageSize)
-                       .Take(pageSearch.pageSize)
-                       .ToListAsync();
+            List<StockManagementViewModel> list;
+            if(pageSearch.pageSize<=0 || pageSearch.pageIndex <= 0)
+            {
+                list = await query.OrderBy(t => t.sku_code)
+                           .ToListAsync();
+            }
+            else
+            {
+                list = await query.OrderBy(t => t.sku_code)
+                           .Skip((pageSearch.pageIndex - 1) * pageSearch.pageSize)
+                           .Take(pageSearch.pageSize)
+                           .ToListAsync();
+            } 
             return (list, totals);
         }
 
@@ -303,10 +312,19 @@ namespace ModernWMS.WMS.Services
                         };
             query = query.Where(t => t.qty > 0).Where(queries.AsExpression<LocationStockManagementViewModel>());
             int totals = await query.CountAsync();
-            var list = await query.OrderBy(t => t.sku_code)
-                       .Skip((pageSearch.pageIndex - 1) * pageSearch.pageSize)
-                       .Take(pageSearch.pageSize)
-                       .ToListAsync();
+            List<LocationStockManagementViewModel> list;
+            if(pageSearch.pageIndex<=0 || pageSearch.pageSize <= 0)
+            {
+                list = await query.OrderBy(t => t.sku_code)
+                           .ToListAsync();
+            }
+            else
+            {
+                list = await query.OrderBy(t => t.sku_code)
+                           .Skip((pageSearch.pageIndex - 1) * pageSearch.pageSize)
+                           .Take(pageSearch.pageSize)
+                           .ToListAsync();
+            }
             return (list, totals);
         }
 
@@ -413,11 +431,20 @@ namespace ModernWMS.WMS.Services
                         };
             query = query.Where(queries.AsExpression<SafetyStockManagementViewModel>());
             int totals = await query.CountAsync();
-            var list = await query.OrderBy(t => t.sku_code)
+            List<SafetyStockManagementViewModel> list;
+            if(pageSearch.pageSize<=0 || pageSearch.pageIndex <= 0)
+            {
+                list = await query.OrderBy(t => t.sku_code)
+                       .ToListAsync();
+            }
+            else
+            {
+                list = await query.OrderBy(t => t.sku_code)
                        .Skip((pageSearch.pageIndex - 1) * pageSearch.pageSize)
                        .Take(pageSearch.pageSize)
                        .ToListAsync();
-            return (list, totals);
+            }
+                return (list, totals);
         }
 
         /// <summary>
@@ -814,9 +841,17 @@ namespace ModernWMS.WMS.Services
                             delivery_amount = dg.Sum(t => t.dpp.picked_qty * t.sku.price)
                         };
             int totals = await query.CountAsync();
-            var list = await query.OrderByDescending(t => t.delivery_date)
+            List<DeliveryStatisticViewModel> list;
+            if(input.pageIndex<=0 || input.pageSize <= 0)
+            {
+                list = await query.OrderByDescending(t => t.delivery_date).ToListAsync();
+            }
+            else
+            {
+                list = await query.OrderByDescending(t => t.delivery_date)
                                               .Skip((input.pageIndex - 1) * input.pageSize)
                                               .Take(input.pageSize).ToListAsync();
+            }
             return (list, totals);
         }
 
