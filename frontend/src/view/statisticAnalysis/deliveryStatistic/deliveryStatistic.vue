@@ -12,6 +12,7 @@
                   <!-- Operate Btn -->
                   <v-col cols="3" class="col">
                     <BtnGroup :authority-list="data.authorityList" :btn-list="btnList" />
+                    <tooltip-btn icon="mdi-apple-keyboard-shift" :tooltip-text="$t('system.page.exportAll')" @click="method.exportAll"></tooltip-btn>
                   </v-col>
 
                   <!-- Search Input -->
@@ -94,7 +95,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref, reactive, watch, onMounted } from 'vue'
+import { computed, ref, reactive, watch, onMounted, nextTick } from 'vue'
 import { VxePagerEvents } from 'vxe-table'
 import { computedCardHeight, computedTableHeight } from '@/constant/style'
 import { PAGE_SIZE, PAGE_LAYOUT, DEFAULT_PAGE_SIZE } from '@/constant/vxeTable'
@@ -105,6 +106,7 @@ import i18n from '@/languages/i18n'
 import customPager from '@/components/custom-pager.vue'
 import { exportData } from '@/utils/exportTable'
 import BtnGroup from '@/components/system/btnGroup.vue'
+import tooltipBtn from '@/components/tooltip-btn.vue'
 import { list as getDeliveryStatisticList } from '@/api/wms/deliveryStatistic'
 import { hookComponent } from '@/components/system'
 import { DeliveryStatisticVo } from '@/types/WMS/DeliveryStatistic'
@@ -203,6 +205,46 @@ const method = reactive({
     })
   },
 
+  // Export all
+  exportAll: async () => {
+    try {
+      const searchForm = {}
+      for (const item of Object.keys(data.searchForm)) {
+        if (data.searchForm[item]) {
+          searchForm[item] = data.searchForm[item]
+        }
+      }
+
+      const params = {
+        ...data.tablePage,
+        pageIndex: 0,
+        pageSize: 0,
+        ...searchForm
+      }
+
+      const { data: res } = await getDeliveryStatisticList(params)
+
+      if (!res.isSuccess) {
+        hookComponent.$message({
+          type: 'error',
+          content: res.errorMessage
+        })
+        return
+      }
+      const originData = [...data.tableData]
+      data.tableData = res.data.rows
+      await nextTick()
+      method.exportTable()
+      data.tableData = originData
+    } catch (e) {
+      console.error(e)
+      hookComponent.$message({
+        type: 'error',
+        content: i18n.global.t('system.page.exportError')
+      })
+    }
+  },
+
   sureSearch: () => {
     // data.tablePage.searchObjects = setSearchObject(data.searchForm)
     method.refresh()
@@ -250,7 +292,7 @@ const btnList = computed(() => [
   {
     name: i18n.global.t('system.page.export'),
     icon: 'mdi-export-variant',
-    code: 'export',
+    code: '',
     click: method.exportTable
   },
   {

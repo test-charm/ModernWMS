@@ -14,8 +14,8 @@
                 
                 <!-- new version -->
                 <BtnGroup :authority-list="data.authorityList" :btn-list="data.btnList" />
-                <tooltip-btn icon="mdi-database-import-outline" :tooltip-text="$t('system.page.import')" @click="method.openDialogImport">
-                </tooltip-btn>
+                <tooltip-btn icon="mdi-database-import-outline" :tooltip-text="$t('system.page.import')" @click="method.openDialogImport"></tooltip-btn>
+                <tooltip-btn icon="mdi-apple-keyboard-shift" :tooltip-text="$t('system.page.exportAll')" @click="method.exportAll"></tooltip-btn>
               </v-col>
 
               <!-- Search Input -->
@@ -248,7 +248,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, onMounted, reactive, ref, watch } from 'vue'
+import { computed, onMounted, reactive, ref, watch, nextTick } from 'vue'
 import { VxePagerEvents } from 'vxe-table'
 import { computedCardHeight, computedTableHeight, errorColor } from '@/constant/style'
 import tooltipBtn from '@/components/tooltip-btn.vue'
@@ -524,6 +524,39 @@ const method = reactive({
         return !['checkbox'].includes(column?.type) && !['operate', 'expend'].includes(column?.field)
       }
     })
+  },
+  // Export all
+  exportAll: async () => {
+    try {
+      const params = {
+        ...data.tablePage,
+        pageIndex: 0,
+        pageSize: 0,
+        searchObjects: setSearchObject(data.searchForm)
+      }
+
+      const { data: res } = await getSpuList(params)
+      if (!res.isSuccess) {
+        hookComponent.$message({
+          type: 'error',
+          content: res.errorMessage
+        })
+        return
+      }
+      const originData = [...data.tableData]
+      data.tableData = res.data.rows
+      data.tableTreeConfig.transform = false
+      await nextTick()
+      method.exportTable()
+      data.tableData = originData
+      data.tableTreeConfig.transform = true
+    } catch (e) {
+      console.error(e)
+      hookComponent.$message({
+        type: 'error',
+        content: i18n.global.t('system.page.exportError')
+      })
+    }
   },
   // When change paging
   handlePageChange: ref<VxePagerEvents.PageChange>(({ currentPage, pageSize }) => {

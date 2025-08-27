@@ -332,6 +332,7 @@
       "delete": "Delete",
       "edit": "Edit",
       "export": "Export",
+      "exportAll": "ExportAll",
       "exportTemplate": "Export Template",
       "gridColumnGap": "Column spacing(px)",
       "gridRowGap": "Row spacing(px)",

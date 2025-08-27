@@ -332,6 +332,7 @@
       "delete": "删除",
       "edit": "编辑",
       "export": "导出",
+      "exportAll": "全量导出",
       "exportTemplate": "导出模板",
       "gridColumnGap": "列间距(px)",
       "gridRowGap": "行间距(px)",
