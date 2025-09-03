@@ -16,6 +16,7 @@ using ModernWMS.Core.Services;
 using ModernWMS.Core.Utility;
 using ModernWMS.WMS.Entities.Models;
 using ModernWMS.WMS.Entities.ViewModels;
+using ModernWMS.WMS.Entities.ViewModels.Dispatchlist;
 using ModernWMS.WMS.IServices;
 using System.Collections.Generic;
 
@@ -373,6 +374,86 @@ namespace ModernWMS.WMS.Services
                                    putaway_date = dpl.putaway_date,
                                }).ToListAsync();
             return datas;
+        }
+        /// <summary>
+        /// GetPickingList
+        /// </summary>
+        /// <param name="dispatch_ids"></param>
+        /// <returns></returns>
+        public async Task<List<PickinglistViewModel>> GetPickingList(List<int> dispatch_ids)
+        {
+            var query = await (from dpl in _dBContext.GetDbSet<DispatchpicklistEntity>().AsNoTracking()
+                               join sku in _dBContext.GetDbSet<SkuEntity>().AsNoTracking() on dpl.sku_id equals sku.id
+                               join spu in _dBContext.GetDbSet<SpuEntity>().AsNoTracking() on sku.spu_id equals spu.id
+                               join owner in _dBContext.GetDbSet<GoodsownerEntity>().AsNoTracking() on dpl.goods_owner_id equals owner.id into o_left
+                               from owner in o_left.DefaultIfEmpty()
+                               join location in _dBContext.GetDbSet<GoodslocationEntity>().AsNoTracking() on dpl.goods_location_id equals location.id
+                               join dispatch in _dBContext.GetDbSet<DispatchlistEntity>().AsNoTracking() on dpl.dispatchlist_id equals dispatch.id
+                               where dispatch_ids.Contains(dpl.dispatchlist_id)
+                               select new
+                               {
+                                   dpl.goods_owner_id,
+                                   goods_owner_name = owner.goods_owner_name ?? "",
+                                   sku_id = dpl.sku_id,
+                                   sku_code = sku.sku_code,
+                                   spu_code = spu.spu_code,
+                                   sku_name = sku.sku_name,
+                                   spu_name = spu.spu_name,
+                                   spu_description = spu.spu_description,
+                                   bar_code = sku.bar_code,
+                                   goods_location_id = dpl.goods_location_id,
+                                   location_name = location.location_name,
+                                   warehouse_id = location.warehouse_id,
+                                   warehouse_name = location.warehouse_name,
+                                   warehouse_area_name = location.warehouse_area_name,
+                                   pick_qty = dpl.pick_qty,
+                                   picked_qty = dpl.picked_qty,
+                                   series_number = dpl.series_number,
+                                   picker = dpl.picker,
+                                   dispatch_no = dispatch.dispatch_no,
+                                   customer_name = dispatch.customer_name
+                               }).ToListAsync();
+            var itemGroups = query
+                .GroupBy(x => new { x.sku_id, x.goods_owner_id, x.goods_location_id, x.warehouse_id, x.series_number })
+                .Select(g => new
+                {
+                    WarehouseId = g.Key.warehouse_id,
+                    WarehouseName = g.First().warehouse_name,
+                    Item = new PickingItemViewModel
+                    {
+                        sku_id = g.Key.sku_id,
+                        sku_code = g.First().sku_code,
+                        spu_code = g.First().spu_code,
+                        sku_name = g.First().sku_name,
+                        spu_name = g.First().spu_name,
+                        spu_description = g.First().spu_description,
+                        bar_code = g.First().bar_code,
+                        goods_owner_name = g.First().goods_owner_name,
+                        warehouse_area_name = g.First().warehouse_area_name,
+                        location_name = g.First().location_name,
+                        pick_qty = g.Sum(x => x.pick_qty),
+                        picked_qty = g.Sum(x => x.picked_qty),
+                        series_number = g.First().series_number,
+                        picker = g.First().picker,
+                        datalist = g.Select(x => new PickingItemDispatchViewModel
+                        {
+                            dispatch_no = x.dispatch_no,
+                            customer_name = x.customer_name,
+                            qty = x.pick_qty
+                        }).ToList()
+                    }
+                }).OrderBy(x=>x.Item.series_number).ToList();
+            var result = itemGroups
+                .GroupBy(x => new { x.WarehouseId, x.WarehouseName })
+                .Select(g => new PickinglistViewModel
+                {
+                    warehouse_id = g.Key.WarehouseId.ToString(),
+                    warehouse_name = g.Key.WarehouseName,
+                    pickingDetails = g.Select(x => x.Item).ToList()
+                })
+                .ToList();
+
+            return result;
         }
 
         /// <summary>

@@ -8,6 +8,7 @@ using ModernWMS.Core.Models;
 using ModernWMS.WMS.Entities.ViewModels;
 using ModernWMS.WMS.IServices;
 using Microsoft.Extensions.Localization;
+using ModernWMS.WMS.Entities.ViewModels.Dispatchlist;
 namespace ModernWMS.WMS.Controllers
 {
     /// <summary>
@@ -151,11 +152,22 @@ namespace ModernWMS.WMS.Controllers
             return ResultModel<List<DispatchpicklistViewModel>>.Success(datas);
         }
         /// <summary>
-        /// delete a record
+        /// 
         /// </summary>
-        /// <param name="dispatch_no">dispatch_no</param>
+        /// <param name="dispatch_id"></param>
         /// <returns></returns>
-        [HttpDelete]
+        [HttpPost("picking-list")]
+        public async Task<ResultModel<List<PickinglistViewModel>>> GetPickingList(List<int> dispatch_id)
+        {
+            var datas = await _dispatchlistService.GetPickingList(dispatch_id);
+            return ResultModel<List<PickinglistViewModel>>.Success(datas);
+        }
+/// <summary>
+/// delete a record
+/// </summary>
+/// <param name="dispatch_no">dispatch_no</param>
+/// <returns></returns>
+[HttpDelete]
         public async Task<ResultModel<string>> DeleteAsync(string dispatch_no)
         {
             var (flag, msg) = await _dispatchlistService.DeleteAsync(dispatch_no, CurrentUser);

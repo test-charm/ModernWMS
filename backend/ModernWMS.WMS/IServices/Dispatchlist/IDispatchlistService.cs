@@ -7,6 +7,7 @@
  using ModernWMS.Core.JWT;
  using ModernWMS.WMS.Entities.Models;
  using ModernWMS.WMS.Entities.ViewModels;
+using ModernWMS.WMS.Entities.ViewModels.Dispatchlist;
 namespace ModernWMS.WMS.IServices
 {
     /// <summary>
@@ -150,7 +151,12 @@ namespace ModernWMS.WMS.IServices
         /// <param name="dispatch_id">dispatch_id</param>
         /// <returns></returns>
         Task<List<DispatchpicklistViewModel>> GetPickListByDispatchID(int dispatch_id);
-
+        /// <summary>
+        /// GetPickingList
+        /// </summary>
+        /// <param name="dispatch_id"></param>
+        /// <returns></returns>
+        Task<List<PickinglistViewModel>> GetPickingList(List<int> dispatch_id);
         /// <summary>
         ///  cancel order opration 
         /// </summary>
