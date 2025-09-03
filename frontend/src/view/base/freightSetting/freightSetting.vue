@@ -19,6 +19,7 @@
 
                     <!-- new version -->
                     <BtnGroup :authority-list="data.authorityList" :btn-list="data.btnList" />
+                    <tooltip-btn icon="mdi-apple-keyboard-shift" :tooltip-text="$t('system.page.exportAll')" @click="method.exportAll"></tooltip-btn>
                   </v-col>
 
                   <!-- Search Input -->
@@ -137,7 +138,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref, reactive, onMounted, watch } from 'vue'
+import { computed, ref, reactive, onMounted, watch, nextTick } from 'vue'
 import { VxePagerEvents } from 'vxe-table'
 import { computedCardHeight, computedTableHeight, errorColor } from '@/constant/style'
 import { FreightVO } from '@/types/Base/Freight'
@@ -277,6 +278,38 @@ const method = reactive({
 
     method.getFreightList()
   }),
+  // Export all
+  exportAll: async () => {
+    try {
+      const params = {
+        ...data.tablePage,
+        pageIndex: 0,
+        pageSize: 0,
+        searchObjects: setSearchObject(data.searchForm)
+      }
+
+      const { data: res } = await getFreightList(params)
+      
+      if (!res.isSuccess) {
+        hookComponent.$message({
+          type: 'error',
+          content: res.errorMessage
+        })
+        return
+      }
+      const originData = [...data.tableData]
+      data.tableData = res.data.rows
+      await nextTick()
+      method.exportTable()
+      data.tableData = originData
+    } catch (e) {
+      console.error(e)
+      hookComponent.$message({
+        type: 'error',
+        content: i18n.global.t('system.page.exportError')
+      })
+    }
+  },
   exportTable: () => {
     const $table = xTable.value
     exportData({

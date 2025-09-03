@@ -6,6 +6,7 @@
         <!-- <tooltip-btn icon="mdi-refresh" :tooltip-text="$t('system.page.refresh')" @click="method.refresh"></tooltip-btn>
         <tooltip-btn icon="mdi-export-variant" :tooltip-text="$t('system.page.export')" @click="method.exportTable"> </tooltip-btn> -->
         <BtnGroup :authority-list="data.authorityList" :btn-list="data.btnList" />
+        <tooltip-btn icon="mdi-apple-keyboard-shift" :tooltip-text="$t('system.page.exportAll')" @click="method.exportAll"></tooltip-btn>
       </v-col>
 
       <!-- Search Input -->
@@ -82,7 +83,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref, reactive, watch, onMounted } from 'vue'
+import { computed, ref, reactive, watch, onMounted, nextTick } from 'vue'
 import { VxePagerEvents } from 'vxe-table'
 import { computedCardHeight, computedTableHeight } from '@/constant/style'
 import { StockLocationVO } from '@/types/WMS/StockManagement'
@@ -97,6 +98,7 @@ import customPager from '@/components/custom-pager.vue'
 import skuInfo from './sku-info.vue'
 import { exportData } from '@/utils/exportTable'
 import BtnGroup from '@/components/system/btnGroup.vue'
+import tooltipBtn from '@/components/tooltip-btn.vue'
 
 const xTableStockLocation = ref()
 
@@ -161,6 +163,47 @@ const method = reactive({
       }
     })
   },
+
+  // Export all
+  exportAll: async () => {
+    try {
+      const searchForm = {}
+      for (const item of Object.keys(data.searchForm)) {
+        if (data.searchForm[item]) {
+          searchForm[item] = data.searchForm[item]
+        }
+      }
+
+      const params = {
+        ...data.tablePage,
+        pageIndex: 0,
+        pageSize: 0,
+        ...searchForm
+      }
+
+      const { data: res } = await getStockLocationList(params)
+
+      if (!res.isSuccess) {
+        hookComponent.$message({
+          type: 'error',
+          content: res.errorMessage
+        })
+        return
+      }
+      const originData = [...data.tableData]
+      data.tableData = res.data.rows
+      await nextTick()
+      method.exportTable()
+      data.tableData = originData
+    } catch (e) {
+      console.error(e)
+      hookComponent.$message({
+        type: 'error',
+        content: i18n.global.t('system.page.exportError')
+      })
+    }
+  },
+
   sureSearch: () => {
     data.tablePage.searchObjects = setSearchObject(data.searchForm)
     method.getStockLocationList()
