@@ -333,6 +333,7 @@
       "edit": "编辑",
       "export": "导出",
       "exportAll": "全量导出",
+      "pick": "生成拣货单",
       "exportTemplate": "导出模板",
       "gridColumnGap": "列间距(px)",
       "gridRowGap": "行间距(px)",
@@ -391,7 +392,9 @@
   },
   "wms": {
     "deliveryManagement": {
+      "related_orders": "相关发货单",
       "NoItemSelected": "请至少选中一项商品进行出库!",
+      "pickListDetail": "拣货单明细",
       "ViewInventoryDetails": "查看商品明细",
       "arrival_city": "到货城市",
       "backToThePreviousStep": "撤回到上一个流程",

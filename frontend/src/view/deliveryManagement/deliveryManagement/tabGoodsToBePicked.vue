@@ -8,6 +8,7 @@
 
         <BtnGroup :authority-list="data.authorityList" :btn-list="data.btnList" />
         <tooltip-btn icon="mdi-apple-keyboard-shift" :tooltip-text="$t('system.page.exportAll')" @click="method.exportAll"></tooltip-btn>
+        <tooltip-btn icon="mdi-paperclip" :tooltip-text="$t('system.page.pick')" @click="method.GeneratePickList"></tooltip-btn>
       </v-col>
 
       <!-- Search Input -->
@@ -66,7 +67,7 @@
         {{ i18n.global.t('system.page.noData') }}
       </template>
       <vxe-column type="seq" width="60"></vxe-column>
-      <!-- <vxe-column type="checkbox" width="50"></vxe-column> -->
+      <vxe-column type="checkbox" width="50"></vxe-column>
       <vxe-column field="dispatch_no" :title="$t('wms.deliveryManagement.dispatch_no')"></vxe-column>
       <vxe-column field="spu_code" :title="$t('wms.deliveryManagement.spu_code')"></vxe-column>
       <vxe-column field="spu_description" width="200px" :title="$t('wms.deliveryManagement.spu_description')"></vxe-column>
@@ -117,6 +118,7 @@
     >
     </custom-pager>
     <SearchDeliveredDetail :id="data.showDeliveredDetailID" :source-type="'picking'" :show-dialog="data.showDeliveredDetail" @close="method.closeDeliveredDetail" />
+    <PickOrder ref="pickOrderRef" :show-dialog="data.showPickOrder" />
   </div>
 </template>
 
@@ -135,15 +137,18 @@ import customPager from '@/components/custom-pager.vue'
 import { setSearchObject, getMenuAuthorityList } from '@/utils/common'
 import { TablePage, btnGroupItem } from '@/types/System/Form'
 import SearchDeliveredDetail from './search-delivered-detail.vue'
+import PickOrder from './pick-order.vue'
 import { exportData } from '@/utils/exportTable'
 import { DEBOUNCE_TIME } from '@/constant/system'
 import BtnGroup from '@/components/system/btnGroup.vue'
 
 const xTable = ref()
+const pickOrderRef = ref()
 
 const data = reactive({
   showDeliveredDetailID: 0,
   showDeliveredDetail: false,
+  showPickOrder: false,
   dialogForm: {
     id: 0
   },
@@ -173,6 +178,21 @@ const method = reactive({
   viewRow: (row: DeliveryManagementDetailVO) => {
     data.showDeliveredDetailID = row.id
     data.showDeliveredDetail = true
+  },
+  closePickOrder: () => {
+    data.showPickOrder = false
+  },
+  GeneratePickList: () => {
+    const records = xTable.value.getCheckboxRecords()
+    if (records.length) {
+      const items = records.map(item => item.id)
+      pickOrderRef.value.openDialog(items)
+    } else {
+      hookComponent.$message({
+        type: 'error',
+        content: i18n.global.t('base.userManagement.checkboxIsNull')
+      })
+    }
   },
   // Refresh data
   refresh: () => {

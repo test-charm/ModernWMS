@@ -333,6 +333,7 @@
       "edit": "Edit",
       "export": "Export",
       "exportAll": "ExportAll",
+      "pick": "Generate pick lists",
       "exportTemplate": "Export Template",
       "gridColumnGap": "Column spacing(px)",
       "gridRowGap": "Row spacing(px)",
@@ -392,6 +393,7 @@
   "wms": {
     "deliveryManagement": {
       "NoItemSelected": "Please select at least one commodity to delivered!",
+      "pickListDetail": "Pick list detail",
       "ViewInventoryDetails": "View product details",
       "arrival_city": "City of arrival",
       "backToThePreviousStep": "Recall to previous process",

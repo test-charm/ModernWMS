@@ -245,3 +245,10 @@ export const viewDeliveryMainDetail = (dispatch_no: string) => http({
       dispatch_no
     }
   })
+
+// Getb pick detail
+export const getPickDetail = (data: any[]) => http({
+    url: '/dispatchlist/picking-list',
+    method: 'post',
+    data
+  })
