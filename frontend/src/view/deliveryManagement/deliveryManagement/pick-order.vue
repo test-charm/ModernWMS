@@ -71,10 +71,18 @@ const data = reactive({
 
 const mergeCells = ({ rowIndex, column }) => {
   if (column.field === 'warehouse_name') {
-    if (rowIndex === 0) {
-      return { rowspan: data.tableData.length, colspan: 1 }
+    let rowspan = 1
+    for (let i = rowIndex + 1; i < data.tableData.length; i++) {
+      if (data.tableData[i].warehouse_name === data.tableData[rowIndex].warehouse_name) {
+        rowspan++
+      } else {
+        break
+      }
     }
-    return { rowspan: 0, colspan: 0 }
+    if (rowIndex > 0 && data.tableData[rowIndex].warehouse_name === data.tableData[rowIndex - 1].warehouse_name) {
+      return { rowspan: 0, colspan: 0 }
+    }
+    return { rowspan, colspan: 1 }
   }
 }
 
