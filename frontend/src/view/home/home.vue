@@ -1,7 +1,10 @@
 <template>
   <div class="HomeContainer">
     <HomeSideBar />
-    <div class="homeRight">
+    <div
+      class="homeRight"
+      :style="{ width: `calc(100% - ${sideBarWidth}px)`}"
+    >
       <HomeHeader />
       <div class="homeRouterContainer pt-2">
         <RouterView v-slot="{ Component }">
@@ -21,6 +24,7 @@ import HomeHeader from './homeHeader.vue'
 import HomeSideBar from './homeSideBar.vue'
 
 const openedMenus = computed(() => store.getters['system/openedMenus'])
+const sideBarWidth = computed(() => store.getters['system/sideBarWidth'])
 </script>
 
 <style scoped lang="less">
@@ -35,7 +39,6 @@ const openedMenus = computed(() => store.getters['system/openedMenus'])
   flex-wrap: wrap;
 
   .homeRight {
-    width: calc(100% - @sideBarWidth);
     padding: 0 5%;
 
     .homeRouterContainer {
