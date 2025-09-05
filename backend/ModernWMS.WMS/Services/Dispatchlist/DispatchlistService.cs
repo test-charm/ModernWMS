@@ -1210,7 +1210,10 @@ namespace ModernWMS.WMS.Services
             });
             pick_datas.ForEach(t =>
             {
-                t.picked_qty = t.pick_qty;
+                if (t.picked_qty==0)
+                {
+                    t.picked_qty = t.pick_qty;
+                }
                 t.last_update_time = now_time;
             });
             var qty = await _dBContext.SaveChangesAsync();
@@ -1232,18 +1235,32 @@ namespace ModernWMS.WMS.Services
         /// <returns></returns>
         public async Task<(bool flag, string msg)> ConfirmPickDetail(List<int> picklist_id, CurrentUser currentUser)
         {
-            var DBSet = _dBContext.GetDbSet<DispatchlistEntity>();
             var pick_DBSet = _dBContext.GetDbSet<DispatchpicklistEntity>();
+            var dispatch_DBSet = _dBContext.GetDbSet<DispatchlistEntity>();
             var pick_datas = await pick_DBSet.Where(t => picklist_id.Contains(t.id)).ToListAsync();
             if (pick_datas.Any(t=>t.picker_id > 0) || pick_datas.Any(t=>t.picked_qty>0))
             {
                 return (false, _stringLocalizer["data_changed"]);
             }
-            pick_datas.ForEach(t=> 
-            { 
+            pick_datas.ForEach(t=>
+            {
+                t.picked_qty = t.pick_qty;
+                t.pick_qty = 0;
                 t.picker = currentUser.user_name;
                 t.picker_id = currentUser.user_id;
             });
+            var dispatch_ids = pick_datas.Select(t => t.dispatchlist_id).Distinct().ToList();
+            var dispatch_lists = await dispatch_DBSet
+                .Where(d => dispatch_ids.Contains(d.id))
+                .ToListAsync();
+            foreach (var dispatch in dispatch_lists)
+            {
+                var related_picks = pick_datas.Where(p => p.dispatchlist_id == dispatch.id);
+
+                int totalPicked = related_picks.Sum(p => p.picked_qty);
+                int totalPickQty = related_picks.Sum(p => p.pick_qty);
+                dispatch.picked_qty += totalPicked;
+            }
             var qty = await _dBContext.SaveChangesAsync();
             if (qty > 0)
             {
