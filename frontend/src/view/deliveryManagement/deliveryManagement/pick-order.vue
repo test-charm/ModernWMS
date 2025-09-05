@@ -49,7 +49,7 @@
         </v-card-text>
         <v-card-actions class="justify-end">
           <v-btn variant="text" @click="method.closeDialog">{{ $t('system.page.close') }}</v-btn>
-          <v-btn color="primary" variant="text" @click="method.printTable">{{ $t('system.page.export') }}</v-btn>
+          <v-btn color="primary" variant="text" @click="method.printTable">{{ $t('system.page.print') }}</v-btn>
         </v-card-actions>
       </v-card>
     </template>

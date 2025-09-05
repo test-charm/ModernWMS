@@ -174,6 +174,7 @@ const data = reactive({
 const method = reactive({
   closeDeliveredDetail: () => {
     data.showDeliveredDetail = false
+    method.refresh()
   },
   viewRow: (row: DeliveryManagementDetailVO) => {
     data.showDeliveredDetailID = row.id

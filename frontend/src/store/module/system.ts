@@ -53,6 +53,12 @@ export const system = {
   },
   actions: {},
   getters: {
+    sideBarWidth(state: StateProps) {
+      return state.sideBarWidth
+    },
+    isSideBarCollapsed(state: StateProps) {
+      return state.isSideBarCollapsed
+    },
     currentRouterPath(state: StateProps) {
       return state.currentRouterPath
     },
