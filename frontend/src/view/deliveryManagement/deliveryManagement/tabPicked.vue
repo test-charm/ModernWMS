@@ -7,7 +7,6 @@
         <tooltip-btn icon="mdi-export-variant" :tooltip-text="$t('system.page.export')" @click="method.exportTable"> </tooltip-btn> -->
 
         <BtnGroup :authority-list="data.authorityList" :btn-list="data.btnList" />
-        <tooltip-btn icon="mdi-apple-keyboard-shift" :tooltip-text="$t('system.page.exportAll')" @click="method.exportAll"></tooltip-btn>
       </v-col>
 
       <!-- Search Input -->
@@ -260,6 +259,12 @@ onMounted(() => {
       icon: 'mdi-export-variant',
       code: 'picked-export',
       click: method.exportTable
+    },
+    {
+      name: i18n.global.t('system.page.exportAll'),
+      icon: 'mdi-apple-keyboard-shift',
+      code: 'picked-exportAll',
+      click: method.exportAll
     }
   ]
 })

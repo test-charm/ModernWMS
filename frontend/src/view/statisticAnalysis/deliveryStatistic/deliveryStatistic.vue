@@ -12,7 +12,6 @@
                   <!-- Operate Btn -->
                   <v-col cols="3" class="col">
                     <BtnGroup :authority-list="data.authorityList" :btn-list="btnList" />
-                    <tooltip-btn icon="mdi-apple-keyboard-shift" :tooltip-text="$t('system.page.exportAll')" @click="method.exportAll"></tooltip-btn>
                   </v-col>
 
                   <!-- Search Input -->
@@ -294,6 +293,12 @@ const btnList = computed(() => [
     icon: 'mdi-export-variant',
     code: '',
     click: method.exportTable
+  },
+  {
+    name: i18n.global.t('system.page.exportAll'),
+    icon: 'mdi-apple-keyboard-shift',
+    code: 'exportAll',
+    click: method.exportAll
   },
   {
     name: i18n.global.t('system.page.setSearch'),

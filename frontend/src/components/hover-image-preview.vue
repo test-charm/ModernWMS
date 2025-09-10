@@ -1,8 +1,10 @@
 <template>
   <v-hover v-slot="{ isHovering, props }">
     <div v-bind="props" class="hover-wrapper" ref="wrapperRef">
-      <span>{{ slotText }}</span>
-      <!-- 悬浮图片显示 -->
+      <span :class="{ 'has-image': !!imageUrl }">
+        {{ slotText }}
+      </span>
+
       <div
         v-if="isHovering && imageUrl"
         class="hover-content"
@@ -15,12 +17,12 @@
         />
       </div>
       <!-- 无预览图 -->
-      <span 
+      <!-- <span 
         v-else-if="isHovering && !imageUrl" 
         class="no-image-text"
         :style="hoverStyle">
         无预览图
-      </span>
+      </span> -->
     </div>
   </v-hover>
 </template>
@@ -36,7 +38,6 @@ const props = defineProps<{
 
 const wrapperRef = ref<HTMLElement | null>(null)
 
-// 图片URL类型判断
 const fullImageUrl = computed(() => {
   if (!props.imageUrl) return ''
   if (/^https?:\/\//.test(props.imageUrl)) return props.imageUrl
@@ -50,7 +51,6 @@ const updateHoverPosition = () => {
   const rect = wrapperRef.value.getBoundingClientRect()
   const popupHeight = 110
 
-  // 找到表格头部底部
   const tableEl = wrapperRef.value.closest('.vxe-table') as HTMLElement
   let headerBottom = 0
   if (tableEl) {
@@ -64,10 +64,8 @@ const updateHoverPosition = () => {
   const spaceAbove = rect.top - headerBottom
 
   if (spaceAbove >= popupHeight) {
-    // 上方显示
     hoverStyle.value = { bottom: '100%', top: 'auto', left: '50%', transform: 'translateX(-50%)' }
   } else {
-    // 下方显示
     hoverStyle.value = { top: '100%', bottom: 'auto', left: '50%', transform: 'translateX(-50%)' }
   }
 }
@@ -89,7 +87,6 @@ onUnmounted(() => {
 .hover-wrapper {
   position: relative;
   display: inline-block;
-  cursor: pointer;
 }
 
 .hover-content {
@@ -131,6 +128,11 @@ onUnmounted(() => {
   text-overflow: ellipsis;
   left: 50%;
   transform: translateX(-50%);
+}
+.has-image {
+  color: #1a73e8;
+  text-decoration: underline;
+  cursor: pointer;
 }
 
 </style>

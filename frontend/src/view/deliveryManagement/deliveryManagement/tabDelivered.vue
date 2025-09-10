@@ -9,7 +9,6 @@
         <tooltip-btn icon="mdi-email-check" :tooltip-text="$t('wms.deliveryManagement.signIn')" @click="method.handleSignIn"></tooltip-btn> -->
 
         <BtnGroup :authority-list="data.authorityList" :btn-list="data.btnList" />
-        <tooltip-btn icon="mdi-apple-keyboard-shift" :tooltip-text="$t('system.page.exportAll')" @click="method.exportAll"></tooltip-btn>
       </v-col>
 
       <!-- Search Input -->
@@ -472,6 +471,12 @@ onMounted(() => {
       icon: 'mdi-export-variant',
       code: 'delivered-export',
       click: method.exportTable
+    },
+    {
+      name: i18n.global.t('system.page.exportAll'),
+      icon: 'mdi-apple-keyboard-shift',
+      code: 'delivered-exportAll',
+      click: method.exportAll
     },
     {
       name: i18n.global.t('wms.deliveryManagement.delivery'),

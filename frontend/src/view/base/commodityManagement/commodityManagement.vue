@@ -14,8 +14,6 @@
                 
                 <!-- new version -->
                 <BtnGroup :authority-list="data.authorityList" :btn-list="data.btnList" />
-                <tooltip-btn icon="mdi-database-import-outline" :tooltip-text="$t('system.page.import')" @click="method.openDialogImport"></tooltip-btn>
-                <tooltip-btn icon="mdi-apple-keyboard-shift" :tooltip-text="$t('system.page.exportAll')" @click="method.exportAll"></tooltip-btn>
               </v-col>
 
               <!-- Search Input -->
@@ -599,6 +597,18 @@ onMounted(async () => {
       icon: 'mdi-barcode',
       code: 'printBarCode',
       click: method.printBarCode
+    },
+    {
+      name: i18n.global.t('system.page.import'),
+      icon: 'mdi-database-import-outline',
+      code: 'import',
+      click: method.openDialogImport
+    },
+    {
+      name: i18n.global.t('system.page.exportAll'),
+      icon: 'mdi-apple-keyboard-shift',
+      code: 'exportAll',
+      click: method.exportAll
     },
     {
       name: i18n.global.t('system.page.print'),
