@@ -137,7 +137,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref, reactive, onMounted, watch } from 'vue'
+import { computed, ref, reactive, onMounted, watch, nextTick } from 'vue'
 import { VxePagerEvents } from 'vxe-table'
 import { computedCardHeight, computedTableHeight, errorColor } from '@/constant/style'
 import { FreightVO } from '@/types/Base/Freight'
@@ -248,8 +248,13 @@ const method = reactive({
     hookComponent.$dialog({
       content: i18n.global.t('system.tips.beforeDeleteMessage'),
       handleConfirm: async () => {
-        if (row.id) {
-          const { data: res } = await deleteFreight(row.id)
+        if (row.id) {         
+          const logTemp = {
+            carrier: row.carrier,
+            departure: row.departure_city,
+            arrival: row.arrival_city
+          }
+          const { data: res } = await deleteFreight(row.id, logTemp)
           if (!res.isSuccess) {
             hookComponent.$message({
               type: 'error',
@@ -272,6 +277,38 @@ const method = reactive({
 
     method.getFreightList()
   }),
+  // Export all
+  exportAll: async () => {
+    try {
+      const params = {
+        ...data.tablePage,
+        pageIndex: 0,
+        pageSize: 0,
+        searchObjects: setSearchObject(data.searchForm)
+      }
+
+      const { data: res } = await getFreightList(params)
+      
+      if (!res.isSuccess) {
+        hookComponent.$message({
+          type: 'error',
+          content: res.errorMessage
+        })
+        return
+      }
+      const originData = [...data.tableData]
+      data.tableData = res.data.rows
+      await nextTick()
+      method.exportTable()
+      data.tableData = originData
+    } catch (e) {
+      console.error(e)
+      hookComponent.$message({
+        type: 'error',
+        content: i18n.global.t('system.page.exportError')
+      })
+    }
+  },
   exportTable: () => {
     const $table = xTable.value
     exportData({
@@ -317,6 +354,12 @@ onMounted(() => {
       icon: 'mdi-export-variant',
       code: 'export',
       click: method.exportTable
+    },
+    {
+      name: i18n.global.t('system.page.exportAll'),
+      icon: 'mdi-apple-keyboard-shift',
+      code: 'exportAll',
+      click: method.exportAll
     }
   ]
 

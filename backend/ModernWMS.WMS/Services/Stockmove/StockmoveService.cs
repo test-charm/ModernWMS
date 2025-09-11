@@ -110,6 +110,7 @@ namespace ModernWMS.WMS.Services
                             sku_code = sku.sku_code,
                             sku_name = sku.sku_name,
                             spu_code = spu.spu_code,
+                            image_url = sku.image_url,
                             spu_name = spu.spu_name,
                             dest_googs_location_name = dest_location.location_name,
                             dest_googs_warehouse = dest_location.warehouse_name,
@@ -123,11 +124,20 @@ namespace ModernWMS.WMS.Services
             query = query.Where(t => t.tenant_id.Equals(currentUser.tenant_id))
                 .Where(queries.AsExpression<StockmoveViewModel>());
             int totals = await query.CountAsync();
-            var list = await query.OrderByDescending(t => t.last_update_time)
+            List<StockmoveViewModel> list;
+            if(pageSearch.pageIndex<=0 || pageSearch.pageSize <= 0)
+            {
+                list = await query.OrderByDescending(t => t.last_update_time)
+                                       .ToListAsync();
+            }
+            else
+            {
+                list = await query.OrderByDescending(t => t.last_update_time)
                        .Skip((pageSearch.pageIndex - 1) * pageSearch.pageSize)
                        .Take(pageSearch.pageSize)
                        .ToListAsync();
-            return (list, totals);
+            }
+                return (list, totals);
         }
 
         /// <summary>

@@ -61,7 +61,11 @@
                   </vxe-column>
                   <vxe-column field="spu_code" width="150px" :title="$t('base.commodityManagement.spu_code')"></vxe-column>
                   <vxe-column field="spu_name" width="150px" :title="$t('base.commodityManagement.spu_name')"></vxe-column>
-                  <vxe-column field="sku_code" width="150px" :title="$t('base.commodityManagement.sku_code')"></vxe-column>
+                  <vxe-column field="sku_code" width="150px" :title="$t('base.commodityManagement.sku_code')">
+                    <template #default="{ row }">
+                      <HoverImagePreview :image-url="row.image_url" :slot-text="row.sku_code" />
+                    </template>
+                  </vxe-column>
                   <vxe-column field="sku_name" width="150px" :title="$t('base.commodityManagement.sku_name')"></vxe-column>
                   <vxe-column field="qty" width="150px" :title="$t('wms.warehouseWorking.warehouseMove.qty')"></vxe-column>
                   <vxe-column
@@ -306,7 +310,7 @@ const method = reactive({
       content: i18n.global.t('system.tips.beforeDeleteMessage'),
       handleConfirm: async () => {
         if (row.id) {
-          const { data: res } = await deleteStockMove(row.id)
+          const { data: res } = await deleteStockMove(row.id, row.job_code)
           if (!res.isSuccess) {
             hookComponent.$message({
               type: 'error',
@@ -342,6 +346,39 @@ const method = reactive({
     })
   },
 
+  // Export all
+  exportAll: async () => {
+    try {
+      const params = {
+        ...data.tablePage,
+        pageIndex: 0,
+        pageSize: 0,
+        searchObjects: setSearchObject(data.searchForm)
+      }
+
+      const { data: res } = await getStockMoveList(params)
+
+      if (!res.isSuccess) {
+        hookComponent.$message({
+          type: 'error',
+          content: res.errorMessage
+        })
+        return
+      }
+      const originData = [...data.tableData]
+      data.tableData = res.data.rows
+      await nextTick()
+      method.exportTable()
+      data.tableData = originData
+    } catch (e) {
+      console.error(e)
+      hookComponent.$message({
+        type: 'error',
+        content: i18n.global.t('system.page.exportError')
+      })
+    }
+  },
+
   sureSearch: () => {
     data.tablePage.searchObjects = setSearchObject(data.searchForm)
     method.refresh()
@@ -355,7 +392,7 @@ const method = reactive({
       content: i18n.global.t('wms.warehouseWorking.warehouseMove.beforeConfirmMove'),
       handleConfirm: async () => {
         if (row.id) {
-          const { data: res } = await confirmMove(row.id)
+          const { data: res } = await confirmMove(row.id, row.job_code)
           if (!res.isSuccess) {
             hookComponent.$message({
               type: 'error',
@@ -397,6 +434,12 @@ onMounted(() => {
       icon: 'mdi-export-variant',
       code: 'export',
       click: method.exportTable
+    },
+    {
+      name: i18n.global.t('system.page.exportAll'),
+      icon: 'mdi-apple-keyboard-shift',
+      code: 'exportAll',
+      click: method.exportAll
     }
   ]
 })

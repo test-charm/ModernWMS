@@ -37,20 +37,22 @@ export const updateUser = (data: UserVO) => http({
   })
 
 // Delete user
-export const deleteUser = (id: number) => http({
+export const deleteUser = (id: number, logTemp: string) => http({
     url: '/user',
     method: 'delete',
     params: {
-      id
+      id,
+      logTemp
     }
   })
 
 // Reset password
-export const resetPassword = (id_list: number[]) => http({
+export const resetPassword = (id_list: number[], logTemp: any) => http({
     url: '/user/reset-pwd',
     method: 'post',
     data: {
-      id_list
+      id_list,
+      logTemp
     }
   })
 

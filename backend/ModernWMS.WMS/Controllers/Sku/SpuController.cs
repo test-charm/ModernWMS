@@ -2,12 +2,13 @@
  * date：2022-12-21
  * developer：NoNo
  */
+using Microsoft.AspNetCore.Http;
  using Microsoft.AspNetCore.Mvc;
+ using Microsoft.Extensions.Localization;
  using ModernWMS.Core.Controller;
  using ModernWMS.Core.Models;
  using ModernWMS.WMS.Entities.ViewModels;
  using ModernWMS.WMS.IServices;
- using Microsoft.Extensions.Localization;
 
 namespace ModernWMS.WMS.Controllers
 {
@@ -143,7 +144,62 @@ namespace ModernWMS.WMS.Controllers
                 return ResultModel<int>.Error(msg);
             }
         }
+        /// <summary>
+        /// add new record list
+        /// </summary>
+        /// <param name="viewModels">viewmodel</param>
+        /// <returns></returns>
+        [HttpPost("addlist")]
+        public async Task<ResultModel<int>> AddListAsync(List<SpuBothViewModel> viewModels)
+        {
+            var (count, msg) = await _spuService.AddListAsync(viewModels, CurrentUser);
+            if (count > 0)
+            {
+                return ResultModel<int>.Success(count);
+            }
+            else
+            {
+                return ResultModel<int>.Error(msg);
+            }
+        }
+        /// <summary>
+        ///  upload sku img
+        /// </summary>
+        /// <param name="img"></param>
+        /// <returns></returns>
+        [HttpPost("uploadImg")]
+        public async Task<ResultModel<string>> UploadImg(IFormFile img)
+        {
+            var (url, msg) = await _spuService.UploadImg(img, CurrentUser);
+            if (!string.IsNullOrEmpty(url))
+            {
+                return ResultModel<string>.Success(url, "Upload sucess");
+            }
+            else
+            {
+                return ResultModel<string>.Error(msg ?? "Upload failed");
+            }
+            
+        }
+        /// <summary>
+        ///  delete sku img
+        /// </summary>
+        /// <param name="imageUrl"></param>
+        /// <returns></returns>
+        [HttpDelete("deleteImg")]
+        public async Task<ResultModel<bool>> DeleteImg(string imageUrl)
+        {
+            // 先验证参数是否为空
+            if (string.IsNullOrEmpty(imageUrl))
+            {
+                return ResultModel<bool>.Error("url 参数不能为空", 400, false);
+            }
 
+            var (flag, msg) = await _spuService.DeleteImg(imageUrl, CurrentUser);
+            return flag 
+                ? ResultModel<bool>.Success(flag) 
+                : ResultModel<bool>.Error(msg, 400, flag);
+        }
         /// <summary>
         /// update a record
         /// </summary>

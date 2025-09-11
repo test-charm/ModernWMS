@@ -80,29 +80,30 @@ import { actionDict } from '@/view/base/roleMenu/actionList'
 import NavListVue from '@/components/page/nav-list.vue'
 import { setSearchObject } from '@/utils/common'
 import { DEBOUNCE_TIME } from '@/constant/system'
+import { menusToSideBar } from '@/utils/router'
 
 const menuList = [] as any[]
 
-Object.keys(actionDict).forEach((key) => {
-  // if (key === 'companySetting') {
-  //   menuList.push({ type: 'subheader', title: i18n.global.t('router.sideBar.baseModule') })
-  // } else if (key === 'stockAsn') {
-  //   menuList.push({ type: 'subheader', title: i18n.global.t('router.sideBar.stockAsn') })
-  // } else if (key === 'stockManagement') {
-  //   menuList.push({ type: 'subheader', title: i18n.global.t('router.sideBar.statisticAnalysis') })
-  // } else if (key === 'warehouseProcessing') {
-  //   menuList.push({ type: 'subheader', title: i18n.global.t('router.sideBar.warehouseWorkingModule') })
-  // } else if (key === 'deliveryManagement') {
-  //   menuList.push({ type: 'subheader', title: i18n.global.t('router.sideBar.deliveryManagement') })
-  // }
+// Object.keys(actionDict).forEach((key) => {
+//   // if (key === 'companySetting') {
+//   //   menuList.push({ type: 'subheader', title: i18n.global.t('router.sideBar.baseModule') })
+//   // } else if (key === 'stockAsn') {
+//   //   menuList.push({ type: 'subheader', title: i18n.global.t('router.sideBar.stockAsn') })
+//   // } else if (key === 'stockManagement') {
+//   //   menuList.push({ type: 'subheader', title: i18n.global.t('router.sideBar.statisticAnalysis') })
+//   // } else if (key === 'warehouseProcessing') {
+//   //   menuList.push({ type: 'subheader', title: i18n.global.t('router.sideBar.warehouseWorkingModule') })
+//   // } else if (key === 'deliveryManagement') {
+//   //   menuList.push({ type: 'subheader', title: i18n.global.t('router.sideBar.deliveryManagement') })
+//   // }
 
-  const obj = {
-    title: i18n.global.t(`router.sideBar.${ key }`),
-    value: key
-  }
+//   const obj = {
+//     title: i18n.global.t(`router.sideBar.${ key }`),
+//     value: key
+//   }
 
-  menuList.push(obj)
-})
+//   menuList.push(obj)
+// })
 
 const data = reactive({
   showDialog: false as boolean,
@@ -148,14 +149,38 @@ const tableHeight = computed(() => {
   return `${ height - 74 }px`
 })
 
-onMounted(() => {
-  const menu = data.menuList.find((item) => !item.type)
+const flattenMenu = (menus: any[]): any[] => {
+  let res: any[] = []
+  menus.forEach(item => {
+    if (!item.children || item.children.length === 0) {
+      res.push({
+        title: item.lable || item.title,
+        value: item.routerPath
+      })
+    } else {
+      res.push(...flattenMenu(item.children))
+    }
+  })
+  return res
+}
 
-  // The first menu is selected by default
-  if (menu) {
-    method.navListClick(menu)
-  }
+onMounted(() => {
+  const menuData = menusToSideBar()
+  data.menuList = flattenMenu(menuData)
+  data.menuList.shift()
+  data.menuList.pop()
+  const menu = data.menuList[0]
+  if (menu) method.navListClick(menu)
 })
+
+// onMounted(() => {
+//   const menu = data.menuList.find((item) => !item.type)
+
+//   // The first menu is selected by default
+//   if (menu) {
+//     method.navListClick(menu)
+//   }
+// })
 
 const method = reactive({
   // Click navList

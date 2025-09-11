@@ -162,6 +162,7 @@ namespace ModernWMS.WMS.Services
                             spu_name = spu.spu_name,
                             spu_code = spu.spu_code,
                             sku_code = sku.sku_code,
+                            image_url = sku.image_url,
                             qty_asn = ag.qty_asn == null ? 0 : ag.qty_asn,
                             qty_available = (sg.qty_normal == null ? 0 : sg.qty_normal) - (sg.qty_normal_frozen == null ? 0 : sg.qty_normal_frozen) - (dp.qty_locked == null ? 0 : dp.qty_locked) - (pl.qty_normal_locked == null ? 0 : pl.qty_normal_locked) - (m.qty_normal_locked == null ? 0 : m.qty_normal_locked),
                             qty_frozen = sg.qty_frozen == null ? 0 : sg.qty_frozen,
@@ -174,10 +175,19 @@ namespace ModernWMS.WMS.Services
                         };
             query = query.Where(t => t.qty_asn > 0 || t.qty > 0).Where(queries.AsExpression<StockManagementViewModel>());
             int totals = await query.CountAsync();
-            var list = await query.OrderBy(t => t.sku_code)
-                       .Skip((pageSearch.pageIndex - 1) * pageSearch.pageSize)
-                       .Take(pageSearch.pageSize)
-                       .ToListAsync();
+            List<StockManagementViewModel> list;
+            if(pageSearch.pageSize<=0 || pageSearch.pageIndex <= 0)
+            {
+                list = await query.OrderBy(t => t.sku_code)
+                           .ToListAsync();
+            }
+            else
+            {
+                list = await query.OrderBy(t => t.sku_code)
+                           .Skip((pageSearch.pageIndex - 1) * pageSearch.pageSize)
+                           .Take(pageSearch.pageSize)
+                           .ToListAsync();
+            } 
             return (list, totals);
         }
 
@@ -287,6 +297,7 @@ namespace ModernWMS.WMS.Services
                             spu_name = spu.spu_name,
                             spu_code = spu.spu_code,
                             sku_code = sku.sku_code,
+                            image_url = sku.image_url,
                             sku_name = sku.sku_name,
                             qty_available = gl.warehouse_area_property == 5 ? 0 : (sg.qty - sg.qty_frozen - (dp.qty_locked == null ? 0 : dp.qty_locked) - (pl.qty_locked == null ? 0 : pl.qty_locked) - (m.qty_locked == null ? 0 : m.qty_locked)),
                             qty_frozen = sg.qty_frozen,
@@ -301,10 +312,19 @@ namespace ModernWMS.WMS.Services
                         };
             query = query.Where(t => t.qty > 0).Where(queries.AsExpression<LocationStockManagementViewModel>());
             int totals = await query.CountAsync();
-            var list = await query.OrderBy(t => t.sku_code)
-                       .Skip((pageSearch.pageIndex - 1) * pageSearch.pageSize)
-                       .Take(pageSearch.pageSize)
-                       .ToListAsync();
+            List<LocationStockManagementViewModel> list;
+            if(pageSearch.pageIndex<=0 || pageSearch.pageSize <= 0)
+            {
+                list = await query.OrderBy(t => t.sku_code)
+                           .ToListAsync();
+            }
+            else
+            {
+                list = await query.OrderBy(t => t.sku_code)
+                           .Skip((pageSearch.pageIndex - 1) * pageSearch.pageSize)
+                           .Take(pageSearch.pageSize)
+                           .ToListAsync();
+            }
             return (list, totals);
         }
 
@@ -324,7 +344,8 @@ namespace ModernWMS.WMS.Services
                     queries.Add(s);
                 });
             }
-
+            // 添加仓库表WareHouse的DBSet
+            var warehouse_DBSet = _dBContext.GetDbSet<WarehouseEntity>().AsNoTracking();
             var DbSet = _dBContext.GetDbSet<StockEntity>().Where(t => t.tenant_id.Equals(currentUser.tenant_id));
             var dispatchpick_DBSet = _dBContext.GetDbSet<DispatchpicklistEntity>();
             var dispatch_DBSet = _dBContext.GetDbSet<DispatchlistEntity>().Where(t => t.tenant_id.Equals(currentUser.tenant_id));
@@ -337,7 +358,7 @@ namespace ModernWMS.WMS.Services
             var stock_group_datas = from stock in DbSet.AsNoTracking()
                                     join gl in location_DBSet.AsNoTracking() on stock.goods_location_id equals gl.id
                                     where stock.tenant_id == currentUser.tenant_id
-                                    group new { stock, gl } by new { stock.sku_id, gl.warehouse_id } into sg
+                                    group new { stock,gl } by new { stock.sku_id, gl.warehouse_id } into sg
                                     select new
                                     {
                                         sku_id = sg.Key.sku_id,
@@ -387,6 +408,9 @@ namespace ModernWMS.WMS.Services
                         from m in m_left.DefaultIfEmpty()
                         join sku in sku_DBSet on sg.sku_id equals sku.id
                         join spu in spu_DBSet on sku.spu_id equals spu.id
+                        //关联仓库表，用于显示仓库名称
+                        join wh in warehouse_DBSet on sg.warehouse_id equals wh.id
+                        //库位表，用于计算库存？？
                         join gl in location_DBSet on sg.warehouse_id equals gl.id
                         join sss in sku_safety_DBSet on new { sg.sku_id, sg.warehouse_id } equals new { sss.sku_id, sss.warehouse_id } into sss_left
                         from sss in sss_left.DefaultIfEmpty()
@@ -396,21 +420,31 @@ namespace ModernWMS.WMS.Services
                             spu_name = spu.spu_name,
                             spu_code = spu.spu_code,
                             sku_code = sku.sku_code,
+                            image_url = sku.image_url,
                             sku_name = sku.sku_name,
                             qty_available = gl.warehouse_area_property == 5 ? 0 : (sg.qty - sg.qty_frozen - (dp.qty_locked == null ? 0 : dp.qty_locked) - (pl.qty_locked == null ? 0 : pl.qty_locked) - (m.qty_locked == null ? 0 : m.qty_locked)),
                             qty_frozen = sg.qty_frozen,
                             qty_locked = (dp.qty_locked == null ? 0 : dp.qty_locked) + (pl.qty_locked == null ? 0 : pl.qty_locked) + (m.qty_locked == null ? 0 : m.qty_locked),
                             qty = sg.qty,
-                            warehouse_name = gl.warehouse_name,
+                            warehouse_name = wh.warehouse_name,
                             safety_stock_qty = sss.safety_stock_qty == null ? 0 : sss.safety_stock_qty,
                         };
             query = query.Where(queries.AsExpression<SafetyStockManagementViewModel>());
             int totals = await query.CountAsync();
-            var list = await query.OrderBy(t => t.sku_code)
+            List<SafetyStockManagementViewModel> list;
+            if(pageSearch.pageSize<=0 || pageSearch.pageIndex <= 0)
+            {
+                list = await query.OrderBy(t => t.sku_code)
+                       .ToListAsync();
+            }
+            else
+            {
+                list = await query.OrderBy(t => t.sku_code)
                        .Skip((pageSearch.pageIndex - 1) * pageSearch.pageSize)
                        .Take(pageSearch.pageSize)
                        .ToListAsync();
-            return (list, totals);
+            }
+                return (list, totals);
         }
 
         /// <summary>
@@ -501,6 +535,7 @@ namespace ModernWMS.WMS.Services
                             spu.spu_name,
                             spu.spu_code,
                             sku.sku_code,
+                            sku.image_url,
                             sku.sku_name,
                             sg.goods_location_id,
                             sg.goods_owner_id,
@@ -523,6 +558,7 @@ namespace ModernWMS.WMS.Services
                             spu_name = g.Key.spu_name,
                             spu_code = g.Key.spu_code,
                             sku_code = g.Key.sku_code,
+                            image_url = g.Key.image_url,
                             sku_name = g.Key.sku_name,
                             qty_available = g.Key.is_freeze ? 0 : (g.Key.qty - g.Sum(t => t.dp.qty_locked == null ? 0 : t.dp.qty_locked) - g.Sum(t => t.pl.qty_locked == null ? 0 : t.pl.qty_locked) - g.Sum(t => (t.m.qty_locked == null ? 0 : t.m.qty_locked))),
                             qty = g.Key.qty,
@@ -594,6 +630,7 @@ namespace ModernWMS.WMS.Services
                             brand = spu.brand,
                             origin = spu.origin,
                             sku_id = sku.id,
+                            image_url = sku.image_url
                         };
             query = query.Where(queries.AsExpression<SkuSelectViewModel>());
             int totals = await query.CountAsync();
@@ -772,6 +809,7 @@ namespace ModernWMS.WMS.Services
                             spu.spu_code,
                             sku.sku_name,
                             sku.sku_code,
+                            sku.image_url,
                             dpp.series_number,
                             dpp.price,
                             dpp.expiry_date,
@@ -791,6 +829,7 @@ namespace ModernWMS.WMS.Services
                             spu_code = dg.Key.spu_code,
                             sku_name = dg.Key.sku_name,
                             sku_code = dg.Key.sku_code,
+                            image_url = dg.Key.image_url,
                             series_number = dg.Key.series_number,
                             expiry_date = dg.Key.expiry_date,
                             price = dg.Key.price,
@@ -802,9 +841,17 @@ namespace ModernWMS.WMS.Services
                             delivery_amount = dg.Sum(t => t.dpp.picked_qty * t.sku.price)
                         };
             int totals = await query.CountAsync();
-            var list = await query.OrderByDescending(t => t.delivery_date)
+            List<DeliveryStatisticViewModel> list;
+            if(input.pageIndex<=0 || input.pageSize <= 0)
+            {
+                list = await query.OrderByDescending(t => t.delivery_date).ToListAsync();
+            }
+            else
+            {
+                list = await query.OrderByDescending(t => t.delivery_date)
                                               .Skip((input.pageIndex - 1) * input.pageSize)
                                               .Take(input.pageSize).ToListAsync();
+            }
             return (list, totals);
         }
 

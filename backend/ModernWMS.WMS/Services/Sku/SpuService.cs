@@ -3,17 +3,19 @@
  * developer：AMo
  */
  using Mapster;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+ using Microsoft.AspNetCore.Mvc;
  using Microsoft.EntityFrameworkCore;
+ using Microsoft.Extensions.Localization;
  using ModernWMS.Core.DBContext;
+ using ModernWMS.Core.DynamicSearch;
+ using ModernWMS.Core.JWT;
+ using ModernWMS.Core.Models;
  using ModernWMS.Core.Services;
  using ModernWMS.WMS.Entities.Models;
  using ModernWMS.WMS.Entities.ViewModels;
  using ModernWMS.WMS.IServices;
- using Microsoft.Extensions.Localization;
-using ModernWMS.Core.DynamicSearch;
-using ModernWMS.Core.Models;
-using ModernWMS.Core.JWT;
-using Microsoft.AspNetCore.Mvc;
 
 namespace ModernWMS.WMS.Services
 {
@@ -32,8 +34,61 @@ namespace ModernWMS.WMS.Services
         /// Localizer Service
         /// </summary>
         private readonly IStringLocalizer<Core.MultiLanguage> _stringLocalizer;
+        /// <summary>
+        /// Web环境信息（用于获取wwwroot路径）
+        /// </summary>
+        private readonly IWebHostEnvironment _webHostEnvironment;
         #endregion
+        #region nstants for image paths and helper methods
+        /// <summary>
+        /// 图片存储相对路径
+        /// </summary>
+        private readonly string[] _imageRelativePath = new[] { "sku_images" };
 
+        /// <summary>
+        /// 获取图片存储根目录
+        /// </summary>
+        /// <returns>图片存储根目录绝对路径</returns>
+        private string GetImageStorageDirectory()
+        {
+            var directoryParts = new List<string> { _webHostEnvironment.WebRootPath }; // 使用wwwroot路径
+            directoryParts.AddRange(_imageRelativePath); // 拼接子目录
+            string fullPath = Path.Combine(directoryParts.ToArray());
+
+            // 确保目录存在
+            if (!Directory.Exists(fullPath))
+            {
+                Directory.CreateDirectory(fullPath);
+            }
+            return fullPath;
+        }
+
+        /// <summary>
+        /// 从URL获取图片文件名
+        /// </summary>
+        /// <param name="imageUrl">图片URL</param>
+        /// <returns>文件名</returns>
+        private string GetFileNameFromUrl(string imageUrl)
+        {
+            if (string.IsNullOrEmpty(imageUrl))
+                return string.Empty;
+
+            // 从URL中提取文件名
+            return Path.GetFileName(imageUrl);
+        }
+
+        /// <summary>
+        /// 验证图片文件名格式
+        /// </summary>
+        /// <param name="fileName">文件名</param>
+        /// <returns>是否有效</returns>
+        private bool IsValidImageFileName(string fileName)
+        {
+            return !string.IsNullOrEmpty(fileName)
+                   && fileName.StartsWith("sku-img_")
+                   && Path.HasExtension(fileName);
+        }
+        #endregion
         #region constructor
         /// <summary>
         ///Spu  constructor
@@ -41,12 +96,14 @@ namespace ModernWMS.WMS.Services
         /// <param name="dBContext">The DBContext</param>
         /// <param name="stringLocalizer">Localizer</param>
         public SpuService(
-            SqlDBContext dBContext
-          , IStringLocalizer<Core.MultiLanguage> stringLocalizer
-            )
+    SqlDBContext dBContext
+  , IStringLocalizer<Core.MultiLanguage> stringLocalizer
+  , IWebHostEnvironment webHostEnvironment // 新增参数
+    )
         {
             this._dBContext = dBContext;
             this._stringLocalizer = stringLocalizer;
+            this._webHostEnvironment = webHostEnvironment; // 赋值给私有字段
         }
         #endregion
 
@@ -59,7 +116,7 @@ namespace ModernWMS.WMS.Services
         /// <returns></returns>
         public async Task<(List<SpuBothViewModel> data, int totals)> PageAsync(PageSearch pageSearch, CurrentUser currentUser)
         {
-            QueryCollection queries = new QueryCollection();
+            ModernWMS.Core.DynamicSearch.QueryCollection queries = new ModernWMS.Core.DynamicSearch.QueryCollection();
             if (pageSearch.searchObjects.Any())
             {
                 pageSearch.searchObjects.ForEach(s =>
@@ -82,7 +139,7 @@ namespace ModernWMS.WMS.Services
                             spu_name = m.spu_name,
                             category_id = m.category_id,
                             category_name = c.category_name,
-                            spu_description = m.spu_description,
+                            spu_description = m.spu_code,
                             supplier_id = m.supplier_id,
                             supplier_name = m.supplier_name,
                             brand = m.brand,
@@ -101,6 +158,7 @@ namespace ModernWMS.WMS.Services
                                              spu_id = t.spu_id,
                                              sku_code = t.sku_code,
                                              sku_name = t.sku_name,
+                                             image_url = t.image_url,
                                              bar_code = t.bar_code,
                                              weight = t.weight,
                                              lenght = t.lenght,
@@ -128,10 +186,18 @@ namespace ModernWMS.WMS.Services
                         };
             query = query.Where(queries.AsExpression<SpuBothViewModel>());
             int totals = await query.CountAsync();
-            var list = await query.OrderByDescending(t => t.create_time)
-                       .Skip((pageSearch.pageIndex - 1) * pageSearch.pageSize)
-                       .Take(pageSearch.pageSize)
-                       .ToListAsync();
+            List<SpuBothViewModel> list;
+            if (pageSearch.pageIndex <= 0 || pageSearch.pageSize <= 0)
+            {
+                list = await query.OrderByDescending(t => t.create_time).ToListAsync();
+            }
+            else
+            {
+                list = await query.OrderByDescending(t => t.create_time)
+                                  .Skip((pageSearch.pageIndex - 1) * pageSearch.pageSize)
+                                  .Take(pageSearch.pageSize)
+                                  .ToListAsync();
+            }
             return (list, totals);
         }
 
@@ -176,6 +242,7 @@ namespace ModernWMS.WMS.Services
                                              sku_code = t.sku_code,
                                              sku_name = t.sku_name,
                                              bar_code = t.bar_code,
+                                             image_url = t.image_url,
                                              weight = t.weight,
                                              lenght = t.lenght,
                                              width = t.width,
@@ -243,6 +310,7 @@ namespace ModernWMS.WMS.Services
                             sku_code = d.sku_code,
                             sku_name = d.sku_name,
                             bar_code = d.bar_code,
+                            image_url = d.image_url,
                             weight = d.weight,
                             lenght = d.lenght,
                             width = d.width,
@@ -297,6 +365,7 @@ namespace ModernWMS.WMS.Services
                             sku_code = d.sku_code,
                             sku_name = d.sku_name,
                             bar_code = d.bar_code,
+                            image_url = d.image_url,
                             weight = d.weight,
                             lenght = d.lenght,
                             width = d.width,
@@ -358,6 +427,335 @@ namespace ModernWMS.WMS.Services
             }
         }
         /// <summary>
+        /// add new record list
+        /// </summary>
+        /// <param name="viewModels"></param>
+        /// <param name="currentUser"></param>
+        /// <returns></returns>
+        public async Task<(int count, string msg)> AddListAsync(List<SpuBothViewModel> viewModels, CurrentUser currentUser)
+        {
+            if (viewModels == null || !viewModels.Any())
+            {
+                return (0, _stringLocalizer["batch_empty"]);
+            }
+            var dbSet = _dBContext.GetDbSet<SpuEntity>();
+            var tenantId = currentUser.tenant_id;
+            var spuCodes = viewModels.Select(vm => vm.spu_code?.Trim()).ToList();
+            var invalidSpuCodes = viewModels.Where(vm => string.IsNullOrWhiteSpace(vm.spu_code?.Trim()))
+                                            .Select((vm, idx) => $"第{idx + 1}条数据")
+                                            .ToList();
+            if (invalidSpuCodes.Any())
+            {
+                return (0, string.Format(_stringLocalizer["spu_code_required"], string.Join("、", invalidSpuCodes)));
+            }
+            var duplicateCodes = spuCodes
+                .GroupBy(code => code)
+                .Where(group => group.Count() > 1 && !string.IsNullOrEmpty(group.Key))
+                .Select(group => group.Key)
+                .ToList();
+            if (duplicateCodes.Any())
+            {
+                return (0, string.Format(_stringLocalizer["batch_duplicate_spu_code"], string.Join(",", duplicateCodes)));
+            }
+            var existingCodes = await dbSet.AsNoTracking()
+                .Where(t => t.tenant_id == tenantId && spuCodes.Contains(t.spu_code))
+                .Select(t => t.spu_code)
+                .ToListAsync();
+            List<SpuBothViewModel> newVms = new();
+            List<SpuBothViewModel> existingVms = new();
+            List<string> inconsistentCodes = new();
+            Dictionary<string, SpuEntity> existingSpuDict = new();
+            if (existingCodes.Any())
+            {
+                existingSpuDict = await dbSet.AsNoTracking()
+                    .Include(spu => spu.detailList)
+                    .Where(t => t.tenant_id == tenantId && existingCodes.Contains(t.spu_code))
+                    .ToDictionaryAsync(s => s.spu_code.Trim(), s => s);
+
+                foreach (var vm in viewModels)
+                {
+                    var spuCode = vm.spu_code!.Trim();
+                    if (existingSpuDict.ContainsKey(spuCode))
+                    {
+                        var existingSpu = existingSpuDict[spuCode];
+                        bool isNameConsistent = string.Equals(
+                            vm.spu_name?.Trim(),
+                            existingSpu.spu_name?.Trim(),
+                            StringComparison.OrdinalIgnoreCase
+                        );
+                        bool isSupplierConsistent = string.Equals(
+                            vm.supplier_name?.Trim(),
+                            existingSpu.supplier_name?.Trim(),
+                            StringComparison.OrdinalIgnoreCase
+                        );
+                        if (!isNameConsistent || !isSupplierConsistent)
+                        {
+                            inconsistentCodes.Add(spuCode);
+                        }
+                        else
+                        {
+                            existingVms.Add(vm);
+                        }
+                    }
+                    else
+                    {
+                        newVms.Add(vm);
+                    }
+                }
+                if (inconsistentCodes.Any())
+                {
+                    return (0, string.Format(_stringLocalizer["spu_info_inconsistent"], string.Join(",", inconsistentCodes)));
+                }
+            }
+            else
+            {
+                newVms = viewModels.ToList();
+            }
+            var allVms = newVms.Concat(existingVms).ToList();
+            var supplierNames = allVms.Select(vm => vm.supplier_name?.Trim())
+                                     .Where(name => !string.IsNullOrEmpty(name))
+                                     .Distinct()
+                                     .ToList();
+            var categoryNames = allVms.Select(vm => vm.category_name?.Trim())
+                                     .Where(name => !string.IsNullOrEmpty(name))
+                                     .Distinct()
+                                     .ToList();
+            var existingSuppliers = await _dBContext.GetDbSet<SupplierEntity>().AsNoTracking()
+                .Where(s => s.tenant_id == tenantId && supplierNames.Contains(s.supplier_name))
+                .Select(s => new { s.supplier_name, s.id })
+                .ToDictionaryAsync(key => key.supplier_name.Trim(), value => value.id);
+            var existingCategories = await _dBContext.GetDbSet<CategoryEntity>().AsNoTracking()
+                .Where(c => c.tenant_id == tenantId && categoryNames.Contains(c.category_name))
+                .Select(c => new { c.category_name, c.id })
+                .ToDictionaryAsync(key => key.category_name.Trim(), value => value.id);
+            foreach (var vm in allVms)
+            {
+                var supplierName = vm.supplier_name?.Trim();
+                if (string.IsNullOrEmpty(supplierName) || !existingSuppliers.TryGetValue(supplierName, out var supplierId))
+                {
+                    return (0, string.Format(_stringLocalizer["supplier_not_exists"], supplierName));
+                }
+                vm.supplier_id = supplierId;
+
+                var categoryName = vm.category_name?.Trim();
+                if (string.IsNullOrEmpty(categoryName) || !existingCategories.TryGetValue(categoryName, out var categoryId))
+                {
+                    return (0, string.Format(_stringLocalizer["category_not_exists"], categoryName));
+                }
+                vm.category_id = categoryId;
+            }
+            using (var transaction = await _dBContext.Database.BeginTransactionAsync())
+            {
+                try
+                {
+                    int totalAffected = 0;
+                    foreach (var vm in existingVms)
+                    {
+                        var spuCode = vm.spu_code!.Trim();
+                        var existingSpu = existingSpuDict[spuCode];
+                        var skuDbSet = _dBContext.GetDbSet<SkuEntity>();
+                        var newSkus = vm.detailList?.Select(skuVm =>
+                        {
+                            var sku = skuVm.Adapt<SkuEntity>();
+                            sku.id = 0;
+                            sku.spu_id = existingSpu.id;
+                            decimal unitConvert = ChangeLengthUnit(existingSpu.length_unit, existingSpu.volume_unit);
+                            sku.volume = Math.Round(
+                                sku.lenght * unitConvert *
+                                sku.width * unitConvert *
+                                sku.height * unitConvert, 3);
+                            return sku;
+                        }).Where(sku => sku != null).ToList();
+                        if (newSkus?.Any() ?? false)
+                        {
+                            var duplicateSkuCodes = newSkus
+                                .GroupBy(s => s.sku_code?.Trim())
+                                .Where(g => g.Count() > 1 && !string.IsNullOrEmpty(g.Key))
+                                .Select(g => g.Key)
+                                .ToList();
+                            if (duplicateSkuCodes.Any())
+                            {
+                                return (0, string.Format(_stringLocalizer["duplicate_sku_in_batch"],
+                                    spuCode, string.Join(",", duplicateSkuCodes)));
+                            }
+                            var existingSkuCodes = existingSpu.detailList?
+                                .Select(s => s.sku_code?.Trim())
+                                .Where(c => !string.IsNullOrEmpty(c))
+                                .ToList() ?? new List<string>();
+                            var conflictSkuCodes = newSkus
+                                .Where(s => !string.IsNullOrEmpty(s.sku_code?.Trim()) &&
+                                           existingSkuCodes.Contains(s.sku_code.Trim()))
+                                .Select(s => s.sku_code!.Trim())
+                                .ToList();
+                            if (conflictSkuCodes.Any())
+                            {
+                                return (0, string.Format(_stringLocalizer["sku_code_exists"],
+                                    spuCode, string.Join(",", conflictSkuCodes)));
+                            }
+                            await skuDbSet.AddRangeAsync(newSkus);
+                            existingSpu.last_update_time = DateTime.Now;
+                            dbSet.Update(existingSpu);
+
+                            totalAffected += newSkus.Count;
+                        }
+                    }
+                    if (newVms.Any())
+                    {
+                        var newSpuEntities = newVms.Select(vm =>
+                        {
+                            var entity = vm.Adapt<SpuEntity>();
+                            entity.id = 0;
+                            entity.creator = currentUser.user_name;
+                            entity.create_time = DateTime.Now;
+                            entity.last_update_time = DateTime.Now;
+                            entity.tenant_id = tenantId;
+                            if (entity.detailList?.Any() ?? false)
+                            {
+                                decimal unitConvert = ChangeLengthUnit(entity.length_unit, entity.volume_unit);
+                                foreach (var sku in entity.detailList)
+                                {
+                                    sku.id = 0;
+                                    sku.volume = Math.Round(
+                                        sku.lenght * unitConvert *
+                                        sku.width * unitConvert *
+                                        sku.height * unitConvert, 3);
+                                }
+                            }
+                            return entity;
+                        }).ToList();
+
+                        await dbSet.AddRangeAsync(newSpuEntities);
+                        totalAffected += newSpuEntities.Count;
+                    }
+                    await _dBContext.SaveChangesAsync();
+                    await transaction.CommitAsync();
+                    return (totalAffected, _stringLocalizer["batch_save_success"]);
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    return (0, string.Format(_stringLocalizer["batch_save_failed"], ex.Message));
+                }
+            }
+        }
+        /// <summary>
+        /// 上传SKU图片（直接在方法中定义存储路径）
+        /// </summary>
+        /// <param name="img">图片文件</param>
+        /// <param name="currentUser">当前用户信息</param>
+        /// <returns>图片URL和操作消息</returns>
+        public async Task<(string url, string msg)> UploadImg(IFormFile img, CurrentUser currentUser)
+        {
+            // 验证文件是否存在
+            if (img == null || img.Length == 0)
+            {
+                return (string.Empty, _stringLocalizer["img_required"]);
+            }
+            try
+            {
+                // 验证文件类型（仅允许常见图片格式）
+                var allowedContentTypes = new[] { "image/jpeg", "image/png", "image/gif", "image/bmp" };
+                if (!allowedContentTypes.Contains(img.ContentType))
+                {
+                    return (string.Empty, _stringLocalizer["Unsupported image types, only JPG, PNG, GIF, BMP formats are allowed"]);
+                }
+                // 验证文件大小（限制5MB以内）
+                var maxFileSize = 5 * 1024 * 1024; // 5MB
+                if (img.Length > maxFileSize)
+                {
+                    return (string.Empty, string.Format(_stringLocalizer["The size of the image cannot be exceeded{0}MB"], maxFileSize / 1024 / 1024));
+                }
+                // 获取图片存储目录
+                var uploadDir = GetImageStorageDirectory();
+                // 确保目录存在
+                if (!Directory.Exists(uploadDir))
+                {
+                    Directory.CreateDirectory(uploadDir);
+                }
+
+                // 生成唯一文件名
+                var fileExtension = Path.GetExtension(img.FileName).ToLowerInvariant();
+                var uniqueFileName = $"sku-img_{Guid.NewGuid()}{fileExtension}";
+                var filePath = Path.Combine(uploadDir, uniqueFileName);
+                // 保存文件
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await img.CopyToAsync(stream);
+                }
+                var imageUrl = $"/{string.Join("/", _imageRelativePath)}/{uniqueFileName}"; // 拼接为/assets/sku-images/文件名
+                return (imageUrl, _stringLocalizer["Upload sucess"]);
+            }
+            catch (IOException)
+            {
+                return (string.Empty, _stringLocalizer["Upload failed"]);
+            }
+            catch (Exception ex)
+            {
+                return (string.Empty, string.Format(_stringLocalizer["Upload failed: {0}"], ex.Message));
+            }
+        }
+        /// <summary>
+        /// 删除SKU图片
+        /// </summary>
+        /// <param name="imageUrl">图片URL</param>
+        /// <param name="currentUser">当前用户信息</param>
+        /// <returns>操作结果和消息</returns>
+        public async Task<(bool flag, string msg)> DeleteImg(string imageUrl, CurrentUser currentUser)
+        {
+            // 验证URL是否有效
+            if (string.IsNullOrEmpty(imageUrl))
+            {
+                return (false, _stringLocalizer["image_url_required"]);
+            }
+
+            try
+            {
+                // 从URL获取文件名
+                var fileName = GetFileNameFromUrl(imageUrl);
+
+                // 验证文件名格式
+                if (!IsValidImageFileName(fileName))
+                {
+                    return (false, _stringLocalizer["invalid_image_url"]);
+                }
+
+                // 获取图片存储目录并构建文件路径
+                var uploadDir = GetImageStorageDirectory();
+                var filePath = Path.Combine(uploadDir, fileName);
+
+                // 检查文件是否存在
+                if (!File.Exists(filePath))
+                {
+                    return (false, _stringLocalizer["image_file_not_found"]);
+                }
+
+                // 删除文件
+                File.Delete(filePath);
+
+                // 同步更新数据库中关联的图片路径
+                var skuEntity = await _dBContext.GetDbSet<SkuEntity>()
+                    .FirstOrDefaultAsync(s => s.image_url == imageUrl);
+
+                if (skuEntity != null)
+                {
+                    skuEntity.image_url = null;
+                    skuEntity.last_update_time = DateTime.Now;
+                    await _dBContext.SaveChangesAsync();
+                }
+
+                return (true, _stringLocalizer["image_delete_success"]);
+            }
+            catch (IOException)
+            {
+                return (false, _stringLocalizer["image_delete_failed_file_in_use"]);
+            }
+            catch (Exception ex)
+            {
+                return (false, string.Format(_stringLocalizer["image_delete_failed: {0}"], ex.Message));
+            }
+        }
+
+
         /// change to the volume unit
         /// </summary>
         /// <param name="length_unit">length_unit</param>
@@ -532,6 +930,7 @@ namespace ModernWMS.WMS.Services
                         d.sku_code = vm.sku_code;
                         d.sku_name = vm.sku_name;
                         d.bar_code = vm.bar_code;
+                        d.image_url = vm.image_url;
                         d.weight = vm.weight;
                         d.lenght = vm.lenght;
                         d.width = vm.width;

@@ -21,7 +21,11 @@
             <vxe-column field="spu_name" :title="$t('wms.deliveryManagement.spu_name')"></vxe-column>
             <vxe-column field="spu_description" width="200px" :title="$t('wms.deliveryManagement.spu_description')"></vxe-column>
             <vxe-column field="bar_code" :title="$t('wms.deliveryManagement.bar_code')"></vxe-column>
-            <vxe-column field="sku_code" :title="$t('wms.deliveryManagement.sku_code')"></vxe-column>
+            <vxe-column field="sku_code" :title="$t('wms.deliveryManagement.sku_code')">
+              <template #default="{ row }">
+                <HoverImagePreview :image-url="row.image_url" :slot-text="row.sku_code" />
+              </template>
+            </vxe-column>
             <vxe-column field="series_number" :title="$t('wms.stockLocation.series_number')"></vxe-column>
             <vxe-column field="goods_owner_name" :title="$t('base.ownerOfCargo.goods_owner_name')"></vxe-column>
             <vxe-column field="warehouse_name" :title="$t('wms.stockLocation.warehouse_name')"></vxe-column>

@@ -195,7 +195,7 @@ const method = reactive({
       content: i18n.global.t('system.tips.beforeDeleteMessage'),
       handleConfirm: async () => {
         if (row.id) {
-          const { data: res } = await deleteCompany(row.id)
+          const { data: res } = await deleteCompany(row.id, row.company_name)
           if (!res.isSuccess) {
             hookComponent.$message({
               type: 'error',

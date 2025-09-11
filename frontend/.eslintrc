@@ -11,6 +11,7 @@
     "ecmaVersion": 2020
   },
   "rules": {
+    "no-console": "off",
     "camelcase": "off",
     "no-bitwise": "off", // 禁用按位运算符
     "no-tabs": "off", // 禁用 tab

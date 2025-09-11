@@ -206,6 +206,14 @@ const data = reactive({
     B5: {
       width: 250,
       height: 175.6
+    },
+    Letter: {
+      width: 215.9,
+      height: 279.4
+    },
+    Legal: {
+      width: 216,
+      height: 356
     }
   },
   scaleValue: 1,

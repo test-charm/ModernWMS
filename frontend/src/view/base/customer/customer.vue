@@ -118,7 +118,7 @@
 </template>
 
 <script lang="tsx" setup>
-import { computed, ref, reactive, onMounted, watch } from 'vue'
+import { computed, ref, reactive, onMounted, watch, nextTick } from 'vue'
 import { VxePagerEvents } from 'vxe-table'
 import { computedCardHeight, computedTableHeight, errorColor } from '@/constant/style'
 import { CustomerVO } from '@/types/Base/Customer'
@@ -223,7 +223,7 @@ const method = reactive({
       content: i18n.global.t('system.tips.beforeDeleteMessage'),
       handleConfirm: async () => {
         if (row.id) {
-          const { data: res } = await deleteCustomer(row.id)
+          const { data: res } = await deleteCustomer(row.id, row.customer_name)
           if (!res.isSuccess) {
             hookComponent.$message({
               type: 'error',
@@ -245,6 +245,38 @@ const method = reactive({
     data.tablePage.pageSize = pageSize
     method.getData()
   }),
+  // Export all
+  exportAll: async () => {
+    try {
+      const params = {
+        ...data.tablePage,
+        pageIndex: 0,
+        pageSize: 0,
+        searchObjects: setSearchObject(data.searchForm)
+      }
+
+      const { data: res } = await getCustomerList(params)
+
+      if (!res.isSuccess) {
+        hookComponent.$message({
+          type: 'error',
+          content: res.errorMessage
+        })
+        return
+      }
+      const originData = [...data.tableData]
+      data.tableData = res.data.rows
+      await nextTick()
+      method.exportTable()
+      data.tableData = originData
+    } catch (e) {
+      console.error(e)
+      hookComponent.$message({
+        type: 'error',
+        content: i18n.global.t('system.page.exportError')
+      })
+    }
+  },
   exportTable: () => {
     const $table = xTable.value
     exportData({
@@ -306,6 +338,12 @@ onMounted(() => {
       icon: 'mdi-export-variant',
       code: 'export',
       click: method.exportTable
+    },
+    {
+      name: i18n.global.t('system.page.exportAll'),
+      icon: 'mdi-apple-keyboard-shift',
+      code: 'exportAll',
+      click: method.exportAll
     },
     {
       name: i18n.global.t('system.page.print'),

@@ -645,4 +645,34 @@
   <data name="username_existed" xml:space="preserve">
     <value>User name already exists</value>
   </data>
+  <data name="batch_empty" xml:space="preserve">
+    <value>Batch data</value>
+  </data>
+  <data name="empty" xml:space="preserve">
+    <value>{0} is empty</value>
+  </data>
+  <data name="batch_duplicate_spu_code" xml:space="preserve">
+    <value>Batch duplicate spu code</value>
+  </data>
+  <data name="spu_info_inconsistent" xml:space="preserve">
+    <value>Check the product information</value>
+  </data>
+  <data name="supplier_not_exists" xml:space="preserve">
+    <value>Supplier not exists</value>
+  </data>
+  <data name="category_not_exists" xml:space="preserve">
+    <value>Category not exists</value>
+  </data>
+  <data name="sku_code_exists" xml:space="preserve">
+    <value>Sku code exists</value>
+  </data>
+  <data name="duplicate_sku_in_batch" xml:space="preserve">
+    <value>Duplicate specification codes are present in the batch data</value>
+  </data>
+  <data name="batch_save_success" xml:space="preserve">
+    <value>Batch save success</value>
+  </data>
+  <data name="batch_save_failed" xml:space="preserve">
+    <value>Batch save failed</value>
+  </data>
 </root>

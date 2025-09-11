@@ -96,6 +96,7 @@ namespace ModernWMS.WMS.Services
                             tenant_id = sj.tenant_id,
                             sku_id = sku.id,
                             sku_code = sku.sku_code,
+                            image_url = sku.image_url,
                             sku_name = sku.sku_name,
                             spu_code = spu.spu_code,
                             spu_name = spu.spu_name,
@@ -114,11 +115,20 @@ namespace ModernWMS.WMS.Services
                         };
             query = query.Where(queries.AsExpression<StockadjustViewModel>());
             int totals = await query.CountAsync();
-            var list = await query.OrderByDescending(t => t.create_time)
+            List<StockadjustViewModel> list;
+            if(pageSearch.pageIndex<=0 || pageSearch.pageSize<=0)
+            {
+                list = await query.OrderByDescending(t => t.create_time)
+                       .ToListAsync();
+            }
+            else
+            {
+                list = await query.OrderByDescending(t => t.create_time)
                        .Skip((pageSearch.pageIndex - 1) * pageSearch.pageSize)
                        .Take(pageSearch.pageSize)
                        .ToListAsync();
-            return (list, totals);
+            }
+                return (list, totals);
         }
 
         /// <summary>

@@ -52,7 +52,11 @@
                   <vxe-column field="spu_code" :title="$t('wms.saftyStock.spu_code')"></vxe-column>
                   <vxe-column field="spu_name" :title="$t('wms.saftyStock.spu_name')"></vxe-column>
                   <vxe-column field="sku_id" :title="$t('wms.saftyStock.sku_id')"></vxe-column>
-                  <vxe-column field="sku_code" :title="$t('wms.saftyStock.sku_code')"></vxe-column>
+                  <vxe-column field="sku_code" :title="$t('wms.saftyStock.sku_code')">
+                    <template #default="{ row }">
+                      <HoverImagePreview :image-url="row.image_url" :slot-text="row.sku_code" />
+                    </template>
+                  </vxe-column>
                   <vxe-column field="sku_name" :title="$t('wms.saftyStock.sku_name')"></vxe-column>
                   <vxe-column field="qty" :title="$t('wms.saftyStock.qty')"></vxe-column>
                   <vxe-column field="qty_available" :title="$t('wms.saftyStock.qty_available')"></vxe-column>
@@ -80,7 +84,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref, reactive, watch, onMounted } from 'vue'
+import { computed, ref, reactive, watch, onMounted, nextTick } from 'vue'
 import { VxePagerEvents } from 'vxe-table'
 import { computedCardHeight, computedTableHeight } from '@/constant/style'
 import { PAGE_SIZE, PAGE_LAYOUT, DEFAULT_PAGE_SIZE } from '@/constant/vxeTable'
@@ -92,6 +96,7 @@ import i18n from '@/languages/i18n'
 import customPager from '@/components/custom-pager.vue'
 import { exportData } from '@/utils/exportTable'
 import BtnGroup from '@/components/system/btnGroup.vue'
+import tooltipBtn from '@/components/tooltip-btn.vue'
 import { list as getSafetyStockList } from '@/api/wms/saftyStock'
 import { hookComponent } from '@/components/system'
 import { SafetyStockVo } from '@/types/WMS/SafetyStock'
@@ -162,6 +167,46 @@ const method = reactive({
     })
   },
 
+  // Export all
+  exportAll: async () => {
+    try {
+      const searchForm = {}
+      for (const item of Object.keys(data.searchForm)) {
+        if (data.searchForm[item]) {
+          searchForm[item] = data.searchForm[item]
+        }
+      }
+
+      const params = {
+        ...data.tablePage,
+        pageIndex: 0,
+        pageSize: 0,
+        ...searchForm
+      }
+
+      const { data: res } = await getSafetyStockList(params)
+
+      if (!res.isSuccess) {
+        hookComponent.$message({
+          type: 'error',
+          content: res.errorMessage
+        })
+        return
+      }
+      const originData = [...data.tableData]
+      data.tableData = res.data.rows
+      await nextTick()
+      method.exportTable()
+      data.tableData = originData
+    } catch (e) {
+      console.error(e)
+      hookComponent.$message({
+        type: 'error',
+        content: i18n.global.t('system.page.exportError')
+      })
+    }
+  },
+
   sureSearch: () => {
     data.tablePage.searchObjects = setSearchObject(data.searchForm)
     method.refresh()
@@ -181,6 +226,12 @@ onMounted(() => {
       icon: 'mdi-export-variant',
       code: 'export',
       click: method.exportTable
+    },
+    {
+      name: i18n.global.t('system.page.exportAll'),
+      icon: 'mdi-apple-keyboard-shift',
+      code: 'exportAll',
+      click: method.exportAll
     }
   ]
 

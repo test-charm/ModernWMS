@@ -188,7 +188,7 @@ const method = reactive({
       content: i18n.global.t('system.tips.beforeDeleteMessage'),
       handleConfirm: async () => {
         if (row.id) {
-          const { data: res } = await deleteUserRole(row.id)
+          const { data: res } = await deleteUserRole(row.id, row.role_name)
           if (!res.isSuccess) {
             hookComponent.$message({
               type: 'error',

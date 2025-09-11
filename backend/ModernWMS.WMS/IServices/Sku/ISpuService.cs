@@ -2,6 +2,7 @@
  * date：2022-12-21
  * developer：NoNo
  */
+using Microsoft.AspNetCore.Http;
 using ModernWMS.Core.JWT;
 using ModernWMS.Core.Models;
 using ModernWMS.Core.Services;
@@ -50,6 +51,22 @@ using ModernWMS.WMS.Entities.ViewModels;
         /// <param name="currentUser">currentUser</param>
         /// <returns></returns>
         Task<(int id, string msg)> AddAsync(SpuBothViewModel viewModel, CurrentUser currentUser);
+        /// <summary>
+        /// add new record list
+        /// </summary>
+        /// <param name="viewModels">viewmodel</param>
+        /// <param name="currentUser">currentUser</param>
+        /// <returns></returns>
+        Task<(int count, string msg)> AddListAsync(List<SpuBothViewModel> viewModels, CurrentUser currentUser);
+        /// <summary>
+        /// upload sku img
+        /// </summary>
+        /// <param name="img"></param>
+        /// <param name="currentUser"></param>
+        /// <returns></returns>
+        Task<(string url , string msg)> UploadImg(IFormFile img, CurrentUser currentUser);
+
+        Task<(bool flag, string msg)> DeleteImg(string imageUrl, CurrentUser currentUser);
         /// <summary>
         /// update a record
         /// </summary>

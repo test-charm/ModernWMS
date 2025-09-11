@@ -45,13 +45,18 @@
       <vxe-column type="checkbox" width="50"></vxe-column>
       <vxe-column field="warehouse_name" :title="$t('wms.stockLocation.warehouse_name')"></vxe-column>
       <vxe-column field="location_name" :title="$t('wms.stockLocation.location_name')"></vxe-column>
-      <vxe-column field="spu_code" :title="$t('wms.stockLocation.spu_code')">
-        <template #default="{ row }">
+      <vxe-column field="spu_code" :title="$t('wms.stockLocation.spu_code')"></vxe-column>
+      <vxe-column field="spu_name" :title="$t('wms.stockLocation.spu_name')"></vxe-column>
+      <vxe-column field="sku_code" :title="$t('wms.stockLocation.sku_code')">
+        <!-- <template #default="{ row }">
           <div :class="'text-decoration-none'" @click="method.showSkuInfo(row)"> {{ row.sku_code }}</div>
+        </template> -->
+        <template #default="{ row }">
+          <div :class="'text-decoration-none'" @click="method.showSkuInfo(row)">
+            <HoverImagePreview :image-url="row.image_url" :slot-text="row.sku_code" />
+          </div>
         </template>
       </vxe-column>
-      <vxe-column field="spu_name" :title="$t('wms.stockLocation.spu_name')"></vxe-column>
-      <vxe-column field="sku_code" :title="$t('wms.stockLocation.sku_code')"></vxe-column>
       <vxe-column field="sku_name" :title="$t('wms.stockLocation.sku_name')"></vxe-column>
       <vxe-column field="series_number" :title="$t('wms.stockLocation.series_number')"></vxe-column>
       <vxe-column field="qty" :title="$t('wms.stockLocation.qty')"></vxe-column>
@@ -77,7 +82,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref, reactive, watch, onMounted } from 'vue'
+import { computed, ref, reactive, watch, onMounted, nextTick } from 'vue'
 import { VxePagerEvents } from 'vxe-table'
 import { computedCardHeight, computedTableHeight } from '@/constant/style'
 import { StockLocationVO } from '@/types/WMS/StockManagement'
@@ -92,6 +97,7 @@ import customPager from '@/components/custom-pager.vue'
 import skuInfo from './sku-info.vue'
 import { exportData } from '@/utils/exportTable'
 import BtnGroup from '@/components/system/btnGroup.vue'
+import tooltipBtn from '@/components/tooltip-btn.vue'
 
 const xTableStockLocation = ref()
 
@@ -156,6 +162,47 @@ const method = reactive({
       }
     })
   },
+
+  // Export all
+  exportAll: async () => {
+    try {
+      const searchForm = {}
+      for (const item of Object.keys(data.searchForm)) {
+        if (data.searchForm[item]) {
+          searchForm[item] = data.searchForm[item]
+        }
+      }
+
+      const params = {
+        ...data.tablePage,
+        pageIndex: 0,
+        pageSize: 0,
+        ...searchForm
+      }
+
+      const { data: res } = await getStockLocationList(params)
+
+      if (!res.isSuccess) {
+        hookComponent.$message({
+          type: 'error',
+          content: res.errorMessage
+        })
+        return
+      }
+      const originData = [...data.tableData]
+      data.tableData = res.data.rows
+      await nextTick()
+      method.exportTable()
+      data.tableData = originData
+    } catch (e) {
+      console.error(e)
+      hookComponent.$message({
+        type: 'error',
+        content: i18n.global.t('system.page.exportError')
+      })
+    }
+  },
+
   sureSearch: () => {
     data.tablePage.searchObjects = setSearchObject(data.searchForm)
     method.getStockLocationList()
@@ -175,6 +222,12 @@ onMounted(() => {
       icon: 'mdi-export-variant',
       code: 'stock-export',
       click: method.exportTable
+    },
+    {
+      name: i18n.global.t('system.page.exportAll'),
+      icon: 'mdi-apple-keyboard-shift',
+      code: 'stock-exportAll',
+      click: method.exportAll
     }
   ]
 })

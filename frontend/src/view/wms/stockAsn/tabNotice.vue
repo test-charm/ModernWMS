@@ -112,7 +112,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref, reactive, watch, onMounted } from 'vue'
+import { computed, ref, reactive, watch, onMounted, nextTick } from 'vue'
 import { VxePagerEvents } from 'vxe-table'
 import { computedCardHeight, computedTableHeight, errorColor } from '@/constant/style'
 import { StockAsnVO } from '@/types/WMS/StockAsn'
@@ -234,7 +234,7 @@ const method = reactive({
       content: i18n.global.t('system.tips.beforeDeleteMessage'),
       handleConfirm: async () => {
         if (row.id) {
-          const { data: res } = await deleteAsnByID(row.id)
+          const { data: res } = await deleteAsnByID(row.id, row.asn_no)
           if (!res.isSuccess) {
             // 2023-12-06 Add automatic refresh of expired data
             if (httpCodeJudge(res.errorMessage)) {
@@ -299,6 +299,40 @@ const method = reactive({
       }
     })
   },
+
+  // Export all
+  exportAll: async () => {
+    try {
+      const params = {
+        ...data.tablePage,
+        pageIndex: 0,
+        pageSize: 0,
+        searchObjects: setSearchObject(data.searchForm)
+      }
+
+      const { data: res } = await getStockAsnList(params)
+
+      if (!res.isSuccess) {
+        hookComponent.$message({
+          type: 'error',
+          content: res.errorMessage
+        })
+        return
+      }
+      const originData = [...data.tableData]
+      data.tableData = res.data.rows
+      await nextTick()
+      method.exportTable()
+      data.tableData = originData
+    } catch (e) {
+      console.error(e)
+      hookComponent.$message({
+        type: 'error',
+        content: i18n.global.t('system.page.exportError')
+      })
+    }
+  },
+
   sureSearch: () => {
     data.tablePage.searchObjects = setSearchObject(data.searchForm)
     method.getStockAsnList()
@@ -324,6 +358,12 @@ onMounted(() => {
       icon: 'mdi-export-variant',
       code: 'notice-export',
       click: method.exportTable
+    },
+    {
+      name: i18n.global.t('system.page.exportAll'),
+      icon: 'mdi-apple-keyboard-shift',
+      code: 'notice-exportAll',
+      click: method.exportAll
     }
     // {
     //   name: i18n.global.t('base.commodityManagement.printQrCode'),

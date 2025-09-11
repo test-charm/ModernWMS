@@ -97,6 +97,7 @@ import i18n from '@/languages/i18n'
 import customPager from '@/components/custom-pager.vue'
 import { exportData } from '@/utils/exportTable'
 import BtnGroup from '@/components/system/btnGroup.vue'
+import tooltipBtn from '@/components/tooltip-btn.vue'
 import { list as getStockAgeStatisticList } from '@/api/wms/stockageStatistic'
 import { hookComponent } from '@/components/system'
 import { StockAgeStatisticVo } from '@/types/WMS/StockAgeStatistic'
@@ -261,6 +262,46 @@ const method = reactive({
     })
   },
 
+  // Export all
+  exportAll: async () => {
+    try {
+      const searchForm = {}
+      for (const item of Object.keys(data.searchForm)) {
+        if (data.searchForm[item]) {
+          searchForm[item] = data.searchForm[item]
+        }
+      }
+
+      const params = {
+        ...data.tablePage,
+        pageIndex: 0,
+        pageSize: 0,
+        ...searchForm
+      }
+
+      const { data: res } = await getStockAgeStatisticList(params)
+
+      if (!res.isSuccess) {
+        hookComponent.$message({
+          type: 'error',
+          content: res.errorMessage
+        })
+        return
+      }
+      const originData = [...data.tableData]
+      data.tableData = res.data.rows
+      await nextTick()
+      method.exportTable()
+      data.tableData = originData
+    } catch (e) {
+      console.error(e)
+      hookComponent.$message({
+        type: 'error',
+        content: i18n.global.t('system.page.exportError')
+      })
+    }
+  },
+
   sureSearch: () => {
     // data.tablePage.searchObjects = setSearchObject(data.searchForm)
     method.refresh()
@@ -286,6 +327,12 @@ const btnList = computed(() => [
     icon: 'mdi-export-variant',
     code: 'export',
     click: method.exportTable
+  },
+  {
+    name: i18n.global.t('system.page.exportAll'),
+    icon: 'mdi-apple-keyboard-shift',
+    code: 'exportAll',
+    click: method.exportAll
   },
   {
     name: i18n.global.t('system.page.setSearch'),

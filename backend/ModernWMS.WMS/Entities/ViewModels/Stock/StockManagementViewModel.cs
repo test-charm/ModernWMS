@@ -39,6 +39,10 @@ namespace ModernWMS.WMS.Entities.ViewModels
         /// sku_code
         /// </summary>
         public string sku_code { get; set; } = string.Empty;
+        /// <summary>
+        /// image_url
+        /// </summary>
+        public string image_url { get; set; } =string.Empty;
 
         /// <summary>
         /// sku_id

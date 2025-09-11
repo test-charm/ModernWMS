@@ -32,19 +32,21 @@ export const addStockMove = (data: WarehouseMoveVO) => http({
   })
 
 // Delete form
-export const deleteStockMove = (id: number) => http({
+export const deleteStockMove = (id: number, logTemp: string) => http({
     url: '/stockmove',
     method: 'delete',
     params: {
-      id
+      id,
+      logTemp
     }
   })
 
 // Confirm move
-export const confirmMove = (id: number) => http({
+export const confirmMove = (id: number, logTemp: any) => http({
     url: '/stockmove',
     method: 'put',
     params: {
-      id
+      id,
+      logTemp
     }
   })

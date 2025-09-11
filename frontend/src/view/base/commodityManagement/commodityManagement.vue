@@ -11,7 +11,7 @@
                 <!-- <tooltip-btn icon="mdi-plus" :tooltip-text="$t('system.page.add')" @click="method.add()"></tooltip-btn>
                 <tooltip-btn icon="mdi-refresh" :tooltip-text="$t('system.page.refresh')" @click="method.refresh()"></tooltip-btn>
                 <tooltip-btn icon="mdi-export-variant" :tooltip-text="$t('system.page.export')" @click="method.exportTable"></tooltip-btn> -->
-
+                
                 <!-- new version -->
                 <BtnGroup :authority-list="data.authorityList" :btn-list="data.btnList" />
               </v-col>
@@ -82,7 +82,7 @@
               </template>
               <vxe-column type="checkbox" width="50" fixed="left"></vxe-column>
               <vxe-column type="seq" width="60"></vxe-column>
-              <vxe-column tree-node width="60">
+              <vxe-column field="expend" tree-node width="60">
                 <template #header>
                   <div
                     style="height: 100%; display: flex; align-items: center; justify-content: flex-start; cursor: pointer"
@@ -102,7 +102,7 @@
               </vxe-column>
               <vxe-column field="spu_code" width="150px" :title="$t('base.commodityManagement.spu_code')">
                 <template #default="{ row }">
-                  <span v-if="row.parent_id > 0">{{ row.sku_code }}</span>
+                  <HoverImagePreview v-if="row.parent_id > 0" :image-url="row.image_url" :slot-text="row.sku_code" />
                   <span v-else>{{ row.spu_code }}</span>
                 </template>
               </vxe-column>
@@ -241,11 +241,12 @@
     <!-- Print barcode -->
     <bar-code-dialog ref="barCodeDialogRef" :menu="'commodityManagement'" />
     <hprintDialog ref="hprintDialogRef" :form="printDate.printForm" :tab-page="'print_page_main'" />
+    <importCommodityTable :show-dialog="data.showDialogImport" @close="method.closeDialogImport" @saveSuccess="method.saveSuccessImport" />
   </div>
 </template>
 
 <script lang="ts" setup>
-import { computed, onMounted, reactive, ref, watch } from 'vue'
+import { computed, onMounted, reactive, ref, watch, nextTick } from 'vue'
 import { VxePagerEvents } from 'vxe-table'
 import { computedCardHeight, computedTableHeight, errorColor } from '@/constant/style'
 import tooltipBtn from '@/components/tooltip-btn.vue'
@@ -263,6 +264,7 @@ import { DEBOUNCE_TIME } from '@/constant/system'
 import BtnGroup from '@/components/system/btnGroup.vue'
 import updateSkuSafetyStock from './update-sku-safety-stock.vue'
 // import qrCodeDialogDialog from './qrCodeDialog.vue'
+import importCommodityTable from './import-commodity-table.vue'
 import BarCodeDialog from '@/components/codeDialog/barCodeDialog.vue'
 import QrCodeDialog from '@/components/codeDialog/qrCodeDialog.vue'
 import hprintDialog from '@/components/hiprint/hiprintFast.vue'
@@ -293,6 +295,7 @@ const data: DataProps = reactive({
   },
   // Dialog info
   showDialog: false,
+  showDialogImport: false,
   dialogForm: {
     id: 0,
     spu_code: '',
@@ -318,6 +321,17 @@ const printDate = reactive({
   printForm: {} as any
 })
 const method = reactive({
+    // Import Dialog
+  openDialogImport: () => {
+    data.showDialogImport = true
+  },
+  closeDialogImport: () => {
+    data.showDialogImport = false
+  },
+  saveSuccessImport: () => {
+    method.refresh()
+    method.closeDialog()
+  },
   // Check if the checkbox can be checked
   getCheckBoxDisableState: ({ row }: { row: any }): boolean => row.parent_id,
   // Print QR code
@@ -481,7 +495,7 @@ const method = reactive({
       content: i18n.global.t('system.tips.beforeDeleteMessage'),
       handleConfirm: async () => {
         if (row.id) {
-          const { data: res } = await deleteSpu(row.id)
+          const { data: res } = await deleteSpu(row.id, row.spu_code)
           if (!res.isSuccess) {
             hookComponent.$message({
               type: 'error',
@@ -505,9 +519,42 @@ const method = reactive({
       table: $table,
       filename: i18n.global.t('router.sideBar.commodityManagement'),
       columnFilterMethod({ column }: any) {
-        return !['checkbox'].includes(column?.type) && !['operate'].includes(column?.field)
+        return !['checkbox'].includes(column?.type) && !['operate', 'expend'].includes(column?.field)
       }
     })
+  },
+  // Export all
+  exportAll: async () => {
+    try {
+      const params = {
+        ...data.tablePage,
+        pageIndex: 0,
+        pageSize: 0,
+        searchObjects: setSearchObject(data.searchForm)
+      }
+
+      const { data: res } = await getSpuList(params)
+      if (!res.isSuccess) {
+        hookComponent.$message({
+          type: 'error',
+          content: res.errorMessage
+        })
+        return
+      }
+      const originData = [...data.tableData]
+      data.tableData = res.data.rows
+      data.tableTreeConfig.transform = false
+      await nextTick()
+      method.exportTable()
+      data.tableData = originData
+      data.tableTreeConfig.transform = true
+    } catch (e) {
+      console.error(e)
+      hookComponent.$message({
+        type: 'error',
+        content: i18n.global.t('system.page.exportError')
+      })
+    }
   },
   // When change paging
   handlePageChange: ref<VxePagerEvents.PageChange>(({ currentPage, pageSize }) => {
@@ -550,6 +597,18 @@ onMounted(async () => {
       icon: 'mdi-barcode',
       code: 'printBarCode',
       click: method.printBarCode
+    },
+    {
+      name: i18n.global.t('system.page.import'),
+      icon: 'mdi-database-import-outline',
+      code: 'import',
+      click: method.openDialogImport
+    },
+    {
+      name: i18n.global.t('system.page.exportAll'),
+      icon: 'mdi-apple-keyboard-shift',
+      code: 'exportAll',
+      click: method.exportAll
     },
     {
       name: i18n.global.t('system.page.print'),

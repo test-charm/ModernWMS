@@ -205,11 +205,12 @@ export const handleSignIn = (data: SignInVO[]) => http({
   })
 
 // Undo to previous step by detail
-export const cancelOrderByDetail = (id: number) => http({
+export const cancelOrderByDetail = (id: number, logTemp: string) => http({
     url: '/dispatchlist/cancel-order',
     method: 'put',
     params: {
-      id
+      id,
+      logTemp
     }
   })
 
@@ -243,4 +244,11 @@ export const viewDeliveryMainDetail = (dispatch_no: string) => http({
     params: {
       dispatch_no
     }
+  })
+
+// Getb pick detail
+export const getPickDetail = (data: any[]) => http({
+    url: '/dispatchlist/picking-list',
+    method: 'post',
+    data
   })

@@ -96,7 +96,6 @@ const method = reactive({
     const { valid } = await formRef.value.validate()
 
     const form = method.constructFormBody()
-
     if (valid) {
       const { data: res } = await confirmStockTaking(form)
       if (!res.isSuccess) {

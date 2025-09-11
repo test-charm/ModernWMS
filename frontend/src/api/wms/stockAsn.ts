@@ -1,3 +1,4 @@
+import { log } from 'console';
 import http from '@/utils/http/request'
 import { PageConfigProps } from '@/types/System/Form'
 import { StockAsnVO, SortingVo, PutawayVo } from '@/types/WMS/StockAsn'
@@ -20,22 +21,23 @@ export const updateAsnNew = (data: StockAsnVO) => http({
     data
   })
 
-export const confirmArrival = (data: { id: number; arrival_time: string }[]) => http({
+export const confirmArrival = (data: { id: number; arrival_time: string, asn_no: string, sku_code: string, spu_code: string }[]) => http({
     url: '/asn/confirm',
     method: 'put',
     data
   })
 
-export const confirmUnload = (data: { id: number; unloadTime: string; unloadPerson: string; unloadPersonID: number }[]) => http({
+export const confirmUnload = (data: { id: number; unloadTime: string; unloadPerson: string; unloadPersonID: number, asn_no: string, sku_code: string, spu_code: string }[]) => http({
     url: '/asn/unload',
     method: 'put',
     data
   })
 
-export const unconfirmArrival = (idList: number[]) => http({
+export const unconfirmArrival = (idList: number[], logTemp) => http({
     url: '/asn/confirm-cancel',
     method: 'put',
-    data: idList
+    data: idList,
+    logTemp
   })
 
 export const editSorting = (data: { asn_id: number; series_number: string; sorted_qty: number }[]) => http({
@@ -73,29 +75,33 @@ export const confirmPutaway = (
     series_number: string
     goods_location_id: number
     putaway_qty: number
-  }[]
+  }[], logTemp
 ) => http({
     url: '/asn/putaway',
     method: 'put',
-    data
+    data,
+    logTemp
   })
 
-export const confirmSorted = (id: number) => http({
+export const confirmSorted = (id: number, logTemp) => http({
     url: '/asn/sorted',
     method: 'put',
-    data: [id]
+    data: [id],
+    logTemp
   })
 
-export const revokeUnload = (idList: number[]) => http({
+export const revokeUnload = (idList: number[], logTemp) => http({
     url: '/asn/unload-cancel',
     method: 'put',
-    data: idList
+    data: idList,
+    logTemp
   })
 
-export const revokeSorting = (idList: number[]) => http({
+export const revokeSorting = (idList: number[], logTemp) => http({
     url: '/asn/sorted-cancel',
     method: 'put',
-    data: idList
+    data: idList,
+    logTemp
   })
 
 export const getStockAsnList = (data: PageConfigProps) => http({
@@ -124,11 +130,12 @@ export const deleteAsn = (id: number) => http({
     }
   })
 
-export const deleteAsnByID = (id: number) => http({
+export const deleteAsnByID = (id: number, logTemp: any) => http({
     url: '/asn/asnmaster',
     method: 'delete',
     params: {
-      id
+      id,
+      logTemp
     }
   })
 

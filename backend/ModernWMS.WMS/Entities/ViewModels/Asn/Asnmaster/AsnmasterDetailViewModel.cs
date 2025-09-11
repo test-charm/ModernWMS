@@ -79,6 +79,11 @@ namespace ModernWMS.WMS.Entities.ViewModels
         public string sku_code { get; set; } = string.Empty;
 
         /// <summary>
+        /// image_url
+        /// </summary>
+        [Display(Name ="image_url")]
+        public string image_url { get; set; } = string.Empty;
+        /// <summary>
         /// sku_name
         /// </summary>
         [Display(Name = "sku_name")]

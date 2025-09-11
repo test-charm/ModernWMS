@@ -71,7 +71,11 @@
       <vxe-column field="spu_code" :title="$t('wms.deliveryManagement.spu_code')"></vxe-column>
       <vxe-column field="spu_description" width="200px" :title="$t('wms.deliveryManagement.spu_description')"></vxe-column>
       <vxe-column field="spu_name" :title="$t('wms.deliveryManagement.spu_name')"></vxe-column>
-      <vxe-column field="sku_code" :title="$t('wms.deliveryManagement.sku_code')"></vxe-column>
+      <vxe-column field="sku_code" :title="$t('wms.deliveryManagement.sku_code')">
+        <template #default="{ row }">
+          <HoverImagePreview :image-url="row.image_url" :slot-text="row.sku_code" />
+        </template>
+      </vxe-column>
       <vxe-column field="bar_code" :title="$t('wms.deliveryManagement.bar_code')"></vxe-column>
       <vxe-column field="qty" :title="$t('wms.deliveryManagement.order_qty')"></vxe-column>
       <vxe-column field="weight" :title="$t('wms.deliveryManagement.detailWeight')">

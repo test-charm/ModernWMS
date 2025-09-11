@@ -48,7 +48,11 @@
                   <vxe-column type="checkbox" width="50"></vxe-column>
                   <vxe-column field="spu_code" :title="$t('base.commodityManagement.spu_code')"></vxe-column>
                   <vxe-column field="spu_name" :title="$t('base.commodityManagement.spu_name')"></vxe-column>
-                  <vxe-column field="sku_code" :title="$t('base.commodityManagement.sku_code')"></vxe-column>
+                  <vxe-column field="sku_code" :title="$t('base.commodityManagement.sku_code')">
+                    <template #default="{ row }">
+                      <HoverImagePreview :image-url="row.image_url" :slot-text="row.sku_code" />
+                    </template>
+                  </vxe-column>
                   <vxe-column field="sku_name" :title="$t('base.commodityManagement.sku_name')"></vxe-column>
                   <vxe-column field="supplier_name" :title="$t('base.commodityManagement.supplier_name')"></vxe-column>
                   <vxe-column field="brand" :title="$t('base.commodityManagement.brand')"></vxe-column>

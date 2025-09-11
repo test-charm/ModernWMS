@@ -30,11 +30,12 @@ export const updateOwnerOfCargo = (data: OwnerOfCargoVO) => http({
   })
 
 // Delete form
-export const deleteOwnerOfCargo = (id: number) => http({
+export const deleteOwnerOfCargo = (id: number, logTemp:string) => http({
     url: '/goodsowner',
     method: 'delete',
     params: {
-      id
+      id,
+      logTemp
     }
   })
 

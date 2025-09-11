@@ -77,11 +77,20 @@ namespace ModernWMS.WMS.Services
                 .Where(t => t.tenant_id.Equals(currentUser.tenant_id))
                 .Where(queries.AsExpression<PrintSolutionEntity>());
             int totals = await query.CountAsync();
-            var list = await query.OrderByDescending(t => t.id)
+            List<PrintSolutionEntity> list;
+            if(pageSearch.pageIndex<=0 || pageSearch.pageSize <= 0)
+            {
+                list = await query.OrderByDescending(t => t.id)
+                       .ToListAsync();
+            }
+            else
+            {
+                list = await query.OrderByDescending(t => t.id)
                        .Skip((pageSearch.pageIndex - 1) * pageSearch.pageSize)
                        .Take(pageSearch.pageSize)
                        .ToListAsync();
-            return (list.Adapt<List<PrintSolutionViewModel>>(), totals);
+            }
+                return (list.Adapt<List<PrintSolutionViewModel>>(), totals);
         }
 
         /// <summary>

@@ -97,8 +97,10 @@ namespace ModernWMS.WMS.Entities.Models
         /// last_update_time
         /// </summary>
         public DateTime last_update_time { get; set; } = UtilConvert.MinDate;
-
-
+        /// <summary>
+        /// image_url
+        /// </summary>
+        public string image_url { get; set; } = string.Empty;
         #endregion
 
         #region Sku Safety Stock

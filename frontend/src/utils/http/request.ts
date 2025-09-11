@@ -4,6 +4,7 @@ import { emitter } from '@/utils/bus'
 import { router } from '@/router'
 import { hookComponent } from '@/components/system'
 import i18n from '@/languages/i18n'
+import { parseOperation } from '../systemLog'
 
 // Basis of axios
 const SERVER_URL = `${ import.meta.env.VITE_BASE_PATH }:${ import.meta.env.VITE_SERVER_PORT }`
@@ -148,6 +149,19 @@ http.interceptors.request.use(
         config.headers.Authorization = `Bearer ${ token }`
       }
 
+      // ---------- 日志预处理 ----------
+      const vue_path = router.currentRoute.value.fullPath.replace(/^\/+/, '')
+      const actionContent = parseOperation(config)
+      if (actionContent) {
+        config.headers['X-Vue-Path'] = encodeURIComponent(vue_path)
+        config.headers['X-Action-Content'] = encodeURIComponent(actionContent)
+      } 
+      if (config.params.logTemp) {
+        delete config.params.logTemp
+      }
+      if (config.logTemp) {
+        delete config.logTemp
+      }
       return config
     }
 

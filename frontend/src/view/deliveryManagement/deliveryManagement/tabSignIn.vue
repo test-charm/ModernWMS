@@ -69,7 +69,11 @@
       <vxe-column field="spu_code" :title="$t('wms.deliveryManagement.spu_code')"></vxe-column>
       <vxe-column field="spu_description" width="200px" :title="$t('wms.deliveryManagement.spu_description')"></vxe-column>
       <vxe-column field="spu_name" :title="$t('wms.deliveryManagement.spu_name')"></vxe-column>
-      <vxe-column field="sku_code" :title="$t('wms.deliveryManagement.sku_code')"></vxe-column>
+      <vxe-column field="sku_code" :title="$t('wms.deliveryManagement.sku_code')">
+        <template #default="{ row }">
+          <HoverImagePreview :image-url="row.image_url" :slot-text="row.sku_code" />
+        </template>
+      </vxe-column>
       <vxe-column field="bar_code" :title="$t('wms.deliveryManagement.bar_code')"></vxe-column>
       <vxe-column field="qty" :title="$t('wms.deliveryManagement.order_qty')"></vxe-column>
       <vxe-column field="weight" :title="$t('wms.deliveryManagement.detailWeight')">
@@ -129,7 +133,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref, reactive, watch, onMounted } from 'vue'
+import { computed, ref, reactive, watch, onMounted, nextTick } from 'vue'
 import { VxePagerEvents } from 'vxe-table'
 import XEUtils from 'xe-utils'
 import { computedCardHeight, computedTableHeight } from '@/constant/style'
@@ -215,6 +219,40 @@ const method = reactive({
       }
     })
   },
+
+  // Export all
+  exportAll: async () => {
+    try {
+      const params = {
+        ...data.tablePage,
+        pageIndex: 0,
+        pageSize: 0,
+        searchObjects: setSearchObject(data.searchForm)
+      }
+
+      const { data: res } = await getSignIn(params)
+
+      if (!res.isSuccess) {
+        hookComponent.$message({
+          type: 'error',
+          content: res.errorMessage
+        })
+        return
+      }
+      const originData = [...data.tableData]
+      data.tableData = res.data.rows
+      await nextTick()
+      method.exportTable()
+      data.tableData = originData
+    } catch (e) {
+      console.error(e)
+      hookComponent.$message({
+        type: 'error',
+        content: i18n.global.t('system.page.exportError')
+      })
+    }
+  },
+
   sureSearch: () => {
     data.tablePage.searchObjects = setSearchObject(data.searchForm)
     method.getSignIn()
@@ -234,6 +272,12 @@ onMounted(() => {
       icon: 'mdi-export-variant',
       code: 'signedIn-export',
       click: method.exportTable
+    },
+    {
+      name: i18n.global.t('system.page.exportAll'),
+      icon: 'mdi-apple-keyboard-shift',
+      code: 'signedIn-exportAll',
+      click: method.exportAll
     }
   ]
 })

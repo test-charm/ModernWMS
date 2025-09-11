@@ -27,11 +27,12 @@ export const updateWarehouse = (data: WarehouseVO) => http({
 })
 
 // Delete warehouse
-export const deleteWarehouse = (id: number) => http({
+export const deleteWarehouse = (id: number, logTemp: string) => http({
   url: '/warehouse',
   method: 'delete',
   params: {
-    id
+    id,
+    logTemp
   }
 })
 // Get warehouse information
@@ -89,11 +90,12 @@ export const updateWarehouseArea = (data: WarehouseAreaVO) => http({
 })
 
 // Delete warehousearea
-export const deleteWarehouseArea = (id: number) => http({
+export const deleteWarehouseArea = (id: number, logTemp: any) => http({
   url: '/warehousearea',
   method: 'delete',
   params: {
-    id
+    id,
+    logTemp
   }
 })
 
@@ -127,11 +129,12 @@ export const updateGoodsLocation = (data: GoodsLocationVO) => http({
 })
 
 // Delete goodslocation
-export const deleteGoodsLocation = (id: number) => http({
+export const deleteGoodsLocation = (id: number, logTemp: any) => http({
   url: '/goodslocation',
   method: 'delete',
   params: {
-    id
+    id,
+    logTemp
   }
 })
 

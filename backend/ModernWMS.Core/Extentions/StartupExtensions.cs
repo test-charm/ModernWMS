@@ -131,6 +131,7 @@ namespace ModernWMS.Core.Extentions
             app.UseTokenGeneratorConfigure(configuration);
             app.UseAuthorization();
             app.UseMiddleware<GlobalExceptionMiddleware>();
+            app.UseMiddleware<RequestResponseMiddleware>();
             var support_languages = new[] { "zh-cn", "en-us" };
             var localization_options = new RequestLocalizationOptions()
                 .SetDefaultCulture(support_languages[0])

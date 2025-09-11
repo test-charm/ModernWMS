@@ -1,9 +1,10 @@
-﻿
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ModernWMS.Core.JWT;
 using ModernWMS.Core.Utility;
 using System.Linq;
+using NLog;
+using ModernWMS.Core.Filters;
 
 namespace ModernWMS.Core.Controller
 {
@@ -12,8 +13,10 @@ namespace ModernWMS.Core.Controller
     /// </summary>
     [Authorize]
     [Produces("application/json")]
+    [ServiceFilter(typeof(ApiLogFilter))]
     public class BaseController : ControllerBase
     {
+        private static readonly ILogger _logger = LogManager.GetCurrentClassLogger();
         /// <summary>
         /// current user
         /// </summary>
@@ -35,6 +38,7 @@ namespace ModernWMS.Core.Controller
 
         public BaseController()
         {
+            _logger.Info("BaseController initialized.");
         }
     }
 }

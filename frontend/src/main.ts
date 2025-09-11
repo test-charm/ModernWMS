@@ -13,7 +13,7 @@ import '@/assets/fonts/iconfont.css'
 import { router } from './router'
 import { store } from './store/index'
 import hookComponent from '@/components/system/index'
-
+import HoverImagePreview from './components/hover-image-preview.vue'
 import VxeDateColumn from '@/components/table/vxe-date-column.vue'
 
 const app = createApp(App)
@@ -34,5 +34,6 @@ app.use(DataVVue3)
 
 // 自定义组件挂载
 app.component('VxeDateColumn', VxeDateColumn)
+app.component('HoverImagePreview', HoverImagePreview)
 
 app.mount('#app')

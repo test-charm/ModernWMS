@@ -59,8 +59,13 @@
       <vxe-column field="spu_code" :title="$t('wms.stockAsnInfo.spu_code')"></vxe-column>
       <vxe-column field="spu_name" :title="$t('wms.stockAsnInfo.spu_name')"></vxe-column>
       <vxe-column field="sku_code" :title="$t('wms.stockAsnInfo.sku_code')">
-        <template #default="{ row }">
+        <!-- <template #default="{ row }">
           <div :class="'text-decoration-none'" @click="method.showSkuInfo(row)"> {{ row.sku_code }}</div>
+        </template> -->
+        <template #default="{ row }">
+          <div :class="'text-decoration-none'" @click="method.showSkuInfo(row)">
+            <HoverImagePreview :image-url="row.image_url" :slot-text="row.sku_code" />
+          </div>
         </template>
       </vxe-column>
       <vxe-column field="sku_name" :title="$t('wms.stockAsnInfo.sku_name')"></vxe-column>
@@ -107,7 +112,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref, reactive, watch, onMounted } from 'vue'
+import { computed, ref, reactive, watch, onMounted, nextTick } from 'vue'
 import { VxePagerEvents } from 'vxe-table'
 import { computedCardHeight, computedTableHeight } from '@/constant/style'
 import { StockAsnVO } from '@/types/WMS/StockAsn'
@@ -122,6 +127,7 @@ import customPager from '@/components/custom-pager.vue'
 import skuInfo from './sku-info.vue'
 // import { exportData } from '@/utils/exportTable'
 import BtnGroup from '@/components/system/btnGroup.vue'
+import tooltipBtn from '@/components/tooltip-btn.vue'
 import ConfirmUnloadModal from './confirm-unload.vue'
 import { httpCodeJudge } from '@/utils/http/httpCodeJudge'
 
@@ -171,10 +177,11 @@ const method = reactive({
     const checkRecords = xTableStockLocation.value.getCheckboxRecords()
     if (checkRecords.length > 0) {
       const idList = checkRecords.map((item: StockAsnVO) => item.id)
+      const logTemp = checkRecords.map((item: StockAsnVO) => ({ asn_no: item.asn_no, sku_code: item.sku_code, spu_code: item.spu_code }))
       hookComponent.$dialog({
         content: i18n.global.t('system.tips.beforeOperation'),
         handleConfirm: async () => {
-          const { data: res } = await unconfirmArrival(idList)
+          const { data: res } = await unconfirmArrival(idList, logTemp)
           if (!res.isSuccess) {
             // 2023-12-06 Add automatic refresh of expired data
             if (httpCodeJudge(res.errorMessage)) {
@@ -218,7 +225,7 @@ const method = reactive({
   // After confirmation
   sureBackUnloadConfirm: async (form: { unloadTime: string; unloadPerson: string; unloadPersonID: number }) => {
     const checkRecords = xTableStockLocation.value.getCheckboxRecords()
-    const reqBody = checkRecords.map((item: StockAsnVO) => ({ id: item.id, ...form }))
+    const reqBody = checkRecords.map((item: StockAsnVO) => ({ id: item.id, ...form, asn_no: item.asn_no, sku_code: item.sku_code, spu_code: item.spu_code }))
 
     const { data: res } = await confirmUnload(reqBody)
     if (!res.isSuccess) {
@@ -326,6 +333,38 @@ const method = reactive({
       }
     })
   },
+  // Export all
+  exportAll: async () => {
+    try {
+      const params = {
+        ...data.tablePage,
+        pageIndex: 0,
+        pageSize: 0,
+        searchObjects: setSearchObject(data.searchForm)
+      }
+
+      const { data: res } = await getStockAsnList(params)
+
+      if (!res.isSuccess) {
+        hookComponent.$message({
+          type: 'error',
+          content: res.errorMessage
+        })
+        return
+      }
+      const originData = [...data.tableData]
+      data.tableData = res.data.rows
+      await nextTick()
+      method.exportTable()
+      data.tableData = originData
+    } catch (e) {
+      console.error(e)
+      hookComponent.$message({
+        type: 'error',
+        content: i18n.global.t('system.page.exportError')
+      })
+    }
+  },
   sureSearch: () => {
     data.tablePage.searchObjects = setSearchObject(data.searchForm)
     method.getStockAsnList()
@@ -345,6 +384,12 @@ onMounted(() => {
       icon: 'mdi-export-variant',
       code: 'unloaded-export',
       click: method.exportTable
+    },
+    {
+      name: i18n.global.t('system.page.exportAll'),
+      icon: 'mdi-apple-keyboard-shift',
+      code: 'unloaded-exportAll',
+      click: method.exportAll
     },
     {
       name: i18n.global.t('wms.stockAsnInfo.confirmUnload'),

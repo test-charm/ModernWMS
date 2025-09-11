@@ -1,3 +1,4 @@
+import { log } from 'console';
 import http from '@/utils/http/request'
 import { PageConfigProps } from '@/types/System/Form'
 import { WarehouseTakingVO } from '@/types/WarehouseWorking/WarehouseTaking'
@@ -26,11 +27,12 @@ export const addStockTaking = (data: WarehouseTakingVO) => http({
   })
 
 // Delete form
-export const deleteStockTaking = (id: number) => http({
+export const deleteStockTaking = (id: number, logTemp: string) => http({
     url: '/stocktaking',
     method: 'delete',
     params: {
-      id
+      id,
+      logTemp
     }
   })
 
@@ -40,15 +42,17 @@ export const confirmStockTaking = (data: WarehouseTakingVO) => http({
     method: 'put',
     data: {
       id: data.id,
-      counted_qty: data.counted_qty
+      counted_qty: data.counted_qty,
+      job_code: data.job_code
     }
   })
 
 // Confirm stock adjust
-export const confirmAdjustment = (id: number) => http({
+export const confirmAdjustment = (id: number, logTemp: string) => http({
     url: '/stocktaking/adjustment-confirm',
     method: 'put',
     params: {
-      id
+      id,
+      logTemp
     }
   })
