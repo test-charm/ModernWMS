@@ -101,6 +101,7 @@ export interface DataProps {
   tableData: CommodityVO[]
   tableTreeConfig: VxeTablePropTypes.TreeConfig
   showDialog: boolean
+  showDialogImport: boolean
   dialogForm: CommodityVO
   tablePage: TablePage
   searchForm: {
