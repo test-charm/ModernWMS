@@ -1,0 +1,64 @@
+services:
+  mysql:
+    image: mysql:8.0
+    restart: unless-stopped
+    command:
+      - --default-authentication-plugin=mysql_native_password
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456
+      MYSQL_DATABASE: wms
+    ports:
+      - "53306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      # 如果你有初始化 SQL，可取消下一行注释后放到该目录
+      # - ./docker/mysql/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-p123456"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    environment:
+      UPLOAD_LIMIT: 300M
+    links:
+      - mysql:db
+    ports:
+      - "50000:80"
+
+  dotnet:
+    build:
+      context: .
+      dockerfile: docker/backend.Dockerfile
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      Database__db: MySql
+      ConnectionStrings__MySqlConn: Server=mysql;Database=wms;Port=3306;charset=utf8;uid=root;pwd=123456;
+    ports:
+      - "20011:5555"
+
+  nginx:
+    build:
+      context: .
+      dockerfile: docker/frontend.Dockerfile
+      args:
+        # 当前构建结果默认让前端请求宿主机的 20011 端口
+        VITE_BASE_PATH: http://127.0.0.1
+        VITE_SERVER_PORT: 20011
+    restart: unless-stopped
+    depends_on:
+      - dotnet
+    ports:
+      - "58080:80"
+
+volumes:
+  mysql_data:
