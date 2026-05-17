@@ -1,0 +1,29 @@
+spring:
+  datasource:
+    url: ${TESTCHARM_DB_URL:jdbc:mysql://127.0.0.1:53306/wms?autoReconnect=true&characterEncoding=utf8&characterSetResults=utf8&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true}
+    username: ${TESTCHARM_DB_USERNAME:root}
+    password: ${TESTCHARM_DB_PASSWORD:123456}
+    testOnBorrow: true
+    testOnReturn: true
+    testWhileIdle: true
+    validationQuery: SELECT 1
+    timeBetweenEvictionRunsMillis: 3600000
+  jpa:
+    hibernate:
+      ddl-auto: none
+      naming-strategy: org.hibernate.cfg.ImprovedNamingStrategy
+    properties:
+      hibernate:
+        default_catalog: wms
+        dialect: org.hibernate.dialect.MySQL5Dialect
+
+mock-server:
+  enabled: ${TESTCHARM_MOCK_SERVER_ENABLED:false}
+  endpoint: ${TESTCHARM_MOCK_SERVER_ENDPOINT:http://127.0.0.1:1080}
+
+testcharm:
+  api:
+    base-url: ${TESTCHARM_API_BASE_URL:http://127.0.0.1:20011}
+    login:
+      user-name: ${TESTCHARM_LOGIN_USERNAME:e2e-login-hook-user}
+      password: ${TESTCHARM_LOGIN_PASSWORD:hook-secret}
