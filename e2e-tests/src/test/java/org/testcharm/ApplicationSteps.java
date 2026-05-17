@@ -89,9 +89,9 @@ public class ApplicationSteps {
     public void apiLogin() {
         jFactory.spec("用户角色").create();
         jFactory.spec("用户")
-                .property("user_name", loginUserName)
-                .property("user_num", loginUserName)
-                .property("auth_string", TestConstants.md5(loginPassword))
+                .property("userName", loginUserName)
+                .property("userNum", loginUserName)
+                .property("authString", TestConstants.md5(loginPassword))
                 .create();
 
         Map<String, String> loginRequest = new HashMap<>();

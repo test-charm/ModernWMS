@@ -1,17 +1,14 @@
 package org.testcharm.entity;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.experimental.Accessors;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.time.LocalDateTime;
 
-@Data
+@Getter
+@Setter
 @Entity
 @Accessors(chain = true)
 @Table(name = "userrole")
@@ -20,10 +17,10 @@ public class UserRole {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    private String role_name;
+    private String roleName;
     @Column(name = "is_valid")
     private boolean valid;
-    private LocalDateTime create_time;
-    private LocalDateTime last_update_time;
-    private long tenant_id;
+    private LocalDateTime createTime;
+    private LocalDateTime lastUpdateTime;
+    private long tenantId;
 }
