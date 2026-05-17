@@ -17,14 +17,13 @@ public class Users {
             property("id").ignore();
             property("userNum").dependsOn("userName", value -> value);
             property("contactTel").value("13000000000");
-            property("userRole").value(TestConstants.LOGIN_ROLE_NAME);
             property("sex").value("male");
             property("valid").value(true);
             property("creator").value(TestConstants.TEST_CREATOR);
             property("createTime").value(DEFAULT_TIME);
             property("lastUpdateTime").value(DEFAULT_TIME);
-            property("tenantId").value(TestConstants.LOGIN_TENANT_ID);
             property("email").value("");
+            property("role").is(用户角色.class);
         }
     }
 

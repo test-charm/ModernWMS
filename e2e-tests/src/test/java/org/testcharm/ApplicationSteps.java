@@ -87,10 +87,8 @@ public class ApplicationSteps {
     @SneakyThrows
     @Before("@api-login")
     public void apiLogin() {
-        jFactory.spec("用户角色").create();
         jFactory.spec("用户")
                 .property("userName", loginUserName)
-                .property("userNum", loginUserName)
                 .property("authString", TestConstants.md5(loginPassword))
                 .create();
 
