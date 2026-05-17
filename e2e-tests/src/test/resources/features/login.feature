@@ -3,8 +3,8 @@
 
   场景: 用户名和明文密码登录成功
     假如存在"用户":
-      | userName         | userNum         | authString                       |
-      | login-user-plain | login-num-plain | 233e36c9678682b168a95b7cae20200b |
+      | userName         | userNum         | authString                       | role.roleName | role.tenantId |
+      | login-user-plain | login-num-plain | 233e36c9678682b168a95b7cae20200b | e2e-login-role | 9001          |
     当POST "/login":
     """
     {
@@ -23,8 +23,8 @@
         user_num: "login-num-plain"
         user_role: "e2e-login-role"
         tenant_id: 9001
-        user_id: *
-        userrole_id: *
+        user_id: {...}
+        userrole_id: {...}
         expire: 60
         access_token: /.+/
         refresh_token: /.+/
@@ -34,8 +34,8 @@
 
   场景: 工号和MD5密码登录成功
     假如存在"用户":
-      | userName       | userNum        | authString                       |
-      | login-user-md5 | login-num-md5  | ff12cfc27d7a2b16f1f2572021225911 |
+      | userName       | userNum        | authString                       | role.roleName   | role.tenantId |
+      | login-user-md5 | login-num-md5  | ff12cfc27d7a2b16f1f2572021225911 | e2e-login-role | 9001          |
     当POST "/login":
     """
     {
@@ -54,8 +54,8 @@
         user_num: "login-num-md5"
         user_role: "e2e-login-role"
         tenant_id: 9001
-        user_id: *
-        userrole_id: *
+        user_id: {...}
+        userrole_id: {...}
         expire: 60
         access_token: /.+/
         refresh_token: /.+/
@@ -65,8 +65,8 @@
 
   场景: 合法最大长度用户名和密码登录成功
     假如存在"用户":
-      | userName                                                                                                                          | authString                       |
-      | UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU | def318e25ed57760834fcaba2cc56540 |
+      | userName                                                                                                                          | authString                       | role.roleName | role.tenantId |
+      | UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU | def318e25ed57760834fcaba2cc56540 | e2e-login-role | 9001          |
     当POST "/login":
     """
     {
@@ -85,8 +85,8 @@
         user_num: "UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU"
         user_role: "e2e-login-role"
         tenant_id: 9001
-        user_id: *
-        userrole_id: *
+        user_id: {...}
+        userrole_id: {...}
         expire: 60
         access_token: /.+/
         refresh_token: /.+/

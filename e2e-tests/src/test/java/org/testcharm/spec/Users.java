@@ -31,11 +31,9 @@ public class Users {
         @Override
         public void main() {
             property("id").ignore();
-            property("roleName").value(TestConstants.LOGIN_ROLE_NAME);
             property("valid").value(true);
             property("createTime").value(DEFAULT_TIME);
             property("lastUpdateTime").value(DEFAULT_TIME);
-            property("tenantId").value(TestConstants.LOGIN_TENANT_ID);
         }
     }
 }

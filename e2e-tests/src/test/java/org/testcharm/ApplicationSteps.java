@@ -54,8 +54,8 @@ public class ApplicationSteps {
         executeDB(entityManager -> entityManager.unwrap(Session.class).doWork(connection -> Sneaky.run(() -> {
             try (Statement stmt = connection.createStatement()) {
                 stmt.execute("SET FOREIGN_KEY_CHECKS=0");
-                stmt.executeUpdate("DELETE FROM `user` WHERE `tenant_id` = " + TestConstants.LOGIN_TENANT_ID);
-                stmt.executeUpdate("DELETE FROM `userrole` WHERE `tenant_id` = " + TestConstants.LOGIN_TENANT_ID);
+                stmt.executeUpdate("DELETE FROM `user`");
+                stmt.executeUpdate("DELETE FROM `userrole`");
                 stmt.execute("SET FOREIGN_KEY_CHECKS=1");
             }
         })));
