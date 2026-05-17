@@ -27,6 +27,13 @@
         userrole_id: {...}
         expire: 60
         access_token: /.+/
+        access_token.decrypt= {
+          user_id: {...}
+          user_name: "login-user-plain"
+          user_num: "login-num-plain"
+          user_role: "e2e-login-role"
+          tenant_id: 9001
+        }
         refresh_token: /.+/
       }
     }
@@ -58,6 +65,13 @@
         userrole_id: {...}
         expire: 60
         access_token: /.+/
+        access_token.decrypt= {
+          user_id: {...}
+          user_name: "login-user-md5"
+          user_num: "login-num-md5"
+          user_role: "e2e-login-role"
+          tenant_id: 9001
+        }
         refresh_token: /.+/
       }
     }
@@ -89,6 +103,13 @@
         userrole_id: {...}
         expire: 60
         access_token: /.+/
+        access_token.decrypt= {
+          user_id: {...}
+          user_name: "UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU"
+          user_num: "UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU"
+          user_role: "e2e-login-role"
+          tenant_id: 9001
+        }
         refresh_token: /.+/
       }
     }
