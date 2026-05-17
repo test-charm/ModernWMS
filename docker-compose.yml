@@ -11,10 +11,10 @@ services:
       MYSQL_DATABASE: wms
     ports:
       - "53306:3306"
+    tmpfs:
+      - /var/lib/mysql
     volumes:
-      - mysql_data:/var/lib/mysql
-      # 如果你有初始化 SQL，可取消下一行注释后放到该目录
-      # - ./docker/mysql/init:/docker-entrypoint-initdb.d:ro
+      - ./docker/mysql/init/database_mysql.sql:/docker-entrypoint-initdb.d/01-database_mysql.sql:ro
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-p123456"]
       interval: 10s
@@ -59,6 +59,3 @@ services:
       - dotnet
     ports:
       - "58080:80"
-
-volumes:
-  mysql_data:
