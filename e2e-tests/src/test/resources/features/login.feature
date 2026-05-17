@@ -17,7 +17,7 @@
     """
     那么response should be:
     """
-    body.json: {
+    body.json= {
       isSuccess: true
       code: 200
       errorMessage: ""
@@ -28,7 +28,7 @@
         tenant_id: 9001
         user_id: *
         userrole_id: *
-        expire: *
+        expire: 60
         access_token: /.+/
         refresh_token: /.+/
       }
@@ -51,7 +51,7 @@
     """
     那么response should be:
     """
-    body.json: {
+    body.json= {
       isSuccess: true
       code: 200
       errorMessage: ""
@@ -62,7 +62,7 @@
         tenant_id: 9001
         user_id: *
         userrole_id: *
-        expire: *
+        expire: 60
         access_token: /.+/
         refresh_token: /.+/
       }
@@ -85,7 +85,7 @@
     """
     那么response should be:
     """
-    body.json: {
+    body.json= {
       isSuccess: true
       code: 200
       errorMessage: ""
@@ -96,7 +96,7 @@
         tenant_id: 9001
         user_id: *
         userrole_id: *
-        expire: *
+        expire: 60
         access_token: /.+/
         refresh_token: /.+/
       }
@@ -119,10 +119,11 @@
     """
     那么response should be:
     """
-    body.json: {
+    body.json= {
       isSuccess: false
       code: 400
-      errorMessage: /登录失败/
+      errorMessage: "登录失败"
+      data: null
     }
     """
 
@@ -136,10 +137,11 @@
     """
     那么response should be:
     """
-    body.json: {
+    body.json= {
       isSuccess: false
       code: 400
-      errorMessage: /登录失败/
+      errorMessage: "登录失败"
+      data: null
     }
     """
 
@@ -156,10 +158,11 @@
     """
     那么response should be:
     """
-    body.json: {
+    body.json= {
       isSuccess: false
       code: 400
-      errorMessage: /登录失败/
+      errorMessage: "登录失败"
+      data: null
     }
     """
 
@@ -172,10 +175,11 @@
     """
     那么response should be:
     """
-    body.json: {
+    body.json= {
       isSuccess: false
       code: 400
-      errorMessage: /.*必填.*/
+      errorMessage: "员工名称必填"
+      data: null
     }
     """
 
@@ -188,10 +192,11 @@
     """
     那么response should be:
     """
-    body.json: {
+    body.json= {
       isSuccess: false
       code: 400
-      errorMessage: /.*必填.*/
+      errorMessage: "password必填"
+      data: null
     }
     """
 
@@ -205,10 +210,11 @@
     """
     那么response should be:
     """
-    body.json: {
+    body.json= {
       isSuccess: false
       code: 400
-      errorMessage: /.*不能大于128个字符.*/
+      errorMessage: "员工名称输入字符长度不能大于128个字符"
+      data: null
     }
     """
 
@@ -222,9 +228,10 @@
     """
     那么response should be:
     """
-    body.json: {
+    body.json= {
       isSuccess: false
       code: 400
-      errorMessage: /.*不能大于64个字符.*/
+      errorMessage: "password输入字符长度不能大于64个字符"
+      data: null
     }
     """
