@@ -9,6 +9,7 @@ import lombok.SneakyThrows;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.*;
 
 import static com.github.leeonky.dal.Assertions.expect;
@@ -20,6 +21,17 @@ public class TokenExtension implements Extension {
     private static final TypeReference<Map<String, Object>> MAP_TYPE = new TypeReference<Map<String, Object>>() {
     };
     private static final List<String> USER_FIELDS = Arrays.asList("user_id", "user_name", "user_num", "user_role", "tenant_id");
+
+    @SneakyThrows
+    public static String md5(String value) {
+        MessageDigest messageDigest = MessageDigest.getInstance("MD5");
+        byte[] digest = messageDigest.digest(value.getBytes(StandardCharsets.UTF_8));
+        StringBuilder builder = new StringBuilder();
+        for (byte current : digest) {
+            builder.append(String.format("%02x", current));
+        }
+        return builder.toString();
+    }
 
     @Override
     public void extend(DAL dal) {

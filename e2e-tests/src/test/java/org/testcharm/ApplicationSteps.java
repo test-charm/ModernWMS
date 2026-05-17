@@ -23,6 +23,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
+import static com.github.leeonky.dal.extensions.TokenExtension.md5;
+
 @ContextConfiguration(classes = {CucumberConfiguration.class}, loader = SpringBootContextLoader.class)
 @CucumberContextConfiguration
 public class ApplicationSteps {
@@ -89,7 +91,7 @@ public class ApplicationSteps {
     public void apiLogin() {
         jFactory.spec("用户")
                 .property("userName", loginUserName)
-                .property("authString", TestConstants.md5(loginPassword))
+                .property("authString", md5(loginPassword))
                 .create();
 
         Map<String, String> loginRequest = new HashMap<>();

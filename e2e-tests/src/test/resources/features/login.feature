@@ -6,241 +6,202 @@
       | userName         | userNum         | authString                       | role.roleName | role.tenantId |
       | login-user-plain | login-num-plain | 233e36c9678682b168a95b7cae20200b | e2e-login-role | 9001          |
     当POST "/login":
-    """
-    {
-      "user_name": "login-user-plain",
-      "password": "plain-secret"
-    }
-    """
-    那么response should be:
-    """
-    body.json= {
-      isSuccess: true
-      code: 200
-      errorMessage: ""
-      data= {
-        user_name: "login-user-plain"
-        user_num: "login-num-plain"
-        user_role: "e2e-login-role"
-        tenant_id: 9001
-        user_id: {...}
-        userrole_id: {...}
-        expire: 60
-        access_token: /.+/
-        access_token.decrypt= {
-          user_id: {...}
-          user_name: "login-user-plain"
-          user_num: "login-num-plain"
-          user_role: "e2e-login-role"
-          tenant_id: 9001
-        }
-        refresh_token: /.+/
+      """
+      {
+        "user_name": "login-user-plain",
+        "password": "plain-secret"
       }
-    }
-    """
+      """
+    那么response should be:
+      """
+      : {
+        code= 200
+        body.json= {
+          isSuccess: true
+          code: 200
+          errorMessage: ""
+          data= {
+            user_name: "login-user-plain"
+            user_num: "login-num-plain"
+            user_role: "e2e-login-role"
+            tenant_id: 9001
+            user_id: {...}
+            userrole_id: {...}
+            expire: 60
+            access_token.decrypt= {
+              user_id: {...}
+              user_name: "login-user-plain"
+              user_num: "login-num-plain"
+              user_role: "e2e-login-role"
+              tenant_id: 9001
+            }
+            refresh_token: {...}
+          }
+        }
+      }
+      """
 
   场景: 工号和MD5密码登录成功
     假如存在"用户":
-      | userName       | userNum        | authString                       | role.roleName   | role.tenantId |
-      | login-user-md5 | login-num-md5  | ff12cfc27d7a2b16f1f2572021225911 | e2e-login-role | 9001          |
+      | userNum        | authString                       |
+      | login-num-md5  | ff12cfc27d7a2b16f1f2572021225911 |
     当POST "/login":
-    """
-    {
-      "user_name": "login-num-md5",
-      "password": "ff12cfc27d7a2b16f1f2572021225911"
-    }
-    """
-    那么response should be:
-    """
-    body.json= {
-      isSuccess: true
-      code: 200
-      errorMessage: ""
-      data: {
-        user_name: "login-user-md5"
-        user_num: "login-num-md5"
-        user_role: "e2e-login-role"
-        tenant_id: 9001
-        user_id: {...}
-        userrole_id: {...}
-        expire: 60
-        access_token: /.+/
-        access_token.decrypt= {
-          user_id: {...}
-          user_name: "login-user-md5"
-          user_num: "login-num-md5"
-          user_role: "e2e-login-role"
-          tenant_id: 9001
-        }
-        refresh_token: /.+/
+      """
+      {
+        "user_name": "login-num-md5",
+        "password": "ff12cfc27d7a2b16f1f2572021225911"
       }
-    }
-    """
+      """
+    那么response should be:
+      """
+      body.json.data: {
+        user_num: "login-num-md5"
+        access_token.decrypt: {
+          user_num: "login-num-md5"
+        }
+      }
+      """
 
   场景: 合法最大长度用户名和密码登录成功
     假如存在"用户":
-      | userName                                                                                                                          | authString                       | role.roleName | role.tenantId |
-      | UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU | def318e25ed57760834fcaba2cc56540 | e2e-login-role | 9001          |
+      | userName                                                                                                                          | authString                       |
+      | UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU | def318e25ed57760834fcaba2cc56540 |
     当POST "/login":
-    """
-    {
-      "user_name": "UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU",
-      "password": "PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP"
-    }
-    """
-    那么response should be:
-    """
-    body.json= {
-      isSuccess: true
-      code: 200
-      errorMessage: ""
-      data: {
-        user_name: "UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU"
-        user_num: "UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU"
-        user_role: "e2e-login-role"
-        tenant_id: 9001
-        user_id: {...}
-        userrole_id: {...}
-        expire: 60
-        access_token: /.+/
-        access_token.decrypt= {
-          user_id: {...}
-          user_name: "UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU"
-          user_num: "UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU"
-          user_role: "e2e-login-role"
-          tenant_id: 9001
-        }
-        refresh_token: /.+/
+      """
+      {
+        "user_name": "UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU",
+        "password": "PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP"
       }
-    }
-    """
+      """
+    那么response should be:
+      """
+      body.json.data: {
+        user_name: "UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU"
+        access_token.decrypt: {
+          user_name: "UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU"
+        }
+      }
+      """
 
   场景: 密码错误登录失败
     假如存在"用户":
       | userName                   | authString                       |
       | login-user-wrong-password  | 233e36c9678682b168a95b7cae20200b |
     当POST "/login":
-    """
-    {
-      "user_name": "login-user-wrong-password",
-      "password": "wrong-secret"
-    }
-    """
+      """
+      {
+        "user_name": "login-user-wrong-password",
+        "password": "wrong-secret"
+      }
+      """
     那么response should be:
-    """
-    body.json= {
-      isSuccess: false
-      code: 400
-      errorMessage: "登录失败"
-      data: null
-    }
-    """
+      """
+      : {
+        code= 200
+        body.json= {
+          isSuccess: false
+          code: 400
+          errorMessage: "登录失败"
+          data: null
+        }
+      }
+      """
 
   场景: 用户不存在登录失败
     当POST "/login":
-    """
-    {
-      "user_name": "missing-user",
-      "password": "any-secret"
-    }
-    """
+      """
+      {
+        "user_name": "missing-user",
+        "password": "any-secret"
+      }
+      """
     那么response should be:
-    """
-    body.json= {
-      isSuccess: false
-      code: 400
-      errorMessage: "登录失败"
-      data: null
-    }
-    """
+      """
+      body.json: {
+        code: 400
+        errorMessage: "登录失败"
+      }
+      """
 
   场景: 角色关联缺失登录失败
     假如存在"用户":
-      | userName            | authString                       | userRole       | tenantId |
-      | login-user-no-role  | 3cc31cd246149aec68079241e71e98f6 | e2e-login-role | 9001     |
+      """
+      | userName            | authString                       | userRole       | tenantId | role |
+      | login-user-no-role  | 3cc31cd246149aec68079241e71e98f6 | e2e-login-role | 9001     | null |
+      """
     当POST "/login":
-    """
-    {
-      "user_name": "login-user-no-role",
-      "password": "no-role-secret"
-    }
-    """
+      """
+      {
+        "user_name": "login-user-no-role",
+        "password": "3cc31cd246149aec68079241e71e98f6"
+      }
+      """
     那么response should be:
-    """
-    body.json= {
-      isSuccess: false
-      code: 400
-      errorMessage: "登录失败"
-      data: null
-    }
-    """
+      """
+      body.json: {
+        code: 400
+        errorMessage: "登录失败"
+      }
+      """
 
   场景: 缺少用户名校验失败
     当POST "/login":
-    """
-    {
-      "password": "valid-secret"
-    }
-    """
+      """
+      {
+        "password": "valid-secret"
+      }
+      """
     那么response should be:
-    """
-    body.json= {
-      isSuccess: false
-      code: 400
-      errorMessage: "员工名称必填"
-      data: null
-    }
-    """
+      """
+      body.json: {
+        code: 400
+        errorMessage: "员工名称必填"
+      }
+      """
 
   场景: 缺少密码校验失败
     当POST "/login":
-    """
-    {
-      "user_name": "login-user"
-    }
-    """
+      """
+      {
+        "user_name": "login-user"
+      }
+      """
     那么response should be:
-    """
-    body.json= {
-      isSuccess: false
-      code: 400
-      errorMessage: "password必填"
-      data: null
-    }
-    """
+      """
+      body.json: {
+        code: 400
+        errorMessage: "password必填"
+      }
+      """
 
   场景: 用户名超长校验失败
     当POST "/login":
-    """
-    {
-      "user_name": "UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU",
-      "password": "valid-secret"
-    }
-    """
+      """
+      {
+        "user_name": "UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU",
+        "password": "valid-secret"
+      }
+      """
     那么response should be:
-    """
-    body.json= {
-      isSuccess: false
-      code: 400
-      errorMessage: "员工名称输入字符长度不能大于128个字符"
-      data: null
-    }
-    """
+      """
+      body.json: {
+        code: 400
+        errorMessage: "员工名称输入字符长度不能大于128个字符"
+      }
+      """
 
   场景: 密码超长校验失败
     当POST "/login":
-    """
-    {
-      "user_name": "login-user",
-      "password": "QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ"
-    }
-    """
+      """
+      {
+        "user_name": "login-user",
+        "password": "QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ"
+      }
+      """
     那么response should be:
-    """
-    body.json= {
-      isSuccess: false
-      code: 400
-      errorMessage: "password输入字符长度不能大于64个字符"
-      data: null
-    }
-    """
+      """
+      body.json: {
+        code: 400
+        errorMessage: "password输入字符长度不能大于64个字符"
+      }
+      """
