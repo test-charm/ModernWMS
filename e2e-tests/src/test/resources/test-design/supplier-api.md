@@ -18,6 +18,7 @@
 | 当前租户 | 当前用户 `tenant_id` | `9001` | Hook 固定为 `9001`，避免数据“假通过” |
 | `sqlTitle` | 列表模式 | 空字符串、`select` | `select` 时只返回 `is_valid=true` |
 | `searchObjects` | 列表查询条件 | 空、`Contains(supplier_name)` | 覆盖 `Any()` 与 `Contains` 分支 |
+| `pageIndex/pageSize` | 分页开关 | `>0`、`<=0` | 任一 `<=0` 时不执行 `Skip/Take` |
 | `supplier_name` | 供应商名称 | 合法唯一、同租户重复、缺失、超长(257) | `POST/PUT/Excel` 的核心判定因子 |
 | `is_valid` | 是否有效 | `true`、`false` | 影响 `/supplier/list` 的 `select` 分支 |
 | `tenant_id` | 供应商归属租户 | 当前租户 `9001`、其他租户 `9002` | `/all`、`list`、重名校验、excel 重名校验均受其影响 |
@@ -29,7 +30,7 @@
 | 接口 | 关注输出 |
 | --- | --- |
 | `/supplier/list` | `data.totals`、`data.rows` 过滤结果 |
-| `/supplier/all` | 仅返回当前租户数据 |
+| `/supplier/all` | 仅返回当前租户数据；无数据时返回空数组 |
 | `GET /supplier` | 成功返回对象；不存在返回 `code=400` |
 | `POST /supplier` | 成功返回新增 id；失败返回重名/校验错误 |
 | `PUT /supplier` | 成功返回 `true`；失败返回重名/不存在 |
@@ -41,7 +42,8 @@
 ```text
 [进入供应商 API]
   ├──→ {POST /supplier/list}
-  │      ├──→ {searchObjects 为空} ──→ [按租户分页]
+  │      ├──→ {searchObjects 为空} ──→ {pageIndex/pageSize > 0} ──→ [按租户分页]
+  │      │                           └──→ {任一 <= 0} ──→ [返回全部当前租户数据]
   │      └──→ {searchObjects 有值} ──→ [按 Contains 过滤]
   │                               └──→ {sqlTitle=select} ──→ [仅保留 is_valid=true]
   ├──→ {GET /supplier/all} ──→ [按租户返回全部]
@@ -71,21 +73,26 @@
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | list-返回当前租户全部数据 | 空 | 空 | N/A | `true/false` | `9001/9002` | N/A | N/A | 返回当前租户全部供应商，含无效数据 |
 | list-select-只返回匹配且有效数据 | `Contains(match)` | `select` | 匹配/不匹配 | `true/false` | `9001` | N/A | N/A | 只返回匹配且有效的供应商 |
+| list-unpaged-返回全部当前租户数据 | 空 | 空 | N/A | N/A | `9001/9002` | N/A | N/A | `pageIndex<=0` 时忽略 `pageSize`，返回全部当前租户数据 |
 | all-只返回当前租户数据 | N/A | N/A | N/A | N/A | `9001/9002` | N/A | N/A | 仅返回 `9001` |
+| all-empty-返回空数组 | N/A | N/A | N/A | N/A | `9001` | N/A | N/A | 无数据时返回空数组 |
 | get-按id获取成功 | N/A | N/A | 合法唯一 | N/A | `9001` | 存在 | N/A | 返回对象 |
 | get-id不存在 | N/A | N/A | N/A | N/A | N/A | 不存在 | N/A | `not_exists_entity` |
 | add-新增成功 | N/A | N/A | 合法唯一 | `true` | `9001` | N/A | N/A | 返回新增 id，数据落库 |
 | add-名称重复失败 | N/A | N/A | 同租户重复 | `true` | `9001` | N/A | N/A | `exists_entity`，库内数量不变 |
+| add-其他租户同名可新增 | N/A | N/A | 其他租户已存在同名 | `true` | `9001/9002` | N/A | N/A | 当前租户新增成功，形成跨租户同名 |
 | add-缺少名称校验失败 | N/A | N/A | 缺失 | N/A | N/A | N/A | N/A | `供应商名称必填` |
 | add-名称超长校验失败 | N/A | N/A | 257 字符 | N/A | N/A | N/A | N/A | `供应商名称输入字符长度不能大于256个字符` |
 | update-修改成功 | N/A | N/A | 合法唯一 | `false` | `9001` | 存在 | N/A | 返回成功且字段更新 |
 | update-名称重复失败 | N/A | N/A | 同租户重复 | N/A | `9001` | 存在 | N/A | `exists_entity` |
+| update-其他租户同名可修改 | N/A | N/A | 其他租户已存在同名 | `false` | `9001/9002` | 存在 | N/A | 当前租户修改成功，形成跨租户同名 |
 | update-id不存在 | N/A | N/A | 合法唯一 | N/A | `9001` | 不存在 | N/A | `not_exists_entity` |
 | delete-删除成功 | N/A | N/A | N/A | N/A | `9001` | 存在 | N/A | 删除成功且库内无记录 |
 | delete-id不存在 | N/A | N/A | N/A | N/A | N/A | 不存在 | N/A | 删除失败 |
 | excel-批量导入成功 | N/A | N/A | 全部唯一 | 默认 `true` | `9001` | N/A | 全部唯一 | 返回保存成功并落库 |
 | excel-文件内重名失败 | N/A | N/A | 重复 | N/A | `9001` | N/A | 文件内重复 | 返回失败且不落库 |
 | excel-与库内重名失败 | N/A | N/A | 与库内重复 | N/A | `9001` | N/A | 与库内重复 | 返回失败且原数据不变 |
+| excel-其他租户同名可导入 | N/A | N/A | 其他租户已存在同名 | N/A | `9001/9002` | N/A | 与其他租户重名 | 当前租户导入成功，形成跨租户同名 |
 
 ## 覆盖性检查
 
@@ -93,10 +100,11 @@
 - 所有显式失败路径均有覆盖：校验失败、同租户重名、id 不存在、excel 文件内重名、excel 库内重名。
 - 所有关键分支均覆盖：
   - `pageSearch.searchObjects.Any()`：空 / 非空
+  - `pageSearch.pageIndex<=0 || pageSearch.pageSize<=0`：否 / 是
   - `sqlTitle == "select"`：否 / 是
   - `is_valid == true`：否 / 是
-  - `AnyAsync(...supplier_name...)`：否 / 是
+  - `AnyAsync(...supplier_name...)`：否 / 是（同租户重复 / 跨租户同名可通过）
   - `entity == null`：否 / 是
   - `ExecuteDeleteAsync() > 0`：否 / 是
   - `supplier_name_repeat_excel.Count > 0`：否 / 是
-  - `supplier_name_repeat_exists.Count > 0`：否 / 是
+  - `supplier_name_repeat_exists.Count > 0`：否 / 是（同租户重复 / 跨租户同名可通过）
