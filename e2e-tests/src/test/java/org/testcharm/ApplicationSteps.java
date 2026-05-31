@@ -56,8 +56,10 @@ public class ApplicationSteps {
         executeDB(entityManager -> entityManager.unwrap(Session.class).doWork(connection -> Sneaky.run(() -> {
             try (Statement stmt = connection.createStatement()) {
                 stmt.execute("SET FOREIGN_KEY_CHECKS=0");
+                stmt.executeUpdate("DELETE FROM `supplier`");
                 stmt.executeUpdate("DELETE FROM `user`");
                 stmt.executeUpdate("DELETE FROM `userrole`");
+                stmt.executeUpdate("ALTER TABLE `supplier` AUTO_INCREMENT = 1");
                 stmt.execute("SET FOREIGN_KEY_CHECKS=1");
             }
         })));
@@ -92,6 +94,7 @@ public class ApplicationSteps {
         jFactory.spec("用户")
                 .property("userName", loginUserName)
                 .property("authString", md5(loginPassword))
+                .property("role.tenantId", 9001L)
                 .create();
 
         Map<String, String> loginRequest = new HashMap<>();
