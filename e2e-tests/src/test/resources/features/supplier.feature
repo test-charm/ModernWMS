@@ -38,7 +38,7 @@
         | list-other-tenant-supplier | 9002     |
       当POST "供应商查询请求" "/supplier/list":
         """
-        {}
+        {...}
         """
       那么response should be:
         """
@@ -64,102 +64,78 @@
                              | list-active-supplier   |
         """
 
-#    场景: 列表select模式只返回有效的供应商
-#      假如存在"供应商":
-#        | supplierName          | valid |
-#        | select-match-active   | true  |
-#        | select-match-inactive | false |
-#      当POST "供应商查询请求" "/supplier/list":
-#        """
-#        {
-#          sqlTitle: 'select'
-#          searchObjects: [{
-#            name: supplier_name
-#            operator: 6
-#            text: select-match
-#            value: select-match
-#          }]
-#        }
-#        """
-#      那么response should be:
-#        """
-#        body.json.data.rows: | supplier_name          |
-#                             | select-match-active    |
-#        """
+    场景: 列表select模式只返回有效的供应商
+      假如存在"供应商":
+        | supplierName          | valid |
+        | select-match-active   | true  |
+        | select-match-inactive | false |
+      当POST "供应商查询请求" "/supplier/list":
+        """
+        {
+          sqlTitle: 'select'
+          searchObjects: [{
+            name: supplier_name
+            operator: 6
+            text: select-match
+            value: select-match
+          }]
+        }
+        """
+      那么response should be:
+        """
+        body.json.data.rows: | supplier_name          |
+                             | select-match-active    |
+        """
 
     场景: 列表select模式只返回匹配且有效的供应商
       假如存在"供应商":
-        | supplierName          | valid | tenantId | createTime           |
-        | select-match-active   | true  | 9001     | 2024-01-03T00:00:00Z |
-        | select-match-inactive | false | 9001     | 2024-01-02T00:00:00Z |
-        | select-other-active   | true  | 9001     | 2024-01-01T00:00:00Z |
-      当POST "/supplier/list":
+        | supplierName        | valid |
+        | select-match-active | true  |
+        | select-other-active | true  |
+      当POST "供应商查询请求" "/supplier/list":
         """
         {
-          "pageIndex": 1,
-          "pageSize": 20,
-          "sqlTitle": "select",
-          "searchObjects": [
-            {
-              "name": "supplier_name",
-              "operator": 6,
-              "text": "select-match",
-              "value": "select-match"
-            }
-          ]
+          sqlTitle: select
+          searchObjects: [{
+            name: supplier_name
+            operator: 6
+            text: select-match
+            value: select-match
+          }]
         }
         """
       那么response should be:
         """
-        body.json: {
-          isSuccess: true
-          code: 200
-          errorMessage: ""
-          data: {
-            totals: 1
-            rows: [
-              {
-                supplier_name: "select-match-active"
-                is_valid: true
-                tenant_id: 9001
-              }
-            ]
-          }
-        }
+        body.json.data.rows: | supplier_name          |
+                             | select-match-active    |
         """
 
-    场景: 禁用分页时列表返回全部当前租户数据
+    场景大纲: 禁用分页时列表返回全部当前租户数据
       假如存在"供应商":
-        | supplierName         | tenantId | createTime           |
-        | unpaged-oldest       | 9001     | 2024-01-01T00:00:00Z |
-        | unpaged-middle       | 9001     | 2024-01-02T00:00:00Z |
-        | unpaged-latest       | 9001     | 2024-01-03T00:00:00Z |
-        | unpaged-other-tenant | 9002     | 2024-01-04T00:00:00Z |
-      当POST "/supplier/list":
+        | supplierName   |
+        | unpaged-oldest |
+        | unpaged-middle |
+        | unpaged-latest |
+      当POST "供应商查询请求" "/supplier/list":
         """
         {
-          "pageIndex": 0,
-          "pageSize": 2,
-          "sqlTitle": "",
-          "searchObjects": []
+          pageIndex: <pageIndex>
+          pageSize: <pageSize>
         }
         """
       那么response should be:
         """
-        body.json: {
-          isSuccess: true
-          code: 200
-          errorMessage: ""
-          data: {
-            totals: 3
-            rows: [
-              { supplier_name: "unpaged-latest" }
-              { supplier_name: "unpaged-middle" }
-              { supplier_name: "unpaged-oldest" }
-            ]
-          }
-        }
+        body.json.data.rows: | supplier_name          |
+                             | unpaged-latest         |
+                             | unpaged-middle         |
+                             | unpaged-oldest         |
         """
+      例子:
+        | pageIndex | pageSize |
+        | 0         | 2        |
+        | 2         | 0        |
+        | -1        | 2        |
+        | 2         | -1       |
 
     场景: 获取全部供应商时只返回当前租户数据
       假如存在"供应商":

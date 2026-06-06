@@ -7,13 +7,15 @@ import org.testcharmtraining.entity.Supplier;
 
 import java.util.List;
 
+import static org.testcharmtraining.ContextWrapper.getCurrentUserTenantId;
+
 public class Suppliers {
     public static class 供应商 extends Spec<Supplier> {
         @Override
         public void main() {
             property("creator").value("e2e-supplier");
             property("valid").value(true);
-            property("tenantId").value(9001L);
+            property("tenantId").value(getCurrentUserTenantId());
         }
     }
 

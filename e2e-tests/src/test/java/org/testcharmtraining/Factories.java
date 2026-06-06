@@ -38,7 +38,7 @@ public class Factories {
     public JFactory factorySet(DALMockServer dalMockServer) {
         return new EntityFactory(
                 new CompositeDataRepository(new MemoryDataRepository())
-                        .registerByPackage("org.testcharm.entity", new JPADataRepository(entityManagerFactory.createEntityManager()))
+                        .registerByPackage("org.testcharmtraining.entity", new JPADataRepository(entityManagerFactory.createEntityManager()))
                         .registerByType(HttpRequest.class, new MockServerDataRepository(dalMockServer))
         );
     }
