@@ -1,8 +1,5 @@
-package org.testcharm;
+package org.testcharmtraining;
 
-import com.github.leeonky.dal.DAL;
-import com.github.leeonky.interpreter.InterpreterException;
-import com.github.leeonky.interpreter.SyntaxException;
 import lombok.SneakyThrows;
 import org.mockserver.client.MockServerClient;
 import org.mockserver.logging.MockServerLogger;
@@ -13,6 +10,9 @@ import org.mockserver.model.MediaType;
 import org.mockserver.serialization.HttpRequestSerializer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.testcharm.dal.DAL;
+import org.testcharm.interpreter.InterpreterException;
+import org.testcharm.interpreter.SyntaxException;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedDeque;

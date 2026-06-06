@@ -1,10 +1,10 @@
-package com.github.leeonky.dal.extensions;
+package org.testcharm.extensions.dal;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.leeonky.dal.DAL;
-import com.github.leeonky.dal.runtime.Extension;
 import lombok.SneakyThrows;
+import org.testcharm.dal.DAL;
+import org.testcharm.dal.runtime.Extension;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -12,8 +12,8 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.*;
 
-import static com.github.leeonky.dal.Assertions.expect;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.testcharm.dal.Assertions.expect;
 
 public class TokenExtension implements Extension {
 

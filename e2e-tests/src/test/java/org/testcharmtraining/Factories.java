@@ -1,16 +1,16 @@
-package org.testcharm;
+package org.testcharmtraining;
 
-import com.github.leeonky.jfactory.CompositeDataRepository;
-import com.github.leeonky.jfactory.DataRepository;
-import com.github.leeonky.jfactory.JFactory;
-import com.github.leeonky.jfactory.MemoryDataRepository;
-import com.github.leeonky.jfactory.repo.JPADataRepository;
 import lombok.SneakyThrows;
 import org.mockserver.client.MockServerClient;
 import org.mockserver.model.HttpRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.testcharm.jfactory.CompositeDataRepository;
+import org.testcharm.jfactory.DataRepository;
+import org.testcharm.jfactory.JFactory;
+import org.testcharm.jfactory.MemoryDataRepository;
+import org.testcharm.jfactory.repo.JPADataRepository;
 
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceUnit;

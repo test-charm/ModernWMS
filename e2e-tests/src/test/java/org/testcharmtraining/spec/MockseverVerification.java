@@ -1,7 +1,7 @@
-package org.testcharm.spec;
+package org.testcharmtraining.spec;
 
-import com.github.leeonky.jfactory.Spec;
 import org.mockserver.model.HttpRequest;
+import org.testcharm.jfactory.Spec;
 
 public class MockseverVerification {
     public static class MockApi extends Spec<HttpRequest> {

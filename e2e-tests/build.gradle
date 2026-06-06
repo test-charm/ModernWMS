@@ -1,8 +1,8 @@
 buildscript {
     repositories {
-        maven {
-            url "https://maven.aliyun.com/repository/public"
-        }
+//        maven {
+//            url "https://mirrors.huaweicloud.com/repository/maven"
+//        }
         maven {
             url "https://plugins.gradle.org/m2/"
         }
@@ -21,9 +21,9 @@ apply plugin: 'war'
 apply plugin: "com.github.ManifestClasspath"
 
 repositories {
-    maven {
-        url "https://maven.aliyun.com/repository/public"
-    }
+//    maven {
+//        url "https://mirrors.huaweicloud.com/repository/maven"
+//    }
     mavenCentral()
 }
 
@@ -34,11 +34,11 @@ configurations {
     }
 }
 
-sourceCompatibility = '1.8'
-targetCompatibility = '1.8'
+sourceCompatibility = '17'
+targetCompatibility = '17'
 
 ext {
-    set('jfactoryDal', '0.8.1-alpha.26')
+    set('jfactoryDal', '1.0.0-alpha.25')
 }
 
 dependencies {
@@ -50,12 +50,13 @@ dependencies {
     testImplementation("io.cucumber:cucumber-java:6.10.2")
     testImplementation("io.cucumber:cucumber-spring:6.10.2")
     testImplementation group: 'org.mock-server', name: 'mockserver-client-java', version: '5.13.2'
-    testImplementation "com.github.leeonky:jfactory:${jfactoryDal}"
-    testImplementation "com.github.leeonky:jfactory-cucumber:${jfactoryDal}"
-    testImplementation "com.github.leeonky:jfactory-repo-jpa:${jfactoryDal}"
-    testImplementation "com.github.leeonky:RESTful-cucumber:${jfactoryDal}"
-    testImplementation "com.github.leeonky:DAL-java:${jfactoryDal}"
-    testImplementation "com.github.leeonky:DAL-extension-basic:${jfactoryDal}"
+    testImplementation "org.test-charm:jfactory:${jfactoryDal}"
+    testImplementation "org.test-charm:jfactory-cucumber:${jfactoryDal}"
+    testImplementation "org.test-charm:jfactory-repo-jpa:${jfactoryDal}"
+    testImplementation "org.test-charm:RESTful-cucumber:${jfactoryDal}"
+    testImplementation "org.test-charm:DAL-java:${jfactoryDal}"
+    testImplementation "org.test-charm:DAL-extension-basic:${jfactoryDal}"
+    testImplementation "org.test-charm:DAL-extension-inspector:${jfactoryDal}"
     testImplementation 'commons-fileupload:commons-fileupload:1.5'
 
 }
@@ -67,8 +68,8 @@ task cucumber(type: JavaExec) {
     environment "SPRING_PROFILES_ACTIVE", "test"
     jvmArgs "-Dfile.encoding=UTF-8", "-Dsun.jnu.encoding=utf-8"
     args = ['--plugin', 'pretty',
+            '--glue', 'org.testcharmtraining',
             '--glue', 'org.testcharm',
-            '--glue', 'com.github',
             project.hasProperty('file') ? project.file : 'src/test/resources/features']
 }
 

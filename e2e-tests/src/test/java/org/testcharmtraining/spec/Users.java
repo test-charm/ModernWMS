@@ -1,8 +1,8 @@
-package org.testcharm.spec;
+package org.testcharmtraining.spec;
 
-import com.github.leeonky.jfactory.Spec;
-import org.testcharm.entity.UserRole;
-import org.testcharm.entity.WmsUser;
+import org.testcharm.jfactory.Spec;
+import org.testcharmtraining.entity.UserRole;
+import org.testcharmtraining.entity.WmsUser;
 
 public class Users {
 

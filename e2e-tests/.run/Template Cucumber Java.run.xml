@@ -1,6 +1,9 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="true" type="CucumberJavaRunConfigurationType" factoryName="Cucumber java">
-    <option name="GLUE" value="org.testcharm com.github.leeonky" />
+    <envs>
+      <env name="DAL_INSPECTOR_MODE" value="AUTO" />
+    </envs>
+    <option name="GLUE" value="org.testcharm org.testcharmtraining" />
     <shortenClasspath name="NONE" />
     <option name="WORKING_DIRECTORY" value="$MODULE_WORKING_DIR$" />
     <method v="2">

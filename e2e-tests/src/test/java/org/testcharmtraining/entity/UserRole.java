@@ -1,4 +1,4 @@
-package org.testcharm.entity;
+package org.testcharmtraining.entity;
 
 import lombok.Getter;
 import lombok.Setter;

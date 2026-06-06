@@ -1,9 +1,5 @@
-package org.testcharm;
+package org.testcharmtraining;
 
-import com.github.leeonky.cucumber.restful.RestfulStep;
-import com.github.leeonky.dal.Assertions;
-import com.github.leeonky.jfactory.JFactory;
-import com.github.leeonky.util.Sneaky;
 import io.cucumber.java.Before;
 import io.cucumber.spring.CucumberContextConfiguration;
 import lombok.SneakyThrows;
@@ -12,6 +8,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootContextLoader;
 import org.springframework.test.context.ContextConfiguration;
+import org.testcharm.cucumber.restful.RestfulStep;
+import org.testcharm.dal.Assertions;
+import org.testcharm.jfactory.JFactory;
+import org.testcharm.util.Sneaky;
 
 import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
@@ -23,7 +23,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import static com.github.leeonky.dal.extensions.TokenExtension.md5;
+import static org.testcharm.extensions.dal.TokenExtension.md5;
 
 @ContextConfiguration(classes = {CucumberConfiguration.class}, loader = SpringBootContextLoader.class)
 @CucumberContextConfiguration
@@ -96,7 +96,7 @@ public class ApplicationSteps {
         loginRequest.put("user_name", LOGIN_USERNAME);
         loginRequest.put("password", LOGIN_PASSWORD);
 
-        restfulStep.post("/login", loginRequest);
+        restfulStep.postObjectInJson("/login", loginRequest);
         restfulStep.header("Authorization", "Bearer " + restfulStep.response("body.json.data.access_token"));
     }
 

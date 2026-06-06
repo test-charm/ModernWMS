@@ -1,9 +1,9 @@
-package org.testcharm.spec;
+package org.testcharmtraining.spec;
 
-import com.github.leeonky.jfactory.Spec;
 import lombok.Getter;
 import lombok.Setter;
-import org.testcharm.entity.Supplier;
+import org.testcharm.jfactory.Spec;
+import org.testcharmtraining.entity.Supplier;
 
 import java.util.List;
 
