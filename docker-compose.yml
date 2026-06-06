@@ -44,7 +44,7 @@ services:
       Database__db: MySql
       ConnectionStrings__MySqlConn: Server=mysql;Database=wms;Port=3306;charset=utf8;uid=root;pwd=123456;
     ports:
-      - "20011:5555"
+      - "10085:5555"
 
   nginx:
     build:

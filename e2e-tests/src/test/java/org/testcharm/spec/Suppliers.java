@@ -1,20 +1,43 @@
 package org.testcharm.spec;
 
 import com.github.leeonky.jfactory.Spec;
+import lombok.Getter;
+import lombok.Setter;
 import org.testcharm.entity.Supplier;
 
-import java.time.LocalDateTime;
+import java.util.List;
 
 public class Suppliers {
     public static class 供应商 extends Spec<Supplier> {
         @Override
         public void main() {
-            property("id").ignore();
             property("creator").value("e2e-supplier");
-            property("createTime").value(LocalDateTime.of(2024, 1, 1, 0, 0));
-            property("lastUpdateTime").value(LocalDateTime.of(2024, 1, 1, 0, 0));
             property("valid").value(true);
             property("tenantId").value(9001L);
+        }
+    }
+
+    public static class 供应商查询请求 extends Spec<SupplierQueryRequest> {
+        @Override
+        public void main() {
+            property("pageIndex").value(1);
+            property("pageSize").value(20);
+            property("sqlTitle").value("");
+        }
+    }
+
+    @Getter
+    @Setter
+    public static class SupplierQueryRequest {
+        private int pageIndex, pageSize;
+        private String sqlTitle;
+        private List<SearchObject> searchObjects;
+
+        @Getter
+        @Setter
+        public static class SearchObject {
+            private String name, text, value;
+            private int operator;
         }
     }
 }

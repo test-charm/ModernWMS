@@ -20,10 +20,3 @@ spring:
 mock-server:
   enabled: ${TESTCHARM_MOCK_SERVER_ENABLED:false}
   endpoint: ${TESTCHARM_MOCK_SERVER_ENDPOINT:http://127.0.0.1:1080}
-
-testcharm:
-  api:
-    base-url: ${TESTCHARM_API_BASE_URL:http://127.0.0.1:20011}
-    login:
-      user-name: ${TESTCHARM_LOGIN_USERNAME:e2e-login-hook-user}
-      password: ${TESTCHARM_LOGIN_PASSWORD:hook-secret}

@@ -4,14 +4,9 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.io.Serializable;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Getter
 @Setter
@@ -32,8 +27,8 @@ public class Supplier implements Serializable {
     @Column(name = "contact_tel")
     private String contactTel;
     private String creator;
-    private LocalDateTime createTime;
-    private LocalDateTime lastUpdateTime;
+    private Instant createTime;
+    private Instant lastUpdateTime;
     @Column(name = "is_valid")
     private boolean valid;
     @Column(name = "tenant_id")

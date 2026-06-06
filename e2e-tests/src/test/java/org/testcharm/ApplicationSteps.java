@@ -38,14 +38,8 @@ public class ApplicationSteps {
     @Value("${testcharm.dal.dumpinput:true}")
     private boolean dalDumpInput;
 
-    @Value("${testcharm.api.base-url}")
-    private String baseUrl;
-
-    @Value("${testcharm.api.login.user-name}")
-    private String loginUserName;
-
-    @Value("${testcharm.api.login.password}")
-    private String loginPassword;
+    private final String LOGIN_USERNAME = "e2e-login-hook-user";
+    private final String LOGIN_PASSWORD = "hook-secret";
 
     @Before
     public void disableDALDump() {
@@ -84,27 +78,26 @@ public class ApplicationSteps {
     private RestfulStep restfulStep;
 
     @PostConstruct
-    public void setBaseUrl() {
-        restfulStep.setBaseUrl(baseUrl);
+    public void initRestfulStep() {
+        restfulStep.setBaseUrl("http://127.0.0.1:10085");
+        restfulStep.setJFactory(jFactory);
     }
 
     @SneakyThrows
-    @Before("@api-login")
+    @Before("@api-login-tenantId-9001")
     public void apiLogin() {
         jFactory.spec("用户")
-                .property("userName", loginUserName)
-                .property("authString", md5(loginPassword))
+                .property("userName", LOGIN_USERNAME)
+                .property("authString", md5(LOGIN_PASSWORD))
                 .property("role.tenantId", 9001L)
                 .create();
 
         Map<String, String> loginRequest = new HashMap<>();
-        loginRequest.put("user_name", loginUserName);
-        loginRequest.put("password", loginPassword);
+        loginRequest.put("user_name", LOGIN_USERNAME);
+        loginRequest.put("password", LOGIN_PASSWORD);
 
-        RestfulStep loginRestfulStep = new RestfulStep();
-        loginRestfulStep.setBaseUrl(baseUrl);
-        loginRestfulStep.post("/login", loginRequest);
-        restfulStep.header("Authorization", "Bearer " + loginRestfulStep.response("body.json.data.access_token"));
+        restfulStep.post("/login", loginRequest);
+        restfulStep.header("Authorization", "Bearer " + restfulStep.response("body.json.data.access_token"));
     }
 
 }

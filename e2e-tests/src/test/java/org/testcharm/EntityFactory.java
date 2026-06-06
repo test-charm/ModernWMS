@@ -16,6 +16,5 @@ public class EntityFactory extends JFactory {
         Classes.subTypesOf(Spec.class, "org.testcharm.spec").forEach(c -> register((Class) c));
 
         ignoreDefaultValue(p -> p.getName().equals("id"));
-        ignoreDefaultValue(p -> p.getName().equals("createdAt"));
     }
 }
