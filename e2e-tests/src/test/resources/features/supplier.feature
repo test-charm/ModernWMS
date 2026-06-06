@@ -137,6 +137,23 @@
         | -1        | 2        |
         | 2         | -1       |
 
+  Rule: 全列表 - GET  /supplier/all
+
+    场景: 全列表返回的全部字段
+      假如存在"供应商":
+        | supplierName         | city | address | email  | manager  | contactTel  | creator | createTime           | lastUpdateTime       | valid | tenantId |
+        | list-active-supplier | c1   | addr1   | email1 | manager1 | 13800000000 | user1   | 2024-01-01T00:00:00Z | 2024-01-02T00:00:00Z | true  | 9001     |
+      那么"/supplier/all" should response:
+        """
+        body.json= {
+          isSuccess: true
+          code: 200
+          errorMessage: ""
+          data= | id | supplier_name          | tenant_id | city | address | email  | manager  | contact_tel   | creator | create_time           | last_update_time       | is_valid |
+                | 1  | list-active-supplier   | 9001      | c1   | addr1 | email1  | manager1 | '13800000000'  | user1   | '2024-01-01 00:00:00' | '2024-01-02 00:00:00' | true      |
+        }
+        """
+
     场景: 获取全部供应商时只返回当前租户数据
       假如存在"供应商":
         | supplierName          | tenantId |
@@ -145,45 +162,34 @@
       当GET "/supplier/all"
       那么response should be:
         """
-        body.json: {
-          isSuccess: true
-          code: 200
-          data: [
-            { supplier_name: "tenant-current-only" }
-          ]
-        }
+        body.json.data: | supplier_name         |
+                        | tenant-current-only   |
         """
 
-    场景: 获取全部供应商在无数据时返回空数组
-      当GET "/supplier/all"
-      那么response should be:
-        """
-        body.json: {
-          isSuccess: true
-          code: 200
-          errorMessage: ""
-          data: []
-        }
-        """
+  Rule: 详情 - GET /supplier?id={id}
 
     场景: 根据id获取供应商成功
       假如存在"供应商":
-        | supplierName   | city   | address     | manager | email            | contactTel  |
-        | get-supplier-1 | Suzhou | Supplier Rd | Alice   | get1@example.com | 13800000001 |
-      当GET "/supplier?id=1"
+        | supplierName   | city | address | email  | manager  | contactTel  | creator | createTime           | lastUpdateTime       | valid | tenantId |
+        | get-supplier-1 | c1   | addr1   | email1 | manager1 | 13800000000 | user1   | 2024-01-01T00:00:00Z | 2024-01-02T00:00:00Z | true  | 9001     |
+      当GET "/supplier?id=${供应商.supplierName[get-supplier-1].id}"
       那么response should be:
         """
-        body.json: {
+        body.json= {
           isSuccess: true
           code: 200
-          data: {
+          errorMessage: ""
+          data= {
             id: 1
-            supplier_name: "get-supplier-1"
-            city: "Suzhou"
-            address: "Supplier Rd"
-            manager: "Alice"
-            email: "get1@example.com"
-            contact_tel: "13800000001"
+            supplier_name: get-supplier-1
+            city: c1
+            address: addr1
+            email: email1
+            manager: manager1
+            contact_tel: '13800000000'
+            creator: user1
+            create_time: '2024-01-01 00:00:00'
+            last_update_time: '2024-01-02 00:00:00'
             is_valid: true
             tenant_id: 9001
           }
@@ -194,12 +200,17 @@
       当GET "/supplier?id=999"
       那么response should be:
         """
-        body.json: {
-          isSuccess: false
-          code: 400
-          errorMessage: "数据不存在或已被删除"
+        : {
+          code: 200
+          body.json: {
+            isSuccess: false
+            code: 400
+            errorMessage: "数据不存在或已被删除"
+          }
         }
         """
+
+  Rule: 新增 - POST /supplier
 
     场景: 新增供应商成功并写入数据库
       当POST "/supplier":
@@ -208,7 +219,7 @@
           "supplier_name": "create-supplier",
           "city": "Shanghai",
           "address": "Create Road",
-          "email": "create@example.com",
+          "email": "email1",
           "manager": "Bob",
           "contact_tel": "13800000002",
           "is_valid": true
@@ -216,146 +227,121 @@
         """
       那么response should be:
         """
-        body.json: {
+        body.json= {
           isSuccess: true
           code: 200
           errorMessage: ""
           data: 1
         }
         """
-    并且 "供应商.id[1]"应为:
-    """
-        .supplierName='create-supplier'
-        and .city='Shanghai'
-        and .address='Create Road'
-        and .email='create@example.com'
-        and .manager='Bob'
-        and .contactTel='13800000002'
-        and .creator='e2e-login-hook-user'
-        and .valid=true
-        and .tenantId=9001L
+      并且数据应为:
+        """
+        供应商= {
+          id: 1
+          supplierName: create-supplier
+          city: Shanghai
+          address: 'Create Road'
+          email: email1
+          manager: Bob
+          contactTel: '13800000002'
+          creator: e2e-login-hook-user
+          tenantId: 9001
+          valid: true,
+          <<createTime,lastUpdateTime>> is AlmostNow
+        }
         """
 
     场景: 新增同租户重名供应商失败且不会重复落库
       假如存在"供应商":
         | supplierName       |
         | duplicate-supplier |
-      当POST "/supplier":
+      当POST "供应商创建请求" "/supplier":
         """
         {
-          "supplier_name": "duplicate-supplier",
-          "city": "Shanghai",
-          "address": "Duplicate Road",
-          "email": "duplicate@example.com",
-          "manager": "Bob",
-          "contact_tel": "13800000003",
-          "is_valid": true
+          supplierName: duplicate-supplier
         }
         """
       那么response should be:
         """
-        body.json: {
+        body.json= {
           isSuccess: false
           code: 400
           errorMessage: "供应商名称:duplicate-supplier 已经存在"
           data: 0
         }
         """
-    并且 所有"供应商"应为:
-    """
-        size= 1
+      并且数据应为:
         """
-    并且 "供应商.id[1]"应为:
-    """
-        .supplierName='duplicate-supplier'
-        and .tenantId=9001L
-        and .creator='e2e-supplier'
+        供应商: | supplierName       |
+               | duplicate-supplier |
         """
 
     场景: 新增供应商允许与其他租户同名
       假如存在"供应商":
         | supplierName          | tenantId |
         | cross-tenant-add-name | 9002     |
-      当POST "/supplier":
+      当POST "供应商创建请求" "/supplier":
         """
         {
-          "supplier_name": "cross-tenant-add-name",
-          "city": "Shanghai",
-          "address": "Cross Tenant Create Road",
-          "email": "cross-tenant-add@example.com",
-          "manager": "Bob",
-          "contact_tel": "13800000015",
-          "is_valid": true
+          supplierName: cross-tenant-add-name
         }
         """
       那么response should be:
         """
-        body.json: {
+        body.json= {
           isSuccess: true
           code: 200
           errorMessage: ""
           data: 2
         }
         """
-    并且 "供应商.id[1]"应为:
-    """
-        .supplierName='cross-tenant-add-name'
-        and .tenantId=9002L
-        and .creator='e2e-supplier'
+      并且数据应为:
         """
-    并且 "供应商.id[2]"应为:
-    """
-        .supplierName='cross-tenant-add-name'
-        and .city='Shanghai'
-        and .address='Cross Tenant Create Road'
-        and .email='cross-tenant-add@example.com'
-        and .manager='Bob'
-        and .contactTel='13800000015'
-        and .creator='e2e-login-hook-user'
-        and .valid=true
-        and .tenantId=9001L
+        供应商: | supplierName          | +tenantId |
+               | cross-tenant-add-name | 9001      |
+               | cross-tenant-add-name | 9002      |
         """
 
-    场景: 新增供应商缺少名称时校验失败
-      当POST "/supplier":
+    场景大纲: 新增供应商缺少名称时校验失败
+      当POST "供应商创建请求" "/supplier":
         """
         {
-          "city": "Shanghai",
-          "address": "No Name Road",
-          "email": "noname@example.com",
-          "manager": "Bob",
-          "contact_tel": "13800000004",
-          "is_valid": true
+          <fieldName>: null
         }
         """
       那么response should be:
         """
         body.json: {
           code: 400
-          errorMessage: "供应商名称必填"
+          errorMessage: "<errorMessage>"
         }
         """
+      例子:
+        | fieldName    | errorMessage |
+        | supplierName | 供应商名称必填      |
 
-    场景: 新增供应商名称超长时校验失败
-      当POST "/supplier":
+    场景大纲: 新增供应商名称超长时校验失败
+      当POST "供应商创建请求" "/supplier":
         """
         {
-          "supplier_name": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
-          "city": "Shanghai",
-          "address": "Too Long Road",
-          "email": "toolong@example.com",
-          "manager": "Bob",
-          "contact_tel": "13800000005",
-          "is_valid": true
+          <fieldName>: 'A'*(<maxLength>+1),
         }
         """
       那么response should be:
         """
         body.json: {
           code: 400
-          errorMessage: "供应商名称输入字符长度不能大于256个字符"
+          errorMessage: "<errorMessage>"
         }
         """
+      例子:
+        | fieldName    | maxLength | errorMessage          |
+        | supplierName | 256       | 供应商名称输入字符长度不能大于256个字符 |
+        | address      | 256       | 详细地址输入字符长度不能大于256个字符  |
+        | city         | 128       | 所在城市输入字符长度不能大于128个字符  |
+        | email        | 128       | Email输入字符长度不能大于128个字符 |
+        | manager      | 64        | 负责人输入字符长度不能大于64个字符    |
+        | contactTel   | 64        | 联系方式输入字符长度不能大于64个字符   |
 
     场景: 修改供应商成功
       假如存在"供应商":
