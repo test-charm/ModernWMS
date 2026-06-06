@@ -1,25 +1,20 @@
-FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:8.0
 
-WORKDIR /src
+ENV PATH="${PATH}:/root/.dotnet/tools" \
+    DOTNET_ROLL_FORWARD=Major
 
-COPY backend/ModernWMS.sln backend/
-COPY backend/ModernWMS/ModernWMS.csproj backend/ModernWMS/
-COPY backend/ModernWMS.Core/ModernWMS.Core.csproj backend/ModernWMS.Core/
-COPY backend/ModernWMS.WMS/ModernWMS.WMS.csproj backend/ModernWMS.WMS/
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends libxml2 procps \
+    && rm -rf /var/lib/apt/lists/*
 
-RUN dotnet restore backend/ModernWMS.sln
+RUN dotnet tool install --tool-path /root/.dotnet/tools dotnet-coverage --version 17.14.2 \
+    && dotnet tool install --tool-path /root/.dotnet/tools dotnet-reportgenerator-globaltool --version 5.5.10
 
-COPY backend/ backend/
+COPY docker/backend/run-with-coverage.sh /usr/local/bin/run-with-coverage.sh
+RUN chmod +x /usr/local/bin/run-with-coverage.sh
 
-WORKDIR /src/backend/ModernWMS
-RUN dotnet publish ModernWMS.csproj -c Release -o /app/publish /p:UseAppHost=false
-
-FROM mcr.microsoft.com/dotnet/aspnet:7.0 AS final
-
-WORKDIR /app
-
-COPY --from=build /app/publish ./
+WORKDIR /workspace/backend
 
 EXPOSE 5555
 
-ENTRYPOINT ["dotnet", "ModernWMS.dll"]
+ENTRYPOINT ["/usr/local/bin/run-with-coverage.sh"]

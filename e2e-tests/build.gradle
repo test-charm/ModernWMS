@@ -73,4 +73,13 @@ task cucumber(type: JavaExec) {
             project.hasProperty('file') ? project.file : 'src/test/resources/features']
 }
 
+task cucumberWithBackendCoverage(type: Exec) {
+    dependsOn assemble, testClasses
+    workingDir projectDir
+    environment "CUCUMBER_CLASSPATH", (configurations.cucumberRuntime + sourceSets.main.output + sourceSets.test.output).asPath
+    environment "CUCUMBER_TARGET", project.hasProperty('file') ? project.property('file').toString() : 'src/test/resources/features'
+    environment "SPRING_PROFILES_ACTIVE", "test"
+    commandLine "bash", "scripts/run-cucumber-with-backend-coverage.sh"
+}
+
 tasks.bootWar { enabled = false }

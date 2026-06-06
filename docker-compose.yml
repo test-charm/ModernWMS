@@ -32,10 +32,13 @@ services:
       - "50000:80"
 
   dotnet:
+    # dotnet-coverage dynamic instrumentation is only supported on Linux x64.
+    platform: linux/amd64
     build:
       context: .
       dockerfile: docker/backend.Dockerfile
     restart: unless-stopped
+    stop_grace_period: 2m
     depends_on:
       mysql:
         condition: service_healthy
@@ -43,6 +46,14 @@ services:
       ASPNETCORE_ENVIRONMENT: Production
       Database__db: MySql
       ConnectionStrings__MySqlConn: Server=mysql;Database=wms;Port=3306;charset=utf8;uid=root;pwd=123456;
+      BACKEND_ROOT: /workspace/backend
+      BACKEND_ENABLE_COVERAGE: ${BACKEND_ENABLE_COVERAGE:-false}
+      BACKEND_COVERAGE_OUTPUT: /workspace/e2e-tests/build/coverage/backend.cobertura.xml
+      BACKEND_COVERAGE_REPORT_DIR: /workspace/e2e-tests/build/reports/backend-coverage
+    volumes:
+      - ./backend:/workspace/backend
+      - ./e2e-tests/build:/workspace/e2e-tests/build
+      - ${HOME}/.nuget/packages:/root/.nuget/packages
     ports:
       - "10085:5555"
 
