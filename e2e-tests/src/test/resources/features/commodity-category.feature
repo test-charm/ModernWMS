@@ -151,9 +151,11 @@
         """
       那么response should be:
         """
-        body.json: {
+        body.json= {
+          isSuccess: false
           code: 400
           errorMessage: "商品类别必填"
+          data: null
         }
         """
 
@@ -166,9 +168,11 @@
         """
       那么response should be:
         """
-        body.json: {
+        body.json= {
+          isSuccess: false
           code: 400
           errorMessage: "商品类别输入字符长度不能大于32个字符"
+          data: null
         }
         """
 
@@ -198,9 +202,9 @@
         """
       并且数据应为:
         """
-        商品类别: | id | categoryName          | parentId | creator      | valid |
-                 | 1  | update-parent         | 0        | parent-user  | true  |
-                 | 2  | update-target-renamed | 1        | target-user  | true  |
+        商品类别: | id | categoryName          | parentId | creator      | tenantId | valid |
+                 | 1  | update-parent         | 0        | parent-user  | 9001     | true  |
+                 | 2  | update-target-renamed | 1        | target-user  | 9001     | true  |
         """
 
     场景: 修改商品类别为同租户重复名称失败
@@ -229,6 +233,34 @@
         商品类别: | id | categoryName              |
                  | 1  | update-duplicate-target   |
                  | 2  | update-duplicate-existing |
+        """
+
+    场景: 修改商品类别允许与其他租户同名
+      假如存在"商品类别":
+        | categoryName               | tenantId |
+        | update-cross-tenant-source | 9001     |
+        | update-cross-tenant-target | 9002     |
+      当PUT "商品类别修改请求" "/category":
+        """
+        {
+          id: 1
+          categoryName: update-cross-tenant-target
+        }
+        """
+      那么response should be:
+        """
+        body.json= {
+          isSuccess: true
+          code: 200
+          errorMessage: ""
+          data: true
+        }
+        """
+      并且数据应为:
+        """
+        商品类别: | id | categoryName               | tenantId | valid |
+                 | 1  | update-cross-tenant-target | 9001     | true  |
+                 | 2  | update-cross-tenant-target | 9002     | true  |
         """
 
     场景: 修改不存在的商品类别失败
@@ -273,9 +305,9 @@
         """
       并且数据应为:
         """
-        商品类别: | id | categoryName | parentId | valid |
-                 | 1  | status-root  | 0        | false |
-                 | 2  | status-child | 1        | false |
+        商品类别: | id | categoryName | parentId | tenantId | valid |
+                 | 1  | status-root  | 0        | 9001     | false |
+                 | 2  | status-child | 1        | 9001     | false |
         """
 
   Rule: 删除 - DELETE /category?id={id}
@@ -340,6 +372,11 @@
         """
         商品类别: | categoryName        |
                  | referenced-category |
+        """
+      并且数据应为:
+        """
+        商品: | categoryId | tenantId |
+             | 1          | 9001     |
         """
 
     场景: 删除不存在的商品类别失败

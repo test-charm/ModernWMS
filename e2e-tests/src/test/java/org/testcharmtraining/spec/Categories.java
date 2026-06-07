@@ -13,24 +13,24 @@ public class Categories {
     public static class 商品类别 extends Spec<Category> {
         @Override
         public void main() {
-            property("valid").value(true);
-            property("tenantId").value(getCurrentUserTenantId());
+            property("valid").defaultValue(true);
+            property("tenantId").defaultValue(getCurrentUserTenantId());
         }
     }
 
     public static class 商品类别创建请求 extends Spec<CategoryCreateRequest> {
         @Override
         public void main() {
-            property("parentId").value(0);
-            property("valid").value(true);
+            property("parentId").defaultValue(0);
+            property("valid").defaultValue(true);
         }
     }
 
     public static class 商品类别修改请求 extends Spec<CategoryUpdateRequest> {
         @Override
         public void main() {
-            property("parentId").value(0);
-            property("valid").value(true);
+            property("parentId").defaultValue(0);
+            property("valid").defaultValue(true);
         }
     }
 
