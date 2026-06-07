@@ -35,6 +35,9 @@ build_backend() {
   log INFO "34" "Restoring backend solution"
   dotnet restore "${backend_solution}" --verbosity minimal
 
+  log INFO "34" "Cleaning backend solution"
+  dotnet clean "${backend_solution}" --configuration "${backend_build_configuration}" --verbosity minimal
+
   log INFO "34" "Building backend solution"
   dotnet build "${backend_solution}" --no-restore --configuration "${backend_build_configuration}" --verbosity minimal
 }
