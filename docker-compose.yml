@@ -62,9 +62,8 @@ services:
       context: .
       dockerfile: docker/frontend.Dockerfile
       args:
-        # 当前构建结果默认让前端请求宿主机的 20011 端口
         VITE_BASE_PATH: http://127.0.0.1
-        VITE_SERVER_PORT: 20011
+        VITE_SERVER_PORT: 10085
     restart: unless-stopped
     depends_on:
       - dotnet
