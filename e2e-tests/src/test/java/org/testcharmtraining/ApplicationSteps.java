@@ -50,14 +50,20 @@ public class ApplicationSteps {
         executeDB(entityManager -> entityManager.unwrap(Session.class).doWork(connection -> Sneaky.run(() -> {
             try (Statement stmt = connection.createStatement()) {
                 stmt.execute("SET FOREIGN_KEY_CHECKS=0");
+                stmt.executeUpdate("DELETE FROM `sku_safety_stock`");
+                stmt.executeUpdate("DELETE FROM `sku`");
                 stmt.executeUpdate("DELETE FROM `spu`");
                 stmt.executeUpdate("DELETE FROM `category`");
                 stmt.executeUpdate("DELETE FROM `supplier`");
+                stmt.executeUpdate("DELETE FROM `warehouse`");
                 stmt.executeUpdate("DELETE FROM `user`");
                 stmt.executeUpdate("DELETE FROM `userrole`");
+                stmt.executeUpdate("ALTER TABLE `sku_safety_stock` AUTO_INCREMENT = 1");
+                stmt.executeUpdate("ALTER TABLE `sku` AUTO_INCREMENT = 1");
                 stmt.executeUpdate("ALTER TABLE `spu` AUTO_INCREMENT = 1");
                 stmt.executeUpdate("ALTER TABLE `category` AUTO_INCREMENT = 1");
                 stmt.executeUpdate("ALTER TABLE `supplier` AUTO_INCREMENT = 1");
+                stmt.executeUpdate("ALTER TABLE `warehouse` AUTO_INCREMENT = 1");
                 stmt.execute("SET FOREIGN_KEY_CHECKS=1");
             }
         })));
