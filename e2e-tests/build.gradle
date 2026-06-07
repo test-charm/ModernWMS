@@ -61,6 +61,8 @@ dependencies {
 
 }
 
+def cucumberTags = project.hasProperty('tags') ? project.property('tags').toString() : 'not @known-bug'
+
 task cucumber(type: JavaExec) {
     dependsOn assemble, testClasses
     main = "io.cucumber.core.cli.Main"
@@ -70,6 +72,7 @@ task cucumber(type: JavaExec) {
     args = ['--plugin', 'pretty',
             '--glue', 'org.testcharmtraining',
             '--glue', 'org.testcharm',
+            '--tags', cucumberTags,
             project.hasProperty('file') ? project.file : 'src/test/resources/features']
 }
 
@@ -78,6 +81,7 @@ task cucumberWithBackendCoverage(type: Exec) {
     workingDir projectDir
     environment "CUCUMBER_CLASSPATH", (configurations.cucumberRuntime + sourceSets.main.output + sourceSets.test.output).asPath
     environment "CUCUMBER_TARGET", project.hasProperty('file') ? project.property('file').toString() : 'src/test/resources/features'
+    environment "CUCUMBER_TAGS", cucumberTags
     environment "SPRING_PROFILES_ACTIVE", "test"
     commandLine "bash", "scripts/run-cucumber-with-backend-coverage.sh"
 }

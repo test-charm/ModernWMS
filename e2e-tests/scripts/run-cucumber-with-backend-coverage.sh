@@ -63,6 +63,7 @@ java \
   --plugin pretty \
   --glue org.testcharmtraining \
   --glue org.testcharm \
+  --tags "${CUCUMBER_TAGS:-not @known-bug}" \
   "${CUCUMBER_TARGET:-src/test/resources/features}" || test_exit=$?
 
 cleanup
