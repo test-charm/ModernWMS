@@ -285,13 +285,25 @@
         }
         """
 
+    场景: 根据不存在的sku_id获取规格详情失败
+      当GET "/spu/sku?sku_id=999"
+      那么response should be:
+        """
+        body.json= {
+          isSuccess: false
+          code: 400
+          errorMessage: "数据不存在或已被删除"
+          data: null
+        }
+        """
+
     场景: 根据bar_code获取规格详情成功
       假如存在"商品":
         | spuCode     | spuName          | category.categoryName | supplierId | supplierName      | brand      | origin      | lengthUnit | volumeUnit | weightUnit | spuDescription     |
         | barcode-spu | barcode-spu-name | barcode-category      | 11         | barcode-supplier  | barcode-brand | barcode-origin | 1       | 0          | 1          | barcode-description |
       假如存在"规格":
-        | spu.spuCode  | skuCode     | skuName          | barCode      | weight | lenght | width | height | volume | unit | cost | price |
-        | barcode-spu  | barcode-sku | barcode-sku-name | barcode-only | 1      | 2      | 3     | 4      | 24     | EA   | 5    | 6     |
+        | spu.spuCode  | skuCode     | skuName          | barCode      | imageUrl | weight | lenght | width | height | volume | unit | cost | price |
+        | barcode-spu  | barcode-sku | barcode-sku-name | barcode-only | /img/barcode-sku.png | 1      | 2      | 3     | 4      | 24     | EA   | 5    | 6     |
       当GET "/spu/sku-bar-code?bar_code=barcode-only"
       那么response should be:
         """
@@ -303,18 +315,45 @@
         """
       并且response should be:
         """
-        body.json.data: {
+        body.json.data= {
           spu_id: 1
           spu_code: barcode-spu
           spu_name: barcode-spu-name
+          category_id: 1
           category_name: barcode-category
           spu_description: barcode-description
+          supplier_id: 11
           supplier_name: barcode-supplier
+          brand: barcode-brand
+          origin: barcode-origin
+          length_unit: 1
+          volume_unit: 0
+          weight_unit: 1
           sku_id: 1
           sku_code: barcode-sku
           sku_name: barcode-sku-name
           bar_code: barcode-only
+          image_url: '/img/barcode-sku.png'
+          weight: 1
+          lenght: 2
+          width: 3
+          height: 4
+          volume: 24
           unit: EA
+          cost: 5
+          price: 6
+        }
+        """
+
+    场景: 根据不存在的bar_code获取规格详情失败
+      当GET "/spu/sku-bar-code?bar_code=missing-bar-code"
+      那么response should be:
+        """
+        body.json= {
+          isSuccess: false
+          code: 400
+          errorMessage: "数据不存在或已被删除"
+          data: null
         }
         """
 
@@ -1063,6 +1102,34 @@
         }
         """
 
+    场景: 批量导入时商品分类不存在失败
+      假如存在"供应商":
+        | supplierName         |
+        | missing-category-supplier |
+      当POST "商品导入请求[]" "/spu/addlist":
+        """
+        [{
+          spuCode: missing-category-spu
+          spuName: missing-category-name
+          categoryName: missing-category
+          supplierName: missing-category-supplier
+          detailList: [{
+            skuCode: missing-category-sku
+            skuName: missing-category-sku-name
+            unit: EA
+          }]
+        }]
+        """
+      那么response should be:
+        """
+        body.json= {
+          isSuccess: false
+          code: 400
+          errorMessage: "商品分类不存在"
+          data: 0
+        }
+        """
+
     场景: 批量导入已有商品时规格编码冲突失败
       假如存在"商品类别":
         | categoryName        |
@@ -1103,6 +1170,48 @@
         """
         规格: | spu.spuCode  | skuCode      |
              | conflict-spu | conflict-sku |
+        """
+
+    场景: 批量导入已有商品时请求内规格编码重复失败
+      假如存在"商品类别":
+        | categoryName          |
+        | duplicate-sku-category |
+      假如存在"供应商":
+        | supplierName          |
+        | duplicate-sku-supplier |
+      假如存在"商品":
+        | spuCode            | spuName            | category.categoryName  | supplierId | supplierName           |
+        | duplicate-sku-spu  | duplicate-sku-name | duplicate-sku-category | 1          | duplicate-sku-supplier |
+      当POST "商品导入请求[]" "/spu/addlist":
+        """
+        [{
+          spuCode: duplicate-sku-spu
+          spuName: duplicate-sku-name
+          categoryName: duplicate-sku-category
+          supplierName: duplicate-sku-supplier
+          detailList: [{
+            skuCode: duplicate-sku-code
+            skuName: duplicate-sku-name-1
+            unit: EA
+          } {
+            skuCode: duplicate-sku-code
+            skuName: duplicate-sku-name-2
+            unit: EA
+          }]
+        }]
+        """
+      那么response should be:
+        """
+        body.json= {
+          isSuccess: false
+          code: 400
+          errorMessage: "批量数据中存在重复的规格编码"
+          data: 0
+        }
+        """
+      并且数据应为:
+        """
+        规格= []
         """
 
   Rule: 规格安全库存 - PUT /spu/sku-safety-stock
@@ -1160,4 +1269,28 @@
         规格安全库存: | sku.skuCode | warehouse.warehouseName | safetyStockQty |
                      | stock-sku   | stock-wh-1              | 20             |
                      | stock-sku   | stock-wh-3              | 30             |
+        """
+
+    场景: 安全库存明细为空时保存失败
+      假如存在"商品":
+        | spuCode         | spuName         | category.categoryName |
+        | empty-stock-spu | empty-stock-spu | empty-stock-category  |
+      假如存在"规格":
+        | spu.spuCode     | skuCode         | skuName         | unit |
+        | empty-stock-spu | empty-stock-sku | empty-stock-sku | EA   |
+      当PUT "安全库存修改请求" "/spu/sku-safety-stock":
+        """
+        {
+          skuId: ${规格.skuCode[empty-stock-sku].id}
+          detailList: []
+        }
+        """
+      那么response should be:
+        """
+        body.json= {
+          isSuccess: false
+          code: 400
+          errorMessage: "保存失败"
+          data: null
+        }
         """

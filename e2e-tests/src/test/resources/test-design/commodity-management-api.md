@@ -22,7 +22,7 @@
 | 列表数据存在性 | 当前租户是否存在商品 | 有数据 / 无数据 | 覆盖列表成功空集与非空集 |
 | `id` | 详情、修改、删除主键 | 存在 / 不存在 | 覆盖 `GET`、`PUT`、`DELETE` 的存在性分支 |
 | `sku_id` | 规格详情主键 | 存在 / 不存在 | 覆盖 `/spu/sku` 成功与失败路径 |
-| `bar_code` | 条码查询参数 | 合法存在 / 缺失 / 不存在 | 覆盖 `/spu/sku-bar-code` 校验与查询路径 |
+| `bar_code` | 条码查询参数 | 合法存在 / 缺失 / 不存在 | 覆盖 `/spu/sku-bar-code` 校验、命中与未命中路径 |
 | `spu_code` | 商品编码 | 合法唯一 / 同租户重复 / 其他租户同名 / 缺失 / 长度=32 / 长度=33 | `POST/PUT/addlist` 的核心判定因子 |
 | `spu_name` | 商品名称 | 合法 / 缺失 / 长度=200 / 长度=201 | 影响校验与批量导入信息一致性 |
 | `category_name` | 商品类别名称 | 合法存在 / 缺失 / 长度=32 / 长度=33 / 不存在 | 影响模型校验、列表展示、批量导入解析 |
@@ -31,9 +31,9 @@
 | 明细 `sku_code` | 规格编码 | 合法唯一 / 缺失 / 已存在 | 覆盖模型校验、导入追加规格、导入冲突 |
 | 明细 `sku_name` / `unit` | 规格名称与单位 | 合法 / 缺失 | 覆盖嵌套校验 |
 | 尺寸与单位 | `length_unit`、`volume_unit`、`weight_unit` 及长宽高重量 | 默认单位 / 非默认换算 | 覆盖体积重算逻辑 |
-| 安全库存明细 | `detailList[].id` | `0` 新增 / `>0` 更新 / `<0` 删除 | 覆盖 `InsertOrUpdateSkuSafetyStockAsync` 三条更新路径 |
+| 安全库存明细 | `detailList[].id` | 空列表 / `0` 新增 / `>0` 更新 / `<0` 删除 | 覆盖 `InsertOrUpdateSkuSafetyStockAsync` 成功与失败路径 |
 | 关联仓库 | `warehouse_id` / `warehouse_name` | 已存在仓库 | 影响安全库存保存与响应明细 |
-| 批量导入行集 | `/spu/addlist` 数组 | 空数组 / 全新商品 / 已有商品追加规格 / 文件内重复 SPU / 商品信息不一致 / 供应商缺失 / 规格编码冲突 | 覆盖批量导入主要成功/失败分支 |
+| 批量导入行集 | `/spu/addlist` 数组 | 空数组 / 全新商品 / 已有商品追加规格 / 文件内重复 SPU / 商品信息不一致 / 供应商缺失 / 类别缺失 / 规格编码冲突 / 请求内重复规格编码 | 覆盖批量导入主要成功/失败分支 |
 
 ## 输出因子
 
@@ -42,12 +42,12 @@
 | `POST /spu/list` | `data.totals`、`data.rows[*]`、`detailList`、当前租户过滤 |
 | `GET /spu?id` | 成功返回完整商品对象和规格列表；不存在返回 `code=400` |
 | `GET /spu/sku` | 成功返回规格详情；不存在返回 `not_exists_entity` |
-| `GET /spu/sku-bar-code` | 缺失条码返回 GET 参数校验错误；存在时返回规格详情 |
+| `GET /spu/sku-bar-code` | 缺失条码返回 GET 参数校验错误；命中时返回规格详情；未命中返回 `not_exists_entity` |
 | `POST /spu` | 成功返回新增 id；失败返回校验错误或 `exists_entity` |
 | `PUT /spu` | 成功返回 `true`；失败返回 `exists_entity` 或 `not_exists_entity` |
 | `DELETE /spu?id` | 成功返回 `删除成功`；不存在返回 `删除失败` |
-| `POST /spu/addlist` | 成功返回受影响数量；失败返回 `batch_empty`、`batch_duplicate_spu_code`、`supplier_not_exists`、`spu_info_inconsistent`、`sku_code_exists` |
-| `PUT /spu/sku-safety-stock` | 成功返回 `保存成功`，并反映到 `sku_safety_stock` 表 |
+| `POST /spu/addlist` | 成功返回受影响数量；失败返回 `batch_empty`、`batch_duplicate_spu_code`、`supplier_not_exists`、`category_not_exists`、`spu_info_inconsistent`、`sku_code_exists`、`duplicate_sku_in_batch` |
+| `PUT /spu/sku-safety-stock` | 成功返回 `保存成功`，并反映到 `sku_safety_stock` 表；空明细时返回 `保存失败` |
 
 ## 流程图
 
@@ -85,9 +85,11 @@
   │      ├──→ {文件内重复 SPU} ──→ [返回 batch_duplicate_spu_code]
   │      ├──→ {已有 SPU 但名称/供应商不一致} ──→ [返回 spu_info_inconsistent]
   │      ├──→ {供应商/类别不存在} ──→ [返回 not_exists]
+  │      ├──→ {已有 SPU 且请求内规格编码重复} ──→ [返回 duplicate_sku_in_batch]
   │      ├──→ {已有 SPU 且规格编码冲突} ──→ [返回 sku_code_exists]
   │      └──→ [新增商品或给已有商品追加规格]
   └──→ {PUT /spu/sku-safety-stock}
+         ├──→ {detailList 为空} ──→ [返回 save_failed]
          ├──→ {detail.id == 0} ──→ [新增安全库存]
          ├──→ {detail.id > 0} ──→ [更新安全库存]
          ├──→ {detail.id < 0} ──→ [删除安全库存]
@@ -104,7 +106,9 @@
 | get-按id获取商品成功 | 存在 | N/A | N/A | 合法存在 | 已有规格 | N/A | 返回商品与规格明细 |
 | get-id不存在失败 | 不存在 | N/A | N/A | N/A | 无 | N/A | 返回 `not_exists_entity` |
 | get-sku-按sku_id获取成功 | 存在 `sku_id` | N/A | N/A | 合法存在 | 已有规格 | N/A | 返回规格详情 |
+| get-sku-按sku_id获取失败 | 不存在 `sku_id` | N/A | N/A | N/A | 无 | N/A | 返回 `not_exists_entity` |
 | get-sku-by-bar-code获取成功 | 存在 `bar_code` | N/A | N/A | 合法存在 | 已有规格 | N/A | 返回规格详情 |
+| get-sku-by-bar-code不存在失败 | 不存在 `bar_code` | N/A | N/A | N/A | 无 | N/A | 返回 `not_exists_entity` |
 | get-sku-by-bar-code缺少条码失败 | 缺失 `bar_code` | N/A | N/A | N/A | 无 | N/A | 返回 GET 参数校验错误 |
 | add-新增商品成功并写入规格 | N/A | 合法唯一 | 合法 | 合法存在 | 新增规格 | N/A | 返回新 id，写入商品和规格，体积按单位换算计算 |
 | add-同租户重复商品编码失败 | N/A | 同租户重复 | 合法 | 合法存在 | 新增规格 | N/A | 返回 `商品编码:{code} 已经存在` |
@@ -123,23 +127,31 @@
 | addlist-文件内重复SPU失败 | N/A | 文件内重复 | 合法 | 合法存在 | 新增规格 | 文件内重复 SPU | 返回 `批量重复 SPU 代码` |
 | addlist-商品信息不一致失败 | N/A | 已存在 | 与库不一致 | 合法存在 | 新增规格 | 已有商品信息不一致 | 返回 `请检查商品信息` |
 | addlist-供应商不存在失败 | N/A | 合法唯一 | 合法 | 合法存在 | 新增规格 | 供应商缺失 | 返回 `供应商不存在` |
+| addlist-商品分类不存在失败 | N/A | 合法唯一 | 合法 | 不存在 | 新增规格 | 类别缺失 | 返回 `商品分类不存在` |
 | addlist-已有商品规格编码冲突失败 | N/A | 已存在 | 与库一致 | 合法存在 | 新增重复规格 | 规格编码冲突 | 返回 `规格编码已存在` |
+| addlist-已有商品请求内规格编码重复失败 | N/A | 已存在 | 与库一致 | 合法存在 | 请求内重复规格 | 请求内重复规格编码 | 返回 `批量数据中存在重复的规格编码` |
 | sku-safety-stock-新增更新删除成功 | 已存在 `sku_id` | N/A | N/A | N/A | `0/+/-` 三类明细 | N/A | `sku_safety_stock` 新增、更新、删除同时生效 |
+| sku-safety-stock-空明细失败 | 已存在 `sku_id` | N/A | N/A | N/A | 空明细 | N/A | 返回 `保存失败` |
 
 ## 覆盖性检查
 
 - 每个控制器入口至少一个稳定成功路径。
 - 显式失败路径均有覆盖：模型校验失败、同租户 `spu_code` 重复、`id/sku_id` 不存在、缺失 `bar_code`、批量空数组、文件内重复 SPU、商品信息不一致、供应商不存在、已有规格编码冲突。
+- 显式失败路径均有覆盖：模型校验失败、同租户 `spu_code` 重复、`id/sku_id` 不存在、缺失/不存在 `bar_code`、批量空数组、文件内重复 SPU、商品信息不一致、供应商不存在、类别不存在、已有商品请求内重复规格编码、已有规格编码冲突、安全库存空明细。
 - 关键逻辑分支均有覆盖：
   - `pageIndex <= 0 || pageSize <= 0`：否 / 是
+  - `GetAsync/GetSkuAsync/GetSkuByBarCodeAsync`：命中 / 未命中
   - `GetAsync/GetSkuAsync/GetSkuByBarCodeAsync`：命中 / 未命中
   - `string.IsNullOrEmpty(bar_code)`：否 / 是
   - `AnyAsync(...tenant_id && spu_code...)`：否 / 是 / 跨租户同码可通过
   - `detail.id > 0 / == 0 / < 0`：更新 / 新增 / 删除规格与安全库存
+  - `detailList.Any()`（安全库存）：否 / 是
   - `viewModels == null || !viewModels.Any()`：否 / 是
   - `duplicateCodes.Any()`：否 / 是
   - `inconsistentCodes.Any()`：否 / 是
   - `existingSuppliers.TryGetValue(...)`：命中 / 未命中
+  - `existingCategories.TryGetValue(...)`：命中 / 未命中
+  - `duplicateSkuCodes.Any()`：否 / 是
   - `conflictSkuCodes.Any()`：否 / 是
 
 ## 测试数据策略
