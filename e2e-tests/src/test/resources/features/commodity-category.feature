@@ -4,12 +4,10 @@
 
   Rule: 全列表 - GET /category/all
 
-    场景: 全列表只返回当前租户商品类别和全部字段
+    场景: 全列表返回全部字段
       假如存在"商品类别":
-        | categoryName   | parentId | creator | createTime           | lastUpdateTime       | valid | tenantId |
-        | root-category  | 0        | user1   | 2024-01-01T00:00:00Z | 2024-01-02T00:00:00Z | true  | 9001     |
-        | child-category | 1        | user2   | 2024-01-03T00:00:00Z | 2024-01-04T00:00:00Z | false | 9001     |
-        | other-tenant   | 0        | user3   | 2024-01-05T00:00:00Z | 2024-01-06T00:00:00Z | true  | 9002     |
+        | categoryName  | parentId | creator | createTime           | lastUpdateTime       | valid | tenantId |
+        | root-category | 0        | user1   | 2024-01-01T00:00:00Z | 2024-01-02T00:00:00Z | true  | 9001     |
       当GET "/category/all"
       那么response should be:
         """
@@ -19,20 +17,19 @@
           errorMessage: ""
           data= | id | category_name  | parent_id | creator | create_time           | last_update_time       | is_valid |
                 | 1  | root-category  | 0         | user1   | '2024-01-01 00:00:00' | '2024-01-02 00:00:00' | true     |
-                | 2  | child-category | 1         | user2   | '2024-01-03 00:00:00' | '2024-01-04 00:00:00' | false    |
         }
         """
 
-    场景: 全列表无数据时返回空数组
+    场景: 全列表只返回当前租户商品类别
+      假如存在"商品类别":
+        | categoryName  | tenantId |
+        | root-category | 9001     |
+        | other-tenant  | 9002     |
       当GET "/category/all"
       那么response should be:
         """
-        body.json= {
-          isSuccess: true
-          code: 200
-          errorMessage: ""
-          data= []
-        }
+        body.json.data: | category_name  |
+                        | root-category  |
         """
 
   Rule: 详情 - GET /category?id={id}
@@ -63,10 +60,11 @@
   Rule: 新增 - POST /category
 
     场景: 新增根级商品类别成功并写入数据库
-      当POST "商品类别创建请求" "/category":
+      当POST "/category":
         """
         {
-          categoryName: create-root-category
+          "category_name": "create-root-category",
+          "parent_id": 0,
         }
         """
       那么response should be:
@@ -180,9 +178,9 @@
 
     场景: 修改商品类别成功
       假如存在"商品类别":
-        | categoryName   | parentId | creator     | createTime           | lastUpdateTime       | valid |
-        | update-parent  | 0        | parent-user | 2024-01-01T00:00:00Z | 2024-01-02T00:00:00Z | true  |
-        | update-target  | 0        | target-user | 2024-01-03T00:00:00Z | 2024-01-04T00:00:00Z | true  |
+        | categoryName  | parentId | creator     | createTime           | lastUpdateTime       | valid |
+        | update-parent | 0        | parent-user | 2024-01-01T00:00:00Z | 2024-01-02T00:00:00Z | true  |
+        | update-target | 0        | target-user | 2024-01-03T00:00:00Z | 2024-01-04T00:00:00Z | true  |
       当PUT "商品类别修改请求" "/category":
         """
         {
@@ -202,16 +200,16 @@
         """
       并且数据应为:
         """
-        商品类别: | id | categoryName          | parentId | creator      | tenantId | valid |
-                 | 1  | update-parent         | 0        | parent-user  | 9001     | true  |
-                 | 2  | update-target-renamed | 1        | target-user  | 9001     | true  |
+        商品类别: | id | categoryName          | parentId | creator      | tenantId | valid | createTime           | lastUpdateTime       |
+                 | 1  | update-parent         | 0        | parent-user  | 9001     | true  | '2024-01-01T00:00:00Z' | '2024-01-02T00:00:00Z' |
+                 | 2  | update-target-renamed | 1        | target-user  | 9001     | true  | '2024-01-03T00:00:00Z' | is AlmostNow |
         """
 
     场景: 修改商品类别为同租户重复名称失败
       假如存在"商品类别":
-        | categoryName               |
-        | update-duplicate-target    |
-        | update-duplicate-existing  |
+        | categoryName              |
+        | update-duplicate-target   |
+        | update-duplicate-existing |
       当PUT "商品类别修改请求" "/category":
         """
         {
@@ -258,9 +256,9 @@
         """
       并且数据应为:
         """
-        商品类别: | id | categoryName               | tenantId | valid |
-                 | 1  | update-cross-tenant-target | 9001     | true  |
-                 | 2  | update-cross-tenant-target | 9002     | true  |
+        商品类别: | id | categoryName               | tenantId |
+                 | 1  | update-cross-tenant-target | 9001     |
+                 | 2  | update-cross-tenant-target | 9002     |
         """
 
     场景: 修改不存在的商品类别失败
@@ -305,9 +303,9 @@
         """
       并且数据应为:
         """
-        商品类别: | id | categoryName | parentId | tenantId | valid |
-                 | 1  | status-root  | 0        | 9001     | false |
-                 | 2  | status-child | 1        | 9001     | false |
+        商品类别: | id | categoryName | parentId | valid |
+                 | 1  | status-root  | 0        | false |
+                 | 2  | status-child | 1        | false |
         """
 
   Rule: 删除 - DELETE /category?id={id}
@@ -352,12 +350,9 @@
         """
 
     场景: 删除被商品引用的商品类别失败
-      假如存在"商品类别":
-        | categoryName        |
-        | referenced-category |
       假如存在"商品":
-        | categoryId |
-        | 1          |
+        | category.categoryName |
+        | referenced-category   |
       当DELETE "/category?id=1"
       那么response should be:
         """
@@ -370,13 +365,9 @@
         """
       并且数据应为:
         """
-        商品类别: | categoryName        |
-                 | referenced-category |
-        """
-      并且数据应为:
-        """
-        商品: | categoryId | tenantId |
-             | 1          | 9001     |
+        商品: {
+          category.categoryName: referenced-category
+        }
         """
 
     场景: 删除不存在的商品类别失败

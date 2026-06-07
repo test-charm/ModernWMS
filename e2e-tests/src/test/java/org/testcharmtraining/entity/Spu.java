@@ -24,8 +24,8 @@ public class Spu implements Serializable {
     @Column(name = "spu_name")
     private String spuName;
 
-    @Column(name = "category_id")
-    private int categoryId;
+    @ManyToOne
+    private Category category;
 
     @Column(name = "spu_description")
     private String spuDescription;

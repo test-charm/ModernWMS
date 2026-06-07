@@ -15,6 +15,7 @@ public class Categories {
         public void main() {
             property("valid").defaultValue(true);
             property("tenantId").defaultValue(getCurrentUserTenantId());
+            property("parentId").defaultValue(0);
         }
     }
 
@@ -22,7 +23,6 @@ public class Categories {
         @Override
         public void main() {
             property("parentId").defaultValue(0);
-            property("valid").defaultValue(true);
         }
     }
 
@@ -30,7 +30,6 @@ public class Categories {
         @Override
         public void main() {
             property("parentId").defaultValue(0);
-            property("valid").defaultValue(true);
         }
     }
 
