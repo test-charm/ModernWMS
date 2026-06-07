@@ -343,10 +343,12 @@
         | manager      | 64        | 负责人输入字符长度不能大于64个字符    |
         | contactTel   | 64        | 联系方式输入字符长度不能大于64个字符   |
 
+  Rule: 修改 - PUT /supplier
+
     场景: 修改供应商成功
       假如存在"供应商":
-        | supplierName    | city    | address     | manager | email           | contactTel  | valid |
-        | update-supplier | Nanjing | Old Address | Carol   | old@example.com | 13800000006 | true  |
+        | supplierName    | city    | address     | manager | email           | contactTel  | valid | creator      | createTime           | lastUpdateTime       | tenantId |
+        | update-supplier | Nanjing | Old Address | Carol   | old@example.com | 13800000006 | true  | e2e-supplier | 2024-01-01T00:00:00Z | 2024-01-02T00:00:00Z | 9001     |
       当PUT "/supplier":
         """
         {
@@ -362,24 +364,29 @@
         """
       那么response should be:
         """
-        body.json: {
+        body.json= {
           isSuccess: true
           code: 200
           errorMessage: ""
           data: true
         }
         """
-    并且 "供应商.id[1]"应为:
-    """
-        .supplierName='update-supplier-renamed'
-        and .city='Hangzhou'
-        and .address='New Address'
-        and .email='new@example.com'
-        and .manager='David'
-        and .contactTel='13800000007'
-        and .creator='e2e-supplier'
-        and .valid=false
-        and .tenantId=9001L
+      并且数据应为:
+        """
+        供应商= {
+          id: 1
+          supplierName: update-supplier-renamed
+          city: Hangzhou
+          address: 'New Address'
+          email: new@example.com
+          manager: David
+          contactTel: '13800000007'
+          creator: e2e-supplier
+          tenantId: 9001
+          valid: false
+          createTime: '2024-01-01T00:00:00Z'
+          lastUpdateTime is AlmostNow
+        }
         """
 
     场景: 修改供应商为同租户重复名称失败
@@ -387,17 +394,11 @@
         | supplierName              |
         | update-duplicate-target   |
         | update-duplicate-existing |
-      当PUT "/supplier":
+      当PUT "供应商修改请求" "/supplier":
         """
         {
-          "id": 1,
-          "supplier_name": "update-duplicate-existing",
-          "city": "Hangzhou",
-          "address": "Duplicate Update Address",
-          "email": "duplicate-update@example.com",
-          "manager": "David",
-          "contact_tel": "13800000008",
-          "is_valid": true
+          id: 1
+          supplierName: update-duplicate-existing
         }
         """
       那么response should be:
@@ -409,10 +410,11 @@
           data: false
         }
         """
-    并且 "供应商.id[1]"应为:
-    """
-        .supplierName='update-duplicate-target'
-        and .tenantId=9001L
+      并且数据应为:
+        """
+        供应商: | id | supplierName              |
+               | 1  | update-duplicate-target   |
+               | 2  | update-duplicate-existing |
         """
 
     场景: 修改供应商允许与其他租户同名
@@ -420,17 +422,11 @@
         | supplierName               | tenantId |
         | update-cross-tenant-source | 9001     |
         | update-cross-tenant-target | 9002     |
-      当PUT "/supplier":
+      当PUT "供应商修改请求" "/supplier":
         """
         {
-          "id": 1,
-          "supplier_name": "update-cross-tenant-target",
-          "city": "Hangzhou",
-          "address": "Cross Tenant Update Address",
-          "email": "cross-tenant-update@example.com",
-          "manager": "David",
-          "contact_tel": "13800000016",
-          "is_valid": false
+          id: 1
+          supplierName: update-cross-tenant-target
         }
         """
       那么response should be:
@@ -442,35 +438,18 @@
           data: true
         }
         """
-    并且 "供应商.id[1]"应为:
-    """
-        .supplierName='update-cross-tenant-target'
-        and .city='Hangzhou'
-        and .address='Cross Tenant Update Address'
-        and .email='cross-tenant-update@example.com'
-        and .manager='David'
-        and .contactTel='13800000016'
-        and .tenantId=9001L
-        and .valid=false
+      并且数据应为:
         """
-    并且 "供应商.id[2]"应为:
-    """
-        .supplierName='update-cross-tenant-target'
-        and .tenantId=9002L
+        供应商: | id | supplierName               | tenantId |
+               | 1  | update-cross-tenant-target | 9001     |
+               | 2  | update-cross-tenant-target | 9002     |
         """
 
     场景: 修改不存在的供应商失败
-      当PUT "/supplier":
+      当PUT "供应商修改请求" "/supplier":
         """
         {
-          "id": 999,
-          "supplier_name": "missing-update-supplier",
-          "city": "Hangzhou",
-          "address": "Missing Address",
-          "email": "missing-update@example.com",
-          "manager": "David",
-          "contact_tel": "13800000009",
-          "is_valid": true
+          id: 999
         }
         """
       那么response should be:
@@ -483,6 +462,26 @@
         }
         """
 
+    场景大纲: 修改供应商缺少名称时校验失败
+      当PUT "供应商修改请求" "/supplier":
+        """
+        {
+          <fieldName>: null
+        }
+        """
+      那么response should be:
+        """
+        body.json: {
+          code: 400
+          errorMessage: "<errorMessage>"
+        }
+        """
+      例子:
+        | fieldName    | errorMessage |
+        | supplierName | 供应商名称必填      |
+
+  Rule: 删除 - DELETE /supplier?id={id}
+
     场景: 删除供应商成功
       假如存在"供应商":
         | supplierName    |
@@ -490,28 +489,31 @@
       当DELETE "/supplier?id=1"
       那么response should be:
         """
-        body.json: {
+        body.json= {
           isSuccess: true
           code: 200
           errorMessage: ""
           data: "删除成功"
         }
         """
-    并且 所有"供应商"应为:
-    """
-        size= 0
+      并且数据应为:
+        """
+        供应商= []
         """
 
     场景: 删除不存在的供应商失败
       当DELETE "/supplier?id=999"
       那么response should be:
         """
-        body.json: {
+        body.json= {
           isSuccess: false
           code: 400
           errorMessage: "删除失败"
+          data: null
         }
         """
+
+  Rule: Excel批量导入 - POST /supplier/excel
 
     场景: Excel批量导入供应商成功
       当POST "/supplier/excel":
@@ -537,150 +539,90 @@
         """
       那么response should be:
         """
-        body.json: {
+        body.json= {
           isSuccess: true
           code: 200
           errorMessage: ""
           data: "保存成功"
         }
         """
-    并且 所有"供应商"应为:
-    """
-        size= 2
+      并且数据应为:
         """
-    并且 "供应商.id[1]"应为:
-    """
-        .supplierName='excel-supplier-1'
-        and .city='Wuxi'
-        and .address='Excel Road 1'
-        and .email='excel1@example.com'
-        and .manager='Eva'
-        and .contactTel='13800000010'
-        and .creator='e2e-login-hook-user'
-        and .valid=true
-        and .tenantId=9001L
-        """
-    并且 "供应商.id[2]"应为:
-    """
-        .supplierName='excel-supplier-2'
-        and .city='Wuxi'
-        and .address='Excel Road 2'
-        and .email='excel2@example.com'
-        and .manager='Frank'
-        and .contactTel='13800000011'
-        and .creator='e2e-login-hook-user'
-        and .valid=true
-        and .tenantId=9001L
+        供应商: | id | supplierName          | city | address     | email               | manager | contactTel    | creator                | valid | tenantId | <<createTime,lastUpdateTime>> |
+               | 1  | excel-supplier-1     | Wuxi | Excel Road 1 | excel1@example.com | Eva     | '13800000010' | e2e-login-hook-user  | true  | 9001L    | is AlmostNow |
+               | 2  | excel-supplier-2     | Wuxi | Excel Road 2 | excel2@example.com | Frank   | '13800000011' | e2e-login-hook-user  | true  | 9001L    | is AlmostNow |
         """
 
     场景: Excel批量导入允许与其他租户同名
       假如存在"供应商":
         | supplierName            | tenantId |
         | excel-cross-tenant-name | 9002     |
-      当POST "/supplier/excel":
+      当POST "供应商导入请求[]" "/supplier/excel":
         """
-        [
-          {
-            "supplier_name": "excel-cross-tenant-name",
-            "city": "Wuxi",
-            "address": "Excel Cross Tenant Road",
-            "email": "excel-cross-tenant@example.com",
-            "manager": "Grace",
-            "contact_tel": "13800000017"
-          }
-        ]
+        [{
+          supplierName: excel-cross-tenant-name
+        }]
         """
       那么response should be:
         """
-        body.json: {
+        body.json= {
           isSuccess: true
           code: 200
           errorMessage: ""
           data: "保存成功"
         }
         """
-    并且 所有"供应商"应为:
-    """
-        size= 2
+      那么数据应为:
         """
-    并且 "供应商.id[1]"应为:
-    """
-        .supplierName='excel-cross-tenant-name'
-        and .tenantId=9002L
-        and .creator='e2e-supplier'
-        """
-    并且 "供应商.id[2]"应为:
-    """
-        .supplierName='excel-cross-tenant-name'
-        and .city='Wuxi'
-        and .address='Excel Cross Tenant Road'
-        and .email='excel-cross-tenant@example.com'
-        and .manager='Grace'
-        and .contactTel='13800000017'
-        and .creator='e2e-login-hook-user'
-        and .valid=true
-        and .tenantId=9001L
+        供应商: | supplierName            | +tenantId |
+               | excel-cross-tenant-name | 9001      |
+               | excel-cross-tenant-name | 9002      |
         """
 
     场景: Excel批量导入时文件内重名失败
-      当POST "/supplier/excel":
+      当POST "供应商导入请求[]" "/supplier/excel":
         """
-        [
-          {
-            "supplier_name": "excel-duplicate-in-payload",
-            "city": "Wuxi",
-            "address": "Excel Payload Road 1",
-            "email": "payload1@example.com",
-            "manager": "Eva",
-            "contact_tel": "13800000012"
-          },
-          {
-            "supplier_name": "excel-duplicate-in-payload",
-            "city": "Wuxi",
-            "address": "Excel Payload Road 2",
-            "email": "payload2@example.com",
-            "manager": "Frank",
-            "contact_tel": "13800000013"
-          }
-        ]
+        [{
+          supplierName: excel-duplicate-in-payload
+        } {
+          supplierName: excel-duplicate-in-payload
+        }]
         """
       那么response should be:
         """
-        body.json: {
+        body.json= {
           isSuccess: false
           code: 400
+          errorMessage: "供应商名称:excel-duplicate-in-payload 已经存在"
+          data: null
         }
         """
-    并且 所有"供应商"应为:
-    """
-        size= 0
+      并且数据应为:
+        """
+        供应商: []
         """
 
     场景: Excel批量导入时与库内重名失败
       假如存在"供应商":
         | supplierName             |
         | excel-duplicate-existing |
-      当POST "/supplier/excel":
+      当POST "供应商导入请求[]" "/supplier/excel":
         """
-        [
-          {
-            "supplier_name": "excel-duplicate-existing",
-            "city": "Wuxi",
-            "address": "Excel Existing Road",
-            "email": "existing@example.com",
-            "manager": "Eva",
-            "contact_tel": "13800000014"
-          }
-        ]
+        [{
+          supplierName: excel-duplicate-existing
+        }]
         """
       那么response should be:
         """
-        body.json: {
+        body.json= {
           isSuccess: false
           code: 400
+          errorMessage: "供应商名称:excel-duplicate-existing 已经存在"
+          data: null
         }
         """
-    并且 所有"供应商"应为:
-    """
-        size= 1
+      并且数据应为:
+        """
+        供应商: | supplierName             |
+               | excel-duplicate-existing |
         """

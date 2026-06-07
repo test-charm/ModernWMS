@@ -15,7 +15,6 @@ public class Suppliers {
     public static class 供应商 extends Spec<Supplier> {
         @Override
         public void main() {
-            property("creator").value("e2e-supplier");
             property("valid").value(true);
             property("tenantId").value(getCurrentUserTenantId());
         }
@@ -37,6 +36,17 @@ public class Suppliers {
         }
     }
 
+    public static class 供应商修改请求 extends Spec<SupplierUpdateRequest> {
+        @Override
+        public void main() {
+            property("valid").value(true);
+        }
+    }
+
+    public static class 供应商导入请求 extends Spec<SupplierImport> {
+
+    }
+
     @Getter
     @Setter
     public static class SupplierQueryRequest {
@@ -55,13 +65,24 @@ public class Suppliers {
 
     @Getter
     @Setter
-    public static class SupplierCreateRequest {
+    public static class SupplierCreateRequest extends SupplierImport {
+        @JsonProperty("is_valid")
+        private boolean valid;
+    }
+
+    @Getter
+    @Setter
+    public static class SupplierUpdateRequest extends SupplierCreateRequest {
+        private int id;
+    }
+
+    @Getter
+    @Setter
+    public static class SupplierImport {
         @JsonProperty("supplier_name")
         private String supplierName;
         private String city, address, email, manager;
         @JsonProperty("contact_tel")
         private String contactTel;
-        @JsonProperty("is_valid")
-        private boolean valid;
     }
 }
