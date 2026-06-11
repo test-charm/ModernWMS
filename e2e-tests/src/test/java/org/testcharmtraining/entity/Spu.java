@@ -7,6 +7,7 @@ import lombok.experimental.Accessors;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.Instant;
+import java.util.List;
 
 @Getter
 @Setter
@@ -30,8 +31,11 @@ public class Spu implements Serializable {
     @Column(name = "spu_description")
     private String spuDescription;
 
-    @Column(name = "supplier_id")
-    private int supplierId;
+//    @Column(name = "supplier_id")
+//    private int supplierId;
+
+    @ManyToOne
+    private Supplier supplier;
 
     @Column(name = "supplier_name")
     private String supplierName;
@@ -57,4 +61,8 @@ public class Spu implements Serializable {
 
     @Column(name = "tenant_id")
     private long tenantId;
+
+    @OneToMany(mappedBy = "spu")
+    private List<Sku> skus;
+
 }

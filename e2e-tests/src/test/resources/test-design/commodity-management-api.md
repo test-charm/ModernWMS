@@ -160,6 +160,7 @@
 - 对 `spu`、`sku`、`sku_safety_stock`、`warehouse` 新增 JPA 实体与 Spec，避免依赖外部 SQL 脚本。
 - 通过 `ApplicationSteps.clearDB()` 统一清理 `sku_safety_stock`、`sku`、`spu`、`category`、`supplier`、`warehouse` 等表，保证各场景自隔离。
 - 创建、修改、导入成功用例尽量只显式设置当前断言需要的字段，其余依赖 Spec 默认值，减少脆弱性。
+- 同一场景的响应校验统一收敛到单个 `response should be` step，在一个 DAL 断言块里列出多个路径校验，避免把同一份响应拆成多个 Then。
 
 ## 已知缺陷回归场景
 

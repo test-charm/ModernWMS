@@ -9,6 +9,7 @@ public class Skus {
         @Override
         public void main() {
             property("spu").is(Spus.商品.class);
+            property("skuSafetyStocks").reverseAssociation("sku");
         }
     }
 

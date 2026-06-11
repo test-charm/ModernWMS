@@ -8,6 +8,7 @@ import javax.persistence.*;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
 
 @Getter
 @Setter
@@ -47,4 +48,7 @@ public class Sku implements Serializable {
     private BigDecimal price;
     private Instant createTime;
     private Instant lastUpdateTime;
+
+    @OneToMany(mappedBy = "sku")
+    private List<SkuSafetyStock> skuSafetyStocks;
 }
