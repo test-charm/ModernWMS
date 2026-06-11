@@ -85,3 +85,6 @@ if [[ ! -f "${coverage_html_dir}/index.html" ]]; then
 fi
 
 log INFO "32" "Backend coverage artifacts are ready"
+
+log INFO "34" "Starting mysql and dotnet containers again"
+(cd "${repo_root}" && BACKEND_ENABLE_COVERAGE=true docker compose up -d --build) >/dev/null
