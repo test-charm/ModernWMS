@@ -68,10 +68,15 @@ public class Spus {
             property("lengthUnit").value(1);
             property("volumeUnit").value(0);
             property("weightUnit").value(1);
+            property("detailList[]").apply("商品规格请求");
         }
 
         @Trait
         public void 依赖已存在的() {
+            property("category").is(Categories.商品类别.class);
+            property("categoryId").dependsOn("category", (category) -> ((Category) category).getId());
+            link("categoryName", "category.categoryName");
+
             property("supplier").is(Suppliers.供应商.class);
             property("supplierId").dependsOn("supplier", (supplier) -> ((Supplier) supplier).getId());
             link("supplierName", "supplier.supplierName");

@@ -754,67 +754,49 @@
 
   Rule: 修改 - PUT /spu
 
-    场景: 修改商品成功并同步新增更新删除规格
-      假如存在"商品类别":
-        | categoryName    |
-        | update-category |
-      假如存在"供应商":
-        | supplierName    |
-        | update-supplier |
-      假如存在"商品":
-        | spuCode    | spuName         | category.categoryName | supplier.supplierName | brand     | origin     | lengthUnit | volumeUnit | weightUnit | creator     | createTime           | lastUpdateTime       | spuDescription  |
-        | update-spu | update-spu-name | update-category       | update-supplier       | old-brand | old-origin | 1          | 0          | 1          | origin-user | 2024-01-01T00:00:00Z | 2024-01-02T00:00:00Z | old-description |
-      假如存在"规格":
-        | spu.spuCode | skuCode      | skuName          | barCode      | unit | weight | lenght | width | height | volume | cost | price | createTime           | lastUpdateTime       |
-        | update-spu  | update-sku-1 | update-sku-name1 | update-bar-1 | EA   | 1      | 1      | 1     | 1      | 1      | 2    | 3     | 2024-01-01T00:00:00Z | 2024-01-02T00:00:00Z |
-        | update-spu  | delete-sku-2 | delete-sku-name2 | delete-bar-2 | EA   | 1      | 1      | 1     | 1      | 1      | 2    | 3     | 2024-01-01T00:00:00Z | 2024-01-02T00:00:00Z |
-      当PUT "商品修改请求" "/spu":
+    场景: 修改商品成功 - 无规格
+      假如存在:
+        """
+        商品: {
+          spuCode: list-spu
+          spuName: list-spu-name
+          category.categoryName: list-category
+          supplier.supplierName: list-supplier
+          brand: list-brand
+          origin: list-origin
+          lengthUnit: 1
+          volumeUnit: 0
+          weightUnit: 1
+          creator: user1
+          createTime: '2024-01-03T00:00:00Z'
+          lastUpdateTime: '2024-01-04T00:00:00Z'
+          valid: true
+          spuDescription: list-description
+        }
+
+        商品类别: | categoryName       |
+                 | update-category    |
+
+        供应商: | supplierName       |
+               | update-supplier    |
+        """
+      当PUT "/spu":
         """
         {
-          id: ${商品.spuCode[update-spu].id}
-          spuCode: update-spu-new
-          spuName: update-spu-name-new
-          categoryId: ${商品类别.categoryName[update-category].id}
-          categoryName: update-category
-          supplierId: ${供应商.supplierName[update-supplier].id}
-          supplierName: update-supplier
-          brand: update-brand-new
-          origin: update-origin-new
-          lengthUnit: 2
-          volumeUnit: 0
-          weightUnit: 2
-          spuDescription: update-description-new
-          detailList: [{
-            id: ${规格.skuCode[update-sku-1].id}
-            skuCode: update-sku-1-new
-            skuName: update-sku-name-1-new
-            barCode: update-bar-1-new
-            unit: BOX
-            weight: 2
-            lenght: 1
-            width: 2
-            height: 4
-            cost: 7
-            price: 8
-          } {
-            id: 0
-            skuCode: add-sku-3
-            skuName: add-sku-name-3
-            barCode: add-bar-3
-            unit: EA
-            weight: 1
-            lenght: 1
-            width: 1
-            height: 1
-            cost: 2
-            price: 3
-          } {
-            id: -2
-            skuCode: delete-sku-2
-            skuName: delete-sku-name2
-            barCode: delete-bar-2
-            unit: EA
-          }]
+          "id": ${商品.spuCode[list-spu].id},
+          "spu_code": "update-spu-new",
+          "spu_name": "update-spu-name-new",
+          "category_id": ${商品类别.categoryName[update-category].id},
+          "category_name": "update-category",
+          "supplier_id": ${供应商.supplierName[update-supplier].id},
+          "supplier_name": "update-supplier",
+          "brand": "update-brand-new",
+          "origin": "update-origin-new",
+          "length_unit": 2,
+          "volume_unit": 0,
+          "weight_unit": 2,
+          "spu_description": "update-description-new",
+          "is_valid": false
         }
         """
       那么response should be:
@@ -841,31 +823,180 @@
           lengthUnit: 2
           volumeUnit: 0
           weightUnit: 2
-          creator: origin-user
-          createTime: '2024-01-01T00:00:00Z',
+          valid: false
+          creator: user1
+          createTime: '2024-01-03T00:00:00Z'
           lastUpdateTime is AlmostNow
         }
         """
+
+    场景: 修改商品成功 - 添加规格
+      假如存在:
+        """
+        商品: {
+          spuCode: list-spu
+          skus: []
+        }
+        """
+      当PUT "商品修改请求" "/spu":
+        """
+        {
+          id: ${商品.spuCode[list-spu].id}
+          spuCode: list-spu
+          detailList: [{
+            id: 0
+            skuCode: add-sku-3
+            skuName: add-sku-name-3
+            barCode: add-bar-3
+            imageUrl: imageUrl3
+            unit: EA
+            weight: 1
+            lenght: 1
+            width: 1
+            height: 1
+            cost: 2
+            price: 3
+          }]
+        }
+        """
+      那么response should be:
+        """
+        body.json.code: 200
+        """
       并且数据应为:
         """
-        规格: | spu.spuCode     | skuCode          | skuName                | barCode          | unit | volume | cost | price |
-             | update-spu-new   | update-sku-1-new | update-sku-name-1-new  | update-bar-1-new | BOX  | 8000   | 7    | 8     |
-             | update-spu-new   | add-sku-3        | add-sku-name-3         | add-bar-3        | EA   | 1000   | 2    | 3     |
+        商品: {
+          skus= [{
+            id: {...}
+            skuCode: add-sku-3
+            skuName: add-sku-name-3
+            barCode: add-bar-3
+            imageUrl: imageUrl3
+            unit: EA
+            weight: 1
+            lenght: 1
+            width: 1
+            height: 1
+            cost: 2
+            price: 3
+            volume: 1,          # 计算值，需要写专门的测试
+            <<createTime, lastUpdateTime>> is AlmostNow
+            spu.spuCode: list-spu
+            skuSafetyStocks: []
+          }]
+        }
+        """
+
+    场景: 修改商品成功 - 修改规格
+      假如存在:
+        """
+        商品: {
+          spuCode: list-spu
+          skus: [{
+            skuCode: add-sku-3
+            skuName: add-sku-name-3
+            barCode: add-bar-3
+            imageUrl: imageUrl3
+            unit: EA
+            weight: 1
+            lenght: 1
+            width: 1
+            height: 1
+            cost: 2
+            price: 3
+            createTime: '2024-01-03T01:00:00Z'
+          }]
+        }
+        """
+      当PUT "依赖已存在的 商品修改请求" "/spu":
+        """
+        {
+          id: ${商品.spuCode[list-spu].id}
+          spuCode: list-spu
+          detailList: [{
+            id: 1
+            skuCode: update-sku-3
+            skuName: update-sku-name-3
+            barCode: update-bar-3
+            imageUrl: update-imageUrl3
+            unit: ABC
+            weight: 2
+            lenght: 2
+            width: 2
+            height: 2
+            cost: 3
+            price: 4
+          }]
+        }
+        """
+      那么response should be:
+        """
+        body.json.code: 200
+        """
+      并且数据应为:
+        """
+        商品: {
+          skus= [{
+            id: {...}
+            skuCode: update-sku-3
+            skuName: update-sku-name-3
+            barCode: update-bar-3
+            imageUrl: update-imageUrl3
+            unit: ABC
+            weight: 2
+            lenght: 2
+            width: 2
+            height: 2
+            cost: 3
+            price: 4
+            volume: 8,          # 计算值，需要写专门的测试
+            createTime: '2024-01-03T01:00:00Z'
+            lastUpdateTime is AlmostNow
+            spu.spuCode: list-spu
+            skuSafetyStocks: []
+          }]
+        }
+        """
+
+    场景: 修改商品成功 - 删除规格
+      假如存在:
+        """
+        商品: {
+          spuCode: list-spu
+          skus: [{ ... }]
+        }
+        """
+      当PUT "依赖已存在的 商品修改请求" "/spu":
+        """
+        {
+          id: ${商品.spuCode[list-spu].id}
+          spuCode: list-spu
+          detailList: [{
+            id: -1
+          }]
+        }
+        """
+      那么response should be:
+        """
+        body.json.code: 200
+        """
+      并且数据应为:
+        """
+        商品: {
+          skus= []
+        }
         """
 
     场景: 修改商品为同租户重复编码失败
       假如存在"商品":
-        | spuCode                | spuName                | category.categoryName |
-        | update-duplicate-src   | update-duplicate-src   | duplicate-category    |
-        | update-duplicate-other | update-duplicate-other | duplicate-category    |
-      当PUT "商品修改请求" "/spu":
+        | spuCode                |
+        | update-duplicate-src   |
+        | update-duplicate-other |
+      当PUT "依赖已存在的 商品修改请求" "/spu":
         """
         {
           id: ${商品.spuCode[update-duplicate-src].id}
           spuCode: update-duplicate-other
-          spuName: update-duplicate-src
-          categoryId: 1
-          categoryName: duplicate-category
         }
         """
       那么response should be:
@@ -886,17 +1017,14 @@
 
     场景: 修改商品允许与其他租户同编码
       假如存在"商品":
-        | spuCode             | spuName             | category.categoryName | tenantId |
-        | update-cross-source | update-cross-source | update-cross-category | 9001     |
-        | update-cross-target | update-cross-target | other-category        | 9002     |
+        | spuCode             | tenantId |
+        | update-cross-source | 9001     |
+        | update-cross-target | 9002     |
       当PUT "依赖已存在的 商品修改请求" "/spu":
         """
         {
           id: ${商品.spuCode[update-cross-source].id}
           spuCode: update-cross-target
-          spuName: update-cross-source
-          categoryId: 1
-          categoryName: update-cross-category
         }
         """
       那么response should be:
@@ -921,8 +1049,6 @@
         {
           id: 999
           spuCode: missing-spu
-          spuName: missing-name
-          categoryName: missing-category
         }
         """
       那么response should be:
@@ -934,6 +1060,121 @@
           data: false
         }
         """
+
+    场景大纲: 修改商品缺少字段时校验失败
+      当PUT "商品修改请求" "/spu":
+        """
+        {
+          id: 1
+          <fieldName>: null
+        }
+        """
+      那么response should be:
+        """
+        body.json: {
+          isSuccess: false
+          code: 400
+          errorMessage: "<errorMessage>"
+        }
+        """
+      例子:
+        | fieldName    | errorMessage |
+        | spuCode      | 商品编码必填       |
+        | spuName      | 商品名称必填       |
+        | categoryName | 商品类别必填       |
+
+    场景大纲: 修改商品字段超长时校验失败
+      当PUT "商品修改请求" "/spu":
+        """
+        {
+          id: 1
+          <fieldName>: 'A'*(<maxLength>+1)
+        }
+        """
+      那么response should be:
+        """
+        body.json: {
+          isSuccess: false
+          code: 400
+          errorMessage: "<errorMessage>"
+        }
+        """
+      例子:
+        | fieldName    | maxLength | errorMessage         |
+        | spuCode      | 32        | 商品编码输入字符长度不能大于32个字符  |
+        | spuName      | 200       | 商品名称输入字符长度不能大于200个字符 |
+        | categoryName | 32        | 商品类别输入字符长度不能大于32个字符  |
+
+    场景大纲: 修改商品规格缺少字段时校验失败
+      当PUT "依赖已存在的 商品修改请求" "/spu":
+        """
+        {
+          id: 1
+          detailList: [{
+            <fieldName>: null
+          }]
+        }
+        """
+      那么response should be:
+        """
+        body.json: {
+          isSuccess: false
+          code: 400
+          errorMessage: "<errorMessage>"
+        }
+        """
+      例子:
+        | fieldName | errorMessage |
+        | skuCode   | 规格编码必填       |
+        | skuName   | 规格名称必填       |
+
+    场景大纲: 修改商品规格字段超长时校验失败
+      当PUT "依赖已存在的 商品修改请求" "/spu":
+        """
+        {
+          id: 1
+          detailList: [{
+            <fieldName>: 'A'*(<maxLength>+1)
+          }]
+        }
+        """
+      那么response should be:
+        """
+        body.json: {
+          isSuccess: false
+          code: 400
+          errorMessage: "<errorMessage>"
+        }
+        """
+      例子:
+        | fieldName | maxLength | errorMessage         |
+        | skuCode   | 32        | 规格编码输入字符长度不能大于32个字符  |
+        | skuName   | 200       | 规格名称输入字符长度不能大于200个字符 |
+        | barCode   | 64        | 商品条码输入字符长度不能大于64个字符  |
+
+    场景大纲: 修改商品规格安全库存缺少字段时校验失败
+      当PUT "依赖已存在的 商品修改请求" "/spu":
+        """
+        {
+          id: 1
+          detailList: [{
+              detailList: [{
+              <fieldName>: null
+              }]
+          }]
+        }
+        """
+      那么response should be:
+        """
+        body.json: {
+          isSuccess: false
+          code: 400
+          errorMessage: "<errorMessage>"
+        }
+        """
+      例子:
+        | fieldName     | errorMessage |
+        | warehouseName | 仓库名称必填       |
 
   Rule: 删除 - DELETE /spu?id={id}
 

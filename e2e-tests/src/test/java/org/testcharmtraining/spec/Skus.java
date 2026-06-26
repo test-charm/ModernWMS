@@ -10,6 +10,7 @@ public class Skus {
         public void main() {
             property("spu").is(Spus.商品.class);
             property("skuSafetyStocks").reverseAssociation("sku");
+            property("unit").value("UA");
         }
     }
 
