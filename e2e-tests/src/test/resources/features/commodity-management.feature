@@ -1864,42 +1864,28 @@
 
   Rule: 规格安全库存 - PUT /spu/sku-safety-stock
 
-    场景: 新增修改删除安全库存成功
-      假如存在"商品":
-        | spuCode   | spuName   | category.categoryName |
-        | stock-spu | stock-spu | stock-category        |
-      假如存在"规格":
-        | spu.spuCode | skuCode   | skuName   | unit |
-        | stock-spu   | stock-sku | stock-sku | EA   |
-      假如存在"规格安全库存":
-        | sku.skuCode | warehouse.warehouseName | safetyStockQty |
-        | stock-sku   | stock-wh-1              | 6              |
-        | stock-sku   | stock-wh-2              | 9              |
-      假如存在"仓库":
-        | warehouseName |
-        | stock-wh-3    |
-      当PUT "安全库存修改请求" "/spu/sku-safety-stock":
+    场景: 新增安全库存成功
+      假如存在:
+        """
+        仓库: {
+          warehouseName: add-stock-wh-3
+        }
+
+        商品: {
+          skus: [{
+            skuCode: add-stock-sku
+          }]
+        }
+        """
+      当PUT "/spu/sku-safety-stock":
         """
         {
-          skuId: ${规格.skuCode[stock-sku].id}
-          detailList: [{
-            id: 1
-            skuId: ${规格.skuCode[stock-sku].id}
-            warehouseId: 1
-            warehouseName: stock-wh-1
-            safetyStockQty: 20
-          } {
-            id: -2
-            skuId: ${规格.skuCode[stock-sku].id}
-            warehouseId: 2
-            warehouseName: stock-wh-2
-            safetyStockQty: 9
-          } {
-            id: 0
-            skuId: ${规格.skuCode[stock-sku].id}
-            warehouseId: ${仓库.warehouseName[stock-wh-3].id}
-            warehouseName: stock-wh-3
-            safetyStockQty: 30
+          "sku_id": ${规格.skuCode[add-stock-sku].id},
+          "detailList": [{
+            "id": 0,
+            "warehouse_id": ${仓库.warehouseName[add-stock-wh-3].id},
+            "warehouse_name": "add-stock-wh-3",
+            "safety_stock_qty": 30
           }]
         }
         """
@@ -1914,18 +1900,86 @@
         """
       并且数据应为:
         """
-        规格安全库存: | sku.skuCode | warehouse.warehouseName | safetyStockQty |
-                     | stock-sku   | stock-wh-1              | 20             |
-                     | stock-sku   | stock-wh-3              | 30             |
+        规格安全库存= | id | sku.skuCode   | warehouse.warehouseName | safetyStockQty |
+                    | 1  | add-stock-sku | add-stock-wh-3          | 30             |
+        """
+
+    场景: 修改安全库存成功
+      假如存在:
+        """
+        仓库: {
+          warehouseName: new-stock-wh
+        }
+
+        商品: {
+          skus: [{
+            skuCode: mod-stock-sku
+            skuSafetyStocks: [{
+              warehouse.warehouseName: mod-stock-wh-1
+              safetyStockQty: 6
+            }]
+          }]
+        }
+        """
+      当PUT "安全库存修改请求" "/spu/sku-safety-stock":
+        """
+        {
+          skuId: ${规格.skuCode[mod-stock-sku].id}
+          detailList: [{
+            id: ${规格安全库存.sku.skuCode[mod-stock-sku].id}
+            warehouseId: ${仓库.warehouseName[new-stock-wh].id}
+            safetyStockQty: 20
+          }]
+        }
+        """
+      那么response should be:
+        """
+        body.json= {
+          isSuccess: true
+          code: 200
+          errorMessage: ""
+          data: "保存成功"
+        }
+        """
+      并且数据应为:
+        """
+        规格安全库存: | sku.skuCode   | warehouse.warehouseName | safetyStockQty |
+                     | mod-stock-sku | new-stock-wh           | 20             |
+        """
+
+    场景: 删除安全库存成功
+      假如存在"规格安全库存":
+        | sku.skuCode   | warehouse.warehouseName |
+        | del-stock-sku | del-stock-wh-1          |
+        | del-stock-sku | del-stock-wh-2          |
+      当PUT "安全库存修改请求" "/spu/sku-safety-stock":
+        """
+        {
+          skuId: ${规格.skuCode[del-stock-sku].id}
+          detailList: [{
+            id: -${规格安全库存.warehouse.warehouseName[del-stock-wh-2].id}
+          }]
+        }
+        """
+      那么response should be:
+        """
+        body.json= {
+          isSuccess: true
+          code: 200
+          errorMessage: ""
+          data: "保存成功"
+        }
+        """
+      并且数据应为:
+        """
+        规格安全库存: | sku.skuCode   | warehouse.warehouseName |
+                     | del-stock-sku | del-stock-wh-1          |
         """
 
     场景: 安全库存明细为空时保存失败
-      假如存在"商品":
-        | spuCode         | spuName         | category.categoryName |
-        | empty-stock-spu | empty-stock-spu | empty-stock-category  |
       假如存在"规格":
-        | spu.spuCode     | skuCode         | skuName         | unit |
-        | empty-stock-spu | empty-stock-sku | empty-stock-sku | EA   |
+        | skuCode         |
+        | empty-stock-sku |
       当PUT "安全库存修改请求" "/spu/sku-safety-stock":
         """
         {
