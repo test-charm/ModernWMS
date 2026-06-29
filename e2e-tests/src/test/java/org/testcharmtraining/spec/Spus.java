@@ -89,6 +89,7 @@ public class Spus {
             property("lengthUnit").value(1);
             property("volumeUnit").value(0);
             property("weightUnit").value(1);
+            property("detailList[]").apply("商品规格请求");
         }
     }
 
@@ -98,6 +99,8 @@ public class Spus {
     public static class 商品规格请求 extends Spec<ProductDetailRequest> {
         @Override
         public void main() {
+            property("createTime").value("2023-03-01 00:00:00");
+            property("lastUpdateTime").value("2023-03-02 00:00:00");
             property("unit").value("EA");
         }
     }
@@ -254,6 +257,14 @@ public class Spus {
 
         @JsonInclude(JsonInclude.Include.NON_NULL)
         private BigDecimal price;
+
+        @JsonProperty("create_time")
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        private String createTime;
+
+        @JsonProperty("last_update_time")
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        private String lastUpdateTime;
 
         private List<SkuSafetyStockRequest> detailList = new ArrayList<>();
     }

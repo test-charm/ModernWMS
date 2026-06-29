@@ -856,6 +856,8 @@
             height: 1
             cost: 2
             price: 3
+            createTime: '2024-01-03 00:00:00'
+            lastUpdateTime: '2024-01-04 00:00:00'
           }]
         }
         """
@@ -880,7 +882,8 @@
             cost: 2
             price: 3
             volume: 1,          # 计算值，需要写专门的测试
-            <<createTime, lastUpdateTime>> is AlmostNow
+            createTime: '2024-01-03T00:00:00Z'
+            lastUpdateTime: '2024-01-04T00:00:00Z'
             spu.spuCode: list-spu
             skuSafetyStocks: []
           }]
@@ -1179,14 +1182,14 @@
   Rule: 删除 - DELETE /spu?id={id}
 
     场景: 删除商品成功并同时删除规格
-      假如存在"商品":
-        | spuCode    | spuName     | category.categoryName |
-        | delete-spu | delete-name | delete-category       |
-      假如存在"规格":
-        | spu.spuCode | skuCode      | skuName       | unit |
-        | delete-spu  | delete-sku-1 | delete-name-1 | EA   |
-        | delete-spu  | delete-sku-2 | delete-name-2 | EA   |
-      当DELETE "/spu?id=${商品.spuCode[delete-spu].id}"
+      假如存在:
+        """
+        商品: {
+          spuCode: list-spu
+          skus: [{ ... }]
+        }
+        """
+      当DELETE "/spu?id=${商品.spuCode[list-spu].id}"
       那么response should be:
         """
         body.json= {
@@ -1198,11 +1201,11 @@
         """
       并且数据应为:
         """
-        商品= []
-        """
-      并且数据应为:
-        """
-        规格= []
+        : {
+          商品= []
+
+          规格= []
+        }
         """
 
     场景: 删除不存在的商品失败
@@ -1220,34 +1223,49 @@
   Rule: 批量导入 - POST /spu/addlist
 
     场景: 批量导入新商品成功
-      假如存在"商品类别":
-        | categoryName    |
-        | import-category |
-      假如存在"供应商":
-        | supplierName    |
-        | import-supplier |
-      当POST "商品导入请求[]" "/spu/addlist":
+      假如存在:
+        """
+        商品类别: | categoryName    |
+                 | import-category |
+
+        供应商: | supplierName    |
+               | import-supplier |
+
+        仓库: | warehouseName    |
+             | import-warehouse |
+        """
+      当POST "/spu/addlist":
         """
         [{
-          spuCode: import-spu
-          spuName: import-spu-name
-          categoryName: import-category
-          supplierName: import-supplier
-          brand: import-brand
-          lengthUnit: 1
-          volumeUnit: 0
-          weightUnit: 1
-          detailList: [{
-            skuCode: import-sku
-            skuName: import-sku-name
-            barCode: import-bar
-            unit: EA
-            weight: 1
-            lenght: 2
-            width: 3
-            height: 4
-            cost: 5
-            price: 6
+          "spu_code": "import-spu",
+          "spu_name": "import-spu-name",
+          "spu_description": "import-spu-desc",
+          "category_name": "import-category",
+          "supplier_name": "import-supplier",
+          "brand": "import-brand",
+          "origin": "import-origin",
+          "length_unit": 1,
+          "volume_unit": 1,
+          "weight_unit": 1,
+          "detailList": [{
+            "sku_code": "import-sku",
+            "sku_name": "import-sku-name",
+            "bar_code": "import-bar",
+            "image_url": "import-image",
+            "unit": "EA",
+            "weight": 1,
+            "lenght": 2,
+            "width": 3,
+            "height": 4,
+            "cost": 5,
+            "price": 6,
+            "create_time": "2023-01-01 00:00:00",
+            "last_update_time": "2023-01-02 00:00:00",
+            "detailList": [{
+              "warehouse_id": ${仓库.warehouseName[import-warehouse].id},
+              "warehouse_name": "import-warehouse",
+              "safety_stock_qty": 10
+            }]
           }]
         }]
         """
@@ -1262,43 +1280,72 @@
         """
       并且数据应为:
         """
-        商品: {
+        商品= {
+          id: 1
           spuCode: import-spu
           spuName: import-spu-name
+          spuDescription: import-spu-desc
           category.categoryName: import-category
           supplier.supplierName: import-supplier
           supplierName: import-supplier
           brand: import-brand
+          origin: import-origin
+          lengthUnit: 1
+          volumeUnit: 1
+          weightUnit: 1
           creator: e2e-login-hook-user
           tenantId: 9001,
+          valid: true,
           <<createTime,lastUpdateTime>> is AlmostNow
-        }
-        """
-      并且数据应为:
-        """
-        规格: {
-          spu.spuCode: import-spu
-          skuCode: import-sku
-          skuName: import-sku-name
-          barCode: import-bar
-          unit: EA
-          volume: 24
+          skus= [{
+            id: 1
+            skuCode: import-sku
+            skuName: import-sku-name
+            barCode: import-bar
+            imageUrl: import-image
+            unit: EA
+            weight: 1
+            lenght: 2
+            width: 3
+            height: 4
+            cost: 5
+            price: 6
+            volume: 0.024
+            createTime: '2023-01-01T00:00:00Z'
+            lastUpdateTime: '2023-01-02T00:00:00Z'
+            spu.spuCode: import-spu
+            skuSafetyStocks= [{
+              id: 1
+              warehouse.warehouseName: import-warehouse
+              sku.skuCode: import-sku
+              safetyStockQty: 10
+            }]
+          }]
         }
         """
 
     场景: 批量导入到已存在商品时追加新规格
-      假如存在"商品类别":
-        | categoryName    |
-        | append-category |
-      假如存在"供应商":
-        | supplierName    |
-        | append-supplier |
-      假如存在"商品":
-        | spuCode    | spuName     | category.categoryName | supplier.supplierName | createTime           | lastUpdateTime       |
-        | append-spu | append-name | append-category       | append-supplier       | 2024-01-01T00:00:00Z | 2024-01-02T00:00:00Z |
-      假如存在"规格":
-        | spu.spuCode | skuCode             | skuName              | unit |
-        | append-spu  | append-existing-sku | append-existing-name | EA   |
+      假如存在:
+        """
+        商品类别: | categoryName    |
+                 | append-category |
+
+        供应商: | supplierName    |
+               | append-supplier |
+
+        仓库: | warehouseName    |
+             | import-warehouse |
+
+        商品: {
+          spuCode: append-spu
+          spuName: append-name
+          category.categoryName: append-category
+          supplier.supplierName: append-supplier
+          skus: [{
+            skuCode: append-existing-sku
+          }]
+        }
+        """
       当POST "商品导入请求[]" "/spu/addlist":
         """
         [{
@@ -1309,7 +1356,22 @@
           detailList: [{
             skuCode: append-new-sku
             skuName: append-new-name
-            unit: EA
+            barCode: append-new-bar
+            imageUrl: append-new-image
+            unit: BA
+            weight: 1
+            lenght: 2
+            width: 3
+            height: 4
+            cost: 5
+            price: 6
+            createTime: "2023-01-01 00:00:00"
+            lastUpdateTime: "2023-01-02 00:00:00"
+            detailList: [{
+              warehouseId: ${仓库.warehouseName[import-warehouse].id}
+              warehouseName: import-warehouse
+              safetyStockQty: 10
+            }]
           }]
         }]
         """
@@ -1326,15 +1388,34 @@
         """
         商品: {
           spuCode: append-spu
-          spuName: append-name,
-          lastUpdateTime is AlmostNow
+          spuName: append-name
+          skus: [{
+            skuCode: append-existing-sku
+          }, = {
+            id: 2
+            skuCode: append-new-sku
+            skuName: append-new-name
+            barCode: append-new-bar
+            imageUrl: append-new-image
+            unit: BA
+            weight: 1
+            lenght: 2
+            width: 3
+            height: 4
+            cost: 5
+            price: 6
+            volume: 24
+            createTime: '2023-01-01T00:00:00Z'
+            lastUpdateTime: '2023-01-02T00:00:00Z'
+            spu.spuCode: append-spu
+            skuSafetyStocks= [{
+              id: 1
+              warehouse.warehouseName: import-warehouse
+              sku.skuCode: append-new-sku
+              safetyStockQty: 10
+            }]
+          }]
         }
-        """
-      并且数据应为:
-        """
-        规格: | spu.spuCode | skuCode             | skuName              |
-             | append-spu  | append-existing-sku | append-existing-name |
-             | append-spu  | append-new-sku      | append-new-name      |
         """
 
     场景: 批量导入空数组失败
@@ -1666,5 +1747,160 @@
           code: 400
           errorMessage: "保存失败"
           data: null
+        }
+        """
+
+  Rule: 删除图片 - DELETE /spu/deleteImg
+
+    场景: 删除时URL参数为空失败
+      当DELETE "/spu/deleteImg?imageUrl="
+      那么response should be:
+        """
+        body.json= {
+          isSuccess: false
+          code: 400
+          errorMessage: "The imageUrl field is required."
+          data: null
+        }
+        """
+
+    场景: 删除无效图片URL格式失败
+      当DELETE "/spu/deleteImg?imageUrl=/sku_images/not-sku-prefix.png"
+      那么response should be:
+        """
+        body.json= {
+          isSuccess: false
+          code: 400
+          errorMessage: "invalid_image_url"
+          data: false
+        }
+        """
+
+    场景: 删除不存在的图片文件失败
+      当DELETE "/spu/deleteImg?imageUrl=/sku_images/sku-img_nonexistent.png"
+      那么response should be:
+        """
+        body.json= {
+          isSuccess: false
+          code: 400
+          errorMessage: "image_file_not_found"
+          data: false
+        }
+        """
+
+  Rule: 体积单位换算 - ChangeLengthUnit 覆盖
+
+    场景: 修改商品后体积按单位换算重算
+      假如存在:
+        """
+        商品类别: | categoryName          |
+                 | unit-convert-category |
+
+        供应商: | supplierName          |
+               | unit-convert-supplier |
+
+        仓库: | warehouseName          |
+             | unit-convert-warehouse  |
+        """
+      当POST "依赖已存在的 商品创建请求" "/spu":
+        """
+        {
+          spuCode: unit-spu
+          spuName: unit-spu-name
+          lengthUnit: 0
+          volumeUnit: 0
+          detailList: [{
+            skuCode: unit-sku
+            skuName: unit-sku-name
+            unit: EA
+            lenght: 10
+            width: 20
+            height: 30
+          }]
+        }
+        """
+      那么response should be:
+        """
+        body.json.isSuccess: true
+        """
+      当PUT "/spu":
+        """
+        {
+          "id": ${商品.spuCode[unit-spu].id},
+          "spu_code": "unit-spu",
+          "spu_name": "unit-spu-name",
+          "category_id": ${商品类别.categoryName[unit-convert-category].id},
+          "category_name": "unit-convert-category",
+          "supplier_id": ${供应商.supplierName[unit-convert-supplier].id},
+          "supplier_name": "unit-convert-supplier",
+          "length_unit": 3,
+          "volume_unit": 0,
+          "detailList": [{
+            "id": ${规格.skuCode[unit-sku].id},
+            "sku_code": "unit-sku",
+            "sku_name": "unit-sku-name",
+            "unit": "EA",
+            "lenght": 10,
+            "width": 20,
+            "height": 30
+          }]
+        }
+        """
+      那么response should be:
+        """
+        body.json= {
+          isSuccess: true
+          code: 200
+          errorMessage: ""
+          data: true
+        }
+        """
+      当GET "/spu?id=${商品.spuCode[unit-spu].id}"
+      那么response should be:
+        """
+        body.json.data.detailList[0].volume: 6000000000
+        """
+
+    场景: 批量导入新商品时体积按单位换算计算
+      假如存在"商品类别":
+        | categoryName           |
+        | batch-convert-category |
+      假如存在"供应商":
+        | supplierName           |
+        | batch-convert-supplier |
+      当POST "商品导入请求[]" "/spu/addlist":
+        """
+        [{
+          spuCode: batch-unit-spu
+          spuName: batch-unit-spu-name
+          categoryName: batch-convert-category
+          supplierName: batch-convert-supplier
+          lengthUnit: 3
+          volumeUnit: 1
+          detailList: [{
+            skuCode: batch-unit-sku
+            skuName: batch-unit-sku-name
+            unit: EA
+            lenght: 1
+            width: 2
+            height: 3
+          }]
+        }]
+        """
+      那么response should be:
+        """
+        body.json= {
+          isSuccess: true
+          code: 200
+          errorMessage: ""
+          data: 1
+        }
+        """
+      并且数据应为:
+        """
+        规格: {
+          spu.spuCode: batch-unit-spu
+          skuCode: batch-unit-sku
+          volume: 6000
         }
         """

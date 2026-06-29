@@ -11,6 +11,7 @@
 - `DELETE /spu?id={id}`
 - `POST /spu/addlist`
 - `PUT /spu/sku-safety-stock`
+- `DELETE /spu/deleteImg`
 
 ## 输入因子与取值
 
@@ -30,7 +31,8 @@
 | 明细 `detailList` | 规格明细列表 | 仅新增 / 新增+更新+删除 / 空列表 | 覆盖新增、修改、批量导入和安全库存更新的主分支 |
 | 明细 `sku_code` | 规格编码 | 合法唯一 / 缺失 / 已存在 | 覆盖模型校验、导入追加规格、导入冲突 |
 | 明细 `sku_name` / `unit` | 规格名称与单位 | 合法 / 缺失 | 覆盖嵌套校验 |
-| 尺寸与单位 | `length_unit`、`volume_unit`、`weight_unit` 及长宽高重量 | 默认单位 / 非默认换算 | 覆盖体积重算逻辑 |
+| `imageUrl` | 图片URL参数 | 合法存在 / 空 / 非法格式 / 文件不存在 | 覆盖 `/spu/deleteImg` 的存在性、校验与边界分支 |
+| 尺寸与单位 | `length_unit`、`volume_unit`、`weight_unit` 及长宽高重量 | 默认单位 / 非默认换算 | 覆盖体积重算逻辑：`mm→cm³`(0.1)、`dm→cm³`(10)、`m→cm³`(100)、`m→dm³`(10) |
 | 安全库存明细 | `detailList[].id` | 空列表 / `0` 新增 / `>0` 更新 / `<0` 删除 | 覆盖 `InsertOrUpdateSkuSafetyStockAsync` 成功与失败路径 |
 | 关联仓库 | `warehouse_id` / `warehouse_name` | 已存在仓库 | 影响安全库存保存与响应明细 |
 | 批量导入行集 | `/spu/addlist` 数组 | 空数组 / 全新商品 / 已有商品追加规格 / 文件内重复 SPU / 商品信息不一致 / 供应商缺失 / 类别缺失 / 规格编码冲突 / 请求内重复规格编码 | 覆盖批量导入主要成功/失败分支 |
@@ -47,6 +49,7 @@
 | `PUT /spu` | 成功返回 `true`；失败返回 `exists_entity` 或 `not_exists_entity` |
 | `DELETE /spu?id` | 成功返回 `删除成功`；不存在返回 `删除失败` |
 | `POST /spu/addlist` | 成功返回受影响数量；失败返回 `batch_empty`、`batch_duplicate_spu_code`、`supplier_not_exists`、`category_not_exists`、`spu_info_inconsistent`、`sku_code_exists`、`duplicate_sku_in_batch` |
+| `DELETE /spu/deleteImg` | 成功返回 `true`；空 URL 返回 `The imageUrl field is required.`；非法格式返回 `invalid_image_url`；文件不存在返回 `image_file_not_found` |
 | `PUT /spu/sku-safety-stock` | 成功返回 `保存成功`，并反映到 `sku_safety_stock` 表；空明细时返回 `保存失败` |
 
 ## 流程图
@@ -80,6 +83,11 @@
   ├──→ {DELETE /spu?id}
   │      ├──→ {删除条数 > 0} ──→ [先删 sku，再删 spu]
   │      └──→ [返回 delete_failed]
+  ├──→ {DELETE /spu/deleteImg}
+  │      ├──→ {imageUrl 为空} ──→ [返回 model validation 错误]
+  │      ├──→ {文件名格式非法} ──→ [返回 invalid_image_url]
+  │      ├──→ {文件不存在} ──→ [返回 image_file_not_found]
+  │      └──→ [删除文件并清理 SkuEntity.image_url，返回成功]
   ├──→ {POST /spu/addlist}
   │      ├──→ {空数组} ──→ [返回 batch_empty]
   │      ├──→ {文件内重复 SPU} ──→ [返回 batch_duplicate_spu_code]
@@ -132,12 +140,17 @@
 | addlist-已有商品请求内规格编码重复失败 | N/A | 已存在 | 与库一致 | 合法存在 | 请求内重复规格 | 请求内重复规格编码 | 返回 `批量数据中存在重复的规格编码` |
 | sku-safety-stock-新增更新删除成功 | 已存在 `sku_id` | N/A | N/A | N/A | `0/+/-` 三类明细 | N/A | `sku_safety_stock` 新增、更新、删除同时生效 |
 | sku-safety-stock-空明细失败 | 已存在 `sku_id` | N/A | N/A | N/A | 空明细 | N/A | 返回 `保存失败` |
+| delete-img-空URL失败 | N/A | N/A | N/A | N/A | N/A | N/A | 返回 `The imageUrl field is required.` |
+| delete-img-非法格式失败 | N/A | N/A | N/A | N/A | N/A | N/A | 返回 `invalid_image_url` |
+| delete-img-文件不存在失败 | N/A | N/A | N/A | N/A | N/A | N/A | 返回 `image_file_not_found` |
+| update-体积重算 | 存在 | 合法唯一 | 合法 | 合法存在 | `>0` 更新规格 | N/A | 修改 `length_unit` 0→3 后 `ChangeLengthUnit` 重算体积 |
+| addlist-体积换算 | N/A | 全新唯一 | 合法 | 合法存在 | 新增规格 | 全新商品 | `length_unit=3,volume_unit=1` 批导时体积换算 |
 
 ## 覆盖性检查
 
 - 每个控制器入口至少一个稳定成功路径。
 - 显式失败路径均有覆盖：模型校验失败、同租户 `spu_code` 重复、`id/sku_id` 不存在、缺失 `bar_code`、批量空数组、文件内重复 SPU、商品信息不一致、供应商不存在、已有规格编码冲突。
-- 显式失败路径均有覆盖：模型校验失败、同租户 `spu_code` 重复、`id/sku_id` 不存在、缺失/不存在 `bar_code`、批量空数组、文件内重复 SPU、商品信息不一致、供应商不存在、类别不存在、已有商品请求内重复规格编码、已有规格编码冲突、安全库存空明细。
+- 显式失败路径均有覆盖：模型校验失败、同租户 `spu_code` 重复、`id/sku_id` 不存在、缺失/不存在 `bar_code`、批量空数组、文件内重复 SPU、商品信息不一致、供应商不存在、类别不存在、已有商品请求内重复规格编码、已有规格编码冲突、安全库存空明细、`deleteImg` 空URL/非法格式/文件不存在。
 - 关键逻辑分支均有覆盖：
   - `pageIndex <= 0 || pageSize <= 0`：否 / 是
   - `GetAsync/GetSkuAsync/GetSkuByBarCodeAsync`：命中 / 未命中
@@ -153,6 +166,9 @@
   - `existingCategories.TryGetValue(...)`：命中 / 未命中
   - `duplicateSkuCodes.Any()`：否 / 是
   - `conflictSkuCodes.Any()`：否 / 是
+  - `string.IsNullOrEmpty(imageUrl)`（deleteImg 控制器）：否 / 是
+  - `GetFileNameFromUrl` / `IsValidImageFileName`（deleteImg 服务）：非法格式 / 文件不存在
+  - `ChangeLengthUnit`：`volume_unit=0` 四种 `length_unit`、`volume_unit=1` `length_unit=3`、`volume_unit=2` 等多种组合
 
 ## 测试数据策略
 
