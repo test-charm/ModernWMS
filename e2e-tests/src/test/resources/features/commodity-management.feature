@@ -1752,6 +1752,116 @@
         规格= []
         """
 
+    场景大纲: 批量导入商品缺少字段时校验失败
+      当POST "商品导入请求[]" "/spu/addlist":
+        """
+        [{
+          <fieldName>: null
+        }]
+        """
+      那么response should be:
+        """
+        body.json: {
+          isSuccess: false
+          code: 400
+          errorMessage: "<errorMessage>"
+        }
+        """
+      例子:
+        | fieldName    | errorMessage |
+        | spuCode      | 商品编码必填       |
+        | spuName      | 商品名称必填       |
+        | categoryName | 商品类别必填       |
+
+    场景大纲: 批量导入商品字段超长时校验失败
+      当POST "商品导入请求[]" "/spu/addlist":
+        """
+        [{
+          <fieldName>: 'A'*(<maxLength>+1)
+        }]
+        """
+      那么response should be:
+        """
+        body.json: {
+          isSuccess: false
+          code: 400
+          errorMessage: "<errorMessage>"
+        }
+        """
+      例子:
+        | fieldName    | maxLength | errorMessage         |
+        | spuCode      | 32        | 商品编码输入字符长度不能大于32个字符  |
+        | spuName      | 200       | 商品名称输入字符长度不能大于200个字符 |
+        | categoryName | 32        | 商品类别输入字符长度不能大于32个字符  |
+
+    场景大纲: 批量导入商品规格缺少字段时校验失败
+      当POST "商品导入请求[]" "/spu/addlist":
+        """
+        [{
+          detailList: [{
+            <fieldName>: null
+          }]
+        }]
+        """
+      那么response should be:
+        """
+        body.json: {
+          isSuccess: false
+          code: 400
+          errorMessage: "<errorMessage>"
+        }
+        """
+      例子:
+        | fieldName | errorMessage |
+        | skuCode   | 规格编码必填       |
+        | skuName   | 规格名称必填       |
+
+    场景大纲: 批量导入商品规格字段超长时校验失败
+      当POST "商品导入请求[]" "/spu/addlist":
+        """
+        [{
+          detailList: [{
+            <fieldName>: 'A'*(<maxLength>+1)
+          }]
+        }]
+        """
+      那么response should be:
+        """
+        body.json: {
+          isSuccess: false
+          code: 400
+          errorMessage: "<errorMessage>"
+        }
+        """
+      例子:
+        | fieldName | maxLength | errorMessage         |
+        | skuCode   | 32        | 规格编码输入字符长度不能大于32个字符  |
+        | skuName   | 200       | 规格名称输入字符长度不能大于200个字符 |
+        | barCode   | 64        | 商品条码输入字符长度不能大于64个字符  |
+
+    场景大纲: 批量导入商品规格安全库存缺少字段时校验失败
+      当POST "商品导入请求[]" "/spu/addlist":
+        """
+        [{
+          detailList: [{
+            detailList: [{
+              <fieldName>: null
+            }]
+          }]
+        }]
+        """
+      那么response should be:
+        """
+        body.json: {
+          isSuccess: false
+          code: 400
+          errorMessage: "<errorMessage>"
+        }
+        """
+      例子:
+        | fieldName     | errorMessage |
+        | warehouseName | 仓库名称必填       |
+
   Rule: 规格安全库存 - PUT /spu/sku-safety-stock
 
     场景: 新增修改删除安全库存成功
