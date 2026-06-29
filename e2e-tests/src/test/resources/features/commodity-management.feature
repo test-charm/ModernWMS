@@ -1327,12 +1327,6 @@
     场景: 批量导入到已存在商品时追加新规格
       假如存在:
         """
-        商品类别: | categoryName    |
-                 | append-category |
-
-        供应商: | supplierName    |
-               | append-supplier |
-
         仓库: | warehouseName    |
              | import-warehouse |
 
@@ -1418,6 +1412,85 @@
         }
         """
 
+    场景: 批量导入到已存在商品和新商品
+      假如存在:
+        """
+        商品: {
+          spuCode: existing-spu
+          spuName: existing-name
+          category.categoryName: existing-category
+          supplier.supplierName: existing-supplier
+        }
+        """
+      当POST "商品导入请求[]" "/spu/addlist":
+        """
+        [{
+          spuCode: existing-spu
+          spuName: existing-name
+          categoryName: existing-category
+          supplierName: existing-supplier
+        } {
+          spuCode: new-spu
+          spuName: new-name
+          categoryName: existing-category
+          supplierName: existing-supplier
+        }]
+        """
+      那么response should be:
+        """
+        body.json= {
+          isSuccess: true
+          code: 200
+          errorMessage: ""
+          data: 1
+        }
+        """
+      并且数据应为:
+        """
+        商品: | spuCode       | spuName       |
+             | existing-spu  | existing-name |
+             | new-spu       | new-name      |
+        """
+
+    场景: 批量导入不会更新已存在的商品信息
+      假如存在:
+        """
+        商品: {
+          spuCode: existing-spu
+          spuName: existing-name
+          spuDescription: existing-desc
+          category.categoryName: existing-category
+          supplier.supplierName: existing-supplier
+        }
+        """
+      当POST "商品导入请求[]" "/spu/addlist":
+        """
+        [{
+          spuCode: existing-spu
+          spuName: existing-name
+          spuDescription: new-desc
+          categoryName: existing-category
+          supplierName: existing-supplier
+        }]
+        """
+      那么response should be:
+        """
+        body.json= {
+          isSuccess: false
+          code: 400
+          errorMessage: "批量数据导入成功"
+          data: 0
+        }
+        """
+      并且数据应为:
+        """
+        商品: {
+          spuCode: existing-spu
+          spuName: existing-name
+          spuDescription: existing-desc
+        }
+        """
+
     场景: 批量导入空数组失败
       当POST "/spu/addlist":
         """
@@ -1434,34 +1507,12 @@
         """
 
     场景: 批量导入时文件内重复SPU编码失败
-      假如存在"商品类别":
-        | categoryName       |
-        | duplicate-category |
-      假如存在"供应商":
-        | supplierName       |
-        | duplicate-supplier |
       当POST "商品导入请求[]" "/spu/addlist":
         """
         [{
           spuCode: duplicate-in-file
-          spuName: duplicate-in-file-a
-          categoryName: duplicate-category
-          supplierName: duplicate-supplier
-          detailList: [{
-            skuCode: duplicate-sku-a
-            skuName: duplicate-sku-a
-            unit: EA
-          }]
         } {
           spuCode: duplicate-in-file
-          spuName: duplicate-in-file-b
-          categoryName: duplicate-category
-          supplierName: duplicate-supplier
-          detailList: [{
-            skuCode: duplicate-sku-b
-            skuName: duplicate-sku-b
-            unit: EA
-          }]
         }]
         """
       那么response should be:
@@ -1477,34 +1528,19 @@
         """
         商品= []
         """
-      并且数据应为:
-        """
-        规格= []
-        """
 
-    场景: 批量导入已有商品但商品信息不一致时失败
-      假如存在"商品类别":
-        | categoryName          |
-        | inconsistent-category |
-      假如存在"供应商":
-        | supplierName          |
-        | inconsistent-supplier |
-        | changed-supplier      |
+    场景: 批量导入已有商品但商品名称不一致时失败
       假如存在"商品":
-        | spuCode          | spuName           | category.categoryName | supplier.supplierName |
-        | inconsistent-spu | inconsistent-name | inconsistent-category | inconsistent-supplier |
+        | spuCode      | spuName       | category.categoryName | supplier.supplierName |
+        | existing-spu | existing-name | existing-category     | existing-supplier     |
       当POST "商品导入请求[]" "/spu/addlist":
         """
         [{
-          spuCode: inconsistent-spu
+          spuCode: existing-spu
           spuName: changed-name
-          categoryName: inconsistent-category
-          supplierName: inconsistent-supplier
-          detailList: [{
-            skuCode: inconsistent-sku
-            skuName: inconsistent-sku-name
-            unit: EA
-          }]
+          categoryName: existing-category
+          supplierName: existing-supplier
+          detailList: [{ ... }]
         }]
         """
       那么response should be:
@@ -1518,15 +1554,56 @@
         """
       并且数据应为:
         """
-        商品: {
-          spuCode: inconsistent-spu
-          spuName: inconsistent-name
-          supplierName: inconsistent-supplier
+        : {
+          商品: {
+            spuCode: existing-spu
+            spuName: existing-name
+            supplierName: existing-supplier
+          }
+
+          规格: []
+        }
+        """
+
+    场景: 批量导入已有商品但供应商名称不一致时失败
+      假如存在:
+        """
+        商品: | spuCode      | spuName       | category.categoryName | supplier.supplierName |
+             | existing-spu | existing-name | existing-category     | existing-supplier     |
+
+        供应商: | supplierName     |
+               | update-supplier |
+        """
+      当POST "商品导入请求[]" "/spu/addlist":
+        """
+        [{
+          spuCode: existing-spu
+          spuName: existing-name
+          categoryName: existing-category
+          supplierName: update-supplier
+          detailList: [{ ... }]
+        }]
+        """
+      那么response should be:
+        """
+        body.json= {
+          isSuccess: false
+          code: 400
+          errorMessage: "请检查商品信息"
+          data: 0
         }
         """
       并且数据应为:
         """
-        规格= []
+        : {
+          商品: {
+            spuCode: existing-spu
+            spuName: existing-name
+            supplierName: existing-supplier
+          }
+
+          规格: []
+        }
         """
 
     场景: 批量导入时供应商不存在失败
@@ -1540,11 +1617,7 @@
           spuName: missing-supplier-name
           categoryName: missing-supplier-category
           supplierName: missing-supplier
-          detailList: [{
-            skuCode: missing-supplier-sku
-            skuName: missing-supplier-sku-name
-            unit: EA
-          }]
+          detailList: [{ ... }]
         }]
         """
       那么response should be:
@@ -1554,6 +1627,14 @@
           code: 400
           errorMessage: "供应商不存在"
           data: 0
+        }
+        """
+      并且数据应为:
+        """
+        : {
+          商品: []
+
+          规格: []
         }
         """
 
@@ -1568,11 +1649,7 @@
           spuName: missing-category-name
           categoryName: missing-category
           supplierName: missing-category-supplier
-          detailList: [{
-            skuCode: missing-category-sku
-            skuName: missing-category-sku-name
-            unit: EA
-          }]
+          detailList: [{ ... }]
         }]
         """
       那么response should be:
@@ -1584,20 +1661,29 @@
           data: 0
         }
         """
+      并且数据应为:
+        """
+        : {
+          商品: []
+
+          规格: []
+        }
+        """
 
     场景: 批量导入已有商品时规格编码冲突失败
-      假如存在"商品类别":
-        | categoryName      |
-        | conflict-category |
-      假如存在"供应商":
-        | supplierName      |
-        | conflict-supplier |
-      假如存在"商品":
-        | spuCode      | spuName       | category.categoryName | supplier.supplierName |
-        | conflict-spu | conflict-name | conflict-category     | conflict-supplier     |
-      假如存在"规格":
-        | spu.spuCode  | skuCode      | skuName      | unit |
-        | conflict-spu | conflict-sku | conflict-sku | EA   |
+      假如存在:
+        """
+        商品: {
+          spuCode: conflict-spu
+          spuName: conflict-name
+          category.categoryName: conflict-category
+          supplier.supplierName: conflict-supplier
+          skus: [{
+            skuCode: conflict-sku
+            skuName: conflict-sku
+          }]
+        }
+        """
       当POST "商品导入请求[]" "/spu/addlist":
         """
         [{
@@ -1608,7 +1694,6 @@
           detailList: [{
             skuCode: conflict-sku
             skuName: conflict-new-sku
-            unit: EA
           }]
         }]
         """
@@ -1628,15 +1713,15 @@
         """
 
     场景: 批量导入已有商品时请求内规格编码重复失败
-      假如存在"商品类别":
-        | categoryName           |
-        | duplicate-sku-category |
-      假如存在"供应商":
-        | supplierName           |
-        | duplicate-sku-supplier |
-      假如存在"商品":
-        | spuCode           | spuName            | category.categoryName  | supplier.supplierName  |
-        | duplicate-sku-spu | duplicate-sku-name | duplicate-sku-category | duplicate-sku-supplier |
+      假如存在:
+        """
+        商品: {
+          spuCode: duplicate-sku-spu
+          spuName: duplicate-sku-name
+          category.categoryName: duplicate-sku-category
+          supplier.supplierName: duplicate-sku-supplier
+        }
+        """
       当POST "商品导入请求[]" "/spu/addlist":
         """
         [{
@@ -1647,11 +1732,9 @@
           detailList: [{
             skuCode: duplicate-sku-code
             skuName: duplicate-sku-name-1
-            unit: EA
           } {
             skuCode: duplicate-sku-code
             skuName: duplicate-sku-name-2
-            unit: EA
           }]
         }]
         """
