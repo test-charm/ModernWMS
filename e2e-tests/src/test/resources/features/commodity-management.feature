@@ -2035,119 +2035,54 @@
         }
         """
 
-  Rule: 体积单位换算 - ChangeLengthUnit 覆盖
+  Rule: 体积单位换算
 
-    场景: 修改商品后体积按单位换算重算
-      假如存在:
-        """
-        商品类别: | categoryName          |
-                 | unit-convert-category |
+    场景大纲: 换算规则 - <体积单位> / <长度单位>
+     假如存在:
+       """
+       商品: {
+         spuCode: list-spu
+       }
+       """
+     当PUT "依赖已存在的 商品修改请求" "/spu":
+       """
+       {
+         id: ${商品.spuCode[list-spu].id}
+         lengthUnit: <lengthUnit>
+         volumeUnit: <volumeUnit>
+         detailList: [{
+           id: 0
+           lenght: <dim>
+           width: <dim>
+           height: <dim>
+         }]
+       }
+       """
+     那么response should be:
+       """
+       body.json.code= 200
+       """
+     并且数据应为:
+       """
+       商品: {
+         skus: [{
+           volume: <dim> * <dec>bd * <dim> * <dec>bd * <dim> * <dec>bd
+         }]
+       }
+       """
 
-        供应商: | supplierName          |
-               | unit-convert-supplier |
-
-        仓库: | warehouseName          |
-             | unit-convert-warehouse  |
-        """
-      当POST "依赖已存在的 商品创建请求" "/spu":
-        """
-        {
-          spuCode: unit-spu
-          spuName: unit-spu-name
-          lengthUnit: 0
-          volumeUnit: 0
-          detailList: [{
-            skuCode: unit-sku
-            skuName: unit-sku-name
-            unit: EA
-            lenght: 10
-            width: 20
-            height: 30
-          }]
-        }
-        """
-      那么response should be:
-        """
-        body.json.isSuccess: true
-        """
-      当PUT "/spu":
-        """
-        {
-          "id": ${商品.spuCode[unit-spu].id},
-          "spu_code": "unit-spu",
-          "spu_name": "unit-spu-name",
-          "category_id": ${商品类别.categoryName[unit-convert-category].id},
-          "category_name": "unit-convert-category",
-          "supplier_id": ${供应商.supplierName[unit-convert-supplier].id},
-          "supplier_name": "unit-convert-supplier",
-          "length_unit": 3,
-          "volume_unit": 0,
-          "detailList": [{
-            "id": ${规格.skuCode[unit-sku].id},
-            "sku_code": "unit-sku",
-            "sku_name": "unit-sku-name",
-            "unit": "EA",
-            "lenght": 10,
-            "width": 20,
-            "height": 30
-          }]
-        }
-        """
-      那么response should be:
-        """
-        body.json= {
-          isSuccess: true
-          code: 200
-          errorMessage: ""
-          data: true
-        }
-        """
-      当GET "/spu?id=${商品.spuCode[unit-spu].id}"
-      那么response should be:
-        """
-        body.json.data.detailList[0].volume: 6000000000
-        """
-
-    场景: 批量导入新商品时体积按单位换算计算
-      假如存在"商品类别":
-        | categoryName           |
-        | batch-convert-category |
-      假如存在"供应商":
-        | supplierName           |
-        | batch-convert-supplier |
-      当POST "商品导入请求[]" "/spu/addlist":
-        """
-        [{
-          spuCode: batch-unit-spu
-          spuName: batch-unit-spu-name
-          categoryName: batch-convert-category
-          supplierName: batch-convert-supplier
-          lengthUnit: 3
-          volumeUnit: 1
-          detailList: [{
-            skuCode: batch-unit-sku
-            skuName: batch-unit-sku-name
-            unit: EA
-            lenght: 1
-            width: 2
-            height: 3
-          }]
-        }]
-        """
-      那么response should be:
-        """
-        body.json= {
-          isSuccess: true
-          code: 200
-          errorMessage: ""
-          data: 1
-        }
-        """
-      并且数据应为:
-        """
-        规格: {
-          spu.spuCode: batch-unit-spu
-          skuCode: batch-unit-sku
-          volume: 6000
-        }
-        """
+     例子:
+       | 体积单位 | 长度单位 | volumeUnit | lengthUnit | dim | dec    |
+       | cm3      | mm       | 0          | 0          | 1   | 0.1    |
+       | cm3      | cm       | 0          | 1          | 1   | 1      |
+       | cm3      | dm       | 0          | 2          | 1   | 10     |
+       | cm3      | m        | 0          | 3          | 1   | 100    |
+       | dm3      | mm       | 1          | 0          | 10  | 0.01   |
+       | dm3      | cm       | 1          | 1          | 1   | 0.1    |
+       | dm3      | dm       | 1          | 2          | 1   | 1      |
+       | dm3      | m        | 1          | 3          | 1   | 10     |
+       | m3       | mm       | 2          | 0          | 100 | 0.001  |
+       | m3       | cm       | 2          | 1          | 10  | 0.01   |
+       | m3       | dm       | 2          | 2          | 1   | 0.1    |
+       | m3       | m        | 2          | 3          | 1   | 1      |
+       | other    | cm       | 3          | 1          | 1   | 1      |
