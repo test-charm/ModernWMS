@@ -2077,6 +2077,59 @@
         }
         """
 
+    场景: 上传图片未提供文件失败
+      当POST form "/spu/uploadImg":
+       """
+       { ... }
+       """
+      那么response should be:
+       """
+       body.json= {
+         isSuccess: false
+         code: 400
+         errorMessage: 'The img field is required.'
+         data: null
+       }
+       """
+
+    场景: 上传图片文件类型无效失败
+      当POST form "/spu/uploadImg":
+       """
+       {
+         img(TextImage): {
+           name: hello.txt
+         }
+       }
+       """
+      那么response should be:
+       """
+       body.json= {
+         isSuccess: false
+         code: 400
+         errorMessage: 'Unsupported image types, only JPG, PNG, GIF, BMP formats are allowed'
+         data: null
+       }
+       """
+
+    场景: 上传图片文件过大失败
+      当POST form "/spu/uploadImg":
+       """
+       {
+         img(LargeImage): {
+           name: 'large.png'
+         }
+       }
+       """
+      那么response should be:
+       """
+       body.json= {
+         isSuccess: false
+         code: 400
+         errorMessage: 'The size of the image cannot be exceeded5MB'
+         data: null
+       }
+       """
+
   Rule: 删除图片 - DELETE /spu/deleteImg
 
     场景: 删除时URL参数为空失败
