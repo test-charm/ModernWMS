@@ -12,10 +12,12 @@ import org.testcharm.jfactory.DataRepository;
 import org.testcharm.jfactory.JFactory;
 import org.testcharm.jfactory.MemoryDataRepository;
 import org.testcharm.jfactory.repo.JPADataRepository;
+import org.testcharmtraining.dto.TextImageFile;
 
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceUnit;
 import java.net.URL;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
 
@@ -37,11 +39,12 @@ public class Factories {
     }
 
     @Bean
-    public JFactory factorySet(DALMockServer dalMockServer) {
+    public JFactory factorySet(DALMockServer dalMockServer, TempDirectory backendWwwroot) {
         return new EntityFactory(
                 new CompositeDataRepository(new MemoryDataRepository())
                         .registerByPackage("org.testcharmtraining.entity", new JPADataRepository(entityManagerFactory.createEntityManager()))
                         .registerByType(HttpRequest.class, new MockServerDataRepository(dalMockServer))
+                        .registerByType(TextImageFile.class, new TextImageFileDataRepository(backendWwwroot))
         );
     }
 
@@ -70,6 +73,23 @@ public class Factories {
         @Override
         public void save(Object object) {
 
+        }
+    }
+
+    public static class TextImageFileDataRepository extends MemoryDataRepository {
+        private final TempDirectory backendWwwroot;
+
+        public TextImageFileDataRepository(TempDirectory backendWwwroot) {
+            this.backendWwwroot = backendWwwroot;
+        }
+
+        @SneakyThrows
+        @Override
+        public void save(Object object) {
+            super.save(object);
+            var file = (TextImageFile) object;
+            Files.createDirectory(backendWwwroot.root().resolve("sku_images"));
+            backendWwwroot.write(Path.of("sku_images", file.getName()).toString(), file.getContent().getBytes());
         }
     }
 }

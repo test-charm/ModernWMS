@@ -2073,7 +2073,7 @@
       那么会生成如下文件:
         """
         : {
-          sku_images[0].ocr: hello
+          sku_images[1].ocr: hello
         }
         """
 
@@ -2131,6 +2131,42 @@
        """
 
   Rule: 删除图片 - DELETE /spu/deleteImg
+
+    # 这个场景有bug，更新sku的imageUrl为null会导致save失败
+    场景: 删除图片成功
+      假如存在:
+        """
+        规格: {
+          imageUrl: 'sku-img_delete.png'
+        }
+
+        TextImage: {
+          name: 'sku-img_delete.png'
+          content: 'delete me'
+        }
+        """
+      当DELETE "/spu/deleteImg?imageUrl=sku-img_delete.png"
+      那么response should be:
+        """
+        body.json= {
+          isSuccess: false
+          code: 400
+          errorMessage: *
+          data: false
+        }
+        """
+      那么数据应为:
+        """
+        规格: {
+          imageUrl: 'sku-img_delete.png'
+        }
+        """
+      那么会生成如下文件:
+        """
+        : {
+          sku_images: []
+        }
+        """
 
     场景: 删除时URL参数为空失败
       当DELETE "/spu/deleteImg?imageUrl="
