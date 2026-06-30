@@ -1997,6 +1997,86 @@
         }
         """
 
+  Rule: 体积单位换算
+
+    场景大纲: 换算规则 - <体积单位> / <长度单位>
+      假如存在:
+       """
+       商品: {
+         spuCode: list-spu
+       }
+       """
+      当PUT "依赖已存在的 商品修改请求" "/spu":
+       """
+       {
+         id: ${商品.spuCode[list-spu].id}
+         lengthUnit: <lengthUnit>
+         volumeUnit: <volumeUnit>
+         detailList: [{
+           id: 0
+           lenght: <dim>
+           width: <dim>
+           height: <dim>
+         }]
+       }
+       """
+      那么response should be:
+       """
+       body.json.code= 200
+       """
+      并且数据应为:
+       """
+       商品: {
+         skus: [{
+           volume: <dim> * <dec>bd * <dim> * <dec>bd * <dim> * <dec>bd
+         }]
+       }
+       """
+
+      例子:
+        | 体积单位  | 长度单位 | volumeUnit | lengthUnit | dim | dec   |
+        | cm3   | mm   | 0          | 0          | 1   | 0.1   |
+        | cm3   | cm   | 0          | 1          | 1   | 1     |
+        | cm3   | dm   | 0          | 2          | 1   | 10    |
+        | cm3   | m    | 0          | 3          | 1   | 100   |
+        | dm3   | mm   | 1          | 0          | 10  | 0.01  |
+        | dm3   | cm   | 1          | 1          | 1   | 0.1   |
+        | dm3   | dm   | 1          | 2          | 1   | 1     |
+        | dm3   | m    | 1          | 3          | 1   | 10    |
+        | m3    | mm   | 2          | 0          | 100 | 0.001 |
+        | m3    | cm   | 2          | 1          | 10  | 0.01  |
+        | m3    | dm   | 2          | 2          | 1   | 0.1   |
+        | m3    | m    | 2          | 3          | 1   | 1     |
+        | other | cm   | 3          | 1          | 1   | 1     |
+
+  Rule: 上传图片 - POST FORM /spu/uploadImg
+
+    场景: 上传图片成功
+      当POST form "/spu/uploadImg":
+        """
+        {
+          img(TextImage): {
+            name: 'hello.png'
+            content: 'hello'
+          }
+        }
+        """
+      那么response should be:
+        """
+        body.json= {
+          isSuccess: true
+          code: 200
+          errorMessage: 'Upload sucess'
+          data: /^\/sku_images\/sku-img.*\.png$/
+        }
+        """
+      那么会生成如下文件:
+        """
+        : {
+          sku_images[0].ocr: hello
+        }
+        """
+
   Rule: 删除图片 - DELETE /spu/deleteImg
 
     场景: 删除时URL参数为空失败
@@ -2035,54 +2115,3 @@
         }
         """
 
-  Rule: 体积单位换算
-
-    场景大纲: 换算规则 - <体积单位> / <长度单位>
-     假如存在:
-       """
-       商品: {
-         spuCode: list-spu
-       }
-       """
-     当PUT "依赖已存在的 商品修改请求" "/spu":
-       """
-       {
-         id: ${商品.spuCode[list-spu].id}
-         lengthUnit: <lengthUnit>
-         volumeUnit: <volumeUnit>
-         detailList: [{
-           id: 0
-           lenght: <dim>
-           width: <dim>
-           height: <dim>
-         }]
-       }
-       """
-     那么response should be:
-       """
-       body.json.code= 200
-       """
-     并且数据应为:
-       """
-       商品: {
-         skus: [{
-           volume: <dim> * <dec>bd * <dim> * <dec>bd * <dim> * <dec>bd
-         }]
-       }
-       """
-
-     例子:
-       | 体积单位 | 长度单位 | volumeUnit | lengthUnit | dim | dec    |
-       | cm3      | mm       | 0          | 0          | 1   | 0.1    |
-       | cm3      | cm       | 0          | 1          | 1   | 1      |
-       | cm3      | dm       | 0          | 2          | 1   | 10     |
-       | cm3      | m        | 0          | 3          | 1   | 100    |
-       | dm3      | mm       | 1          | 0          | 10  | 0.01   |
-       | dm3      | cm       | 1          | 1          | 1   | 0.1    |
-       | dm3      | dm       | 1          | 2          | 1   | 1      |
-       | dm3      | m        | 1          | 3          | 1   | 10     |
-       | m3       | mm       | 2          | 0          | 100 | 0.001  |
-       | m3       | cm       | 2          | 1          | 10  | 0.01   |
-       | m3       | dm       | 2          | 2          | 1   | 0.1    |
-       | m3       | m        | 2          | 3          | 1   | 1      |
-       | other    | cm       | 3          | 1          | 1   | 1      |

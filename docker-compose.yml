@@ -54,6 +54,7 @@ services:
       - ./backend:/workspace/backend
       - ./e2e-tests/build:/workspace/e2e-tests/build
       - ${HOME}/.nuget/packages:/root/.nuget/packages
+      - /tmp/atdd-v2/wwwroot:/workspace/backend/ModernWMS/wwwroot
     ports:
       - "10085:5555"
 
@@ -69,3 +70,12 @@ services:
       - dotnet
     ports:
       - "58080:80"
+
+  ocr:
+    image: hertzg/tesseract-server
+    ports:
+      - 58884:8884
+    networks:
+      default:
+        aliases:
+          - ocr.tool.net

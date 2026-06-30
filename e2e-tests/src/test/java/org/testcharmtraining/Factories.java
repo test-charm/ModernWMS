@@ -6,6 +6,7 @@ import org.mockserver.model.HttpRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.testcharm.io.TempDirectory;
 import org.testcharm.jfactory.CompositeDataRepository;
 import org.testcharm.jfactory.DataRepository;
 import org.testcharm.jfactory.JFactory;
@@ -15,6 +16,7 @@ import org.testcharm.jfactory.repo.JPADataRepository;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceUnit;
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.Collection;
 
 @Configuration
@@ -41,6 +43,11 @@ public class Factories {
                         .registerByPackage("org.testcharmtraining.entity", new JPADataRepository(entityManagerFactory.createEntityManager()))
                         .registerByType(HttpRequest.class, new MockServerDataRepository(dalMockServer))
         );
+    }
+
+    @Bean
+    public TempDirectory backendWwwroot() {
+        return new TempDirectory(Path.of("/tmp/atdd-v2/wwwroot"));
     }
 
     public static class MockServerDataRepository implements DataRepository {
